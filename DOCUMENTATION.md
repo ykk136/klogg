@@ -14,14 +14,14 @@
 *klogg* can be started from the command line, optionally passing the
 file to open as an argument, or via the desktop environment's menu or
 file association. If no file name is passed, *klogg* will initially open
-the last used file.
+the most recent file.
 
-The main window is divided in three parts : the top displays the log
-file. The bottom part, called the "filtered view", shows the results of
+The main window is divided into three parts : the top displays the log
+file. The bottom part, called the "filtered view", displays the results of
 the search. The line separating the two contains the regular expression
 used as a filter.
 
-Entering a new regular expression, or a simple search term, will update
+Entering a new regular expression or a simple search term will update
 the bottom view, displaying the results of the search. The lines
 matching the search criteria are listed in order in the results, and are
 marked with a red circle in both windows.
@@ -29,44 +29,44 @@ marked with a red circle in both windows.
 ## Exploring log files
 
 Regular expressions are a powerful way to extract the information you
-are interested in from the log file. *klogg* uses *extended regular
+want from the log file. *klogg* uses *extended regular
 expressions*.
 
-One of the most useful regexp feature when exploring logs is the
-*alternation*, using parentheses and the | operator. It searches for
-several alternatives, permitting to display several line types in the
+One of the most useful regexp features when exploring logs is the
+*alternation* feature, using parentheses and the | operator. It searches for
+several alternatives and displays several line types in the
 filtered window, in the same order they appear in the log file.
 
-For example, to check that every connection opened is also closed, one
+For example, to verify that every connection opened is also closed, one
 can use an expression similar to:
 
 `Entering (Open|Close)Connection`
 
-Any 'open' call without a matching 'close' will immediately be obvious
+Any 'open' call without a matching 'close' will immediately stand out
 in the filtered window. The alternation also works with the whole search
-line. For example if you also want to know what kind of connection has
+line. If you would like to know what kind of connection has
 been opened:
 
 `Entering (Open|Close)Connection|Created a .* connection`
 
-`.*` will match any sequence of character on a single line, but *klogg*
+`.*` will match any sequence of characters on a single line, but *klogg*
 will only display lines with a space and the word `connection` somewhere
 after `Created a`
 
-*klogg* keeps history of used search patterns and provides autocomplete
-for them. This history can be cleared from search text box context menu.
+*klogg* keeps track of used search patterns and provides autocomplete
+for them. This history can be cleared from the search text box context menu.
 Autocomplete is case sensitive if this option is selected for matching 
-regular expression.
+regular expressions.
 
 In addition to the filtered window, the match overview on the right hand
 side of the screen offers a view of the position of matches in the log
-file. Matches are showed as small red lines.
+file. Matches are shown as small red lines.
 
-In addition to regexp matches, *klogg* enables the user to mark any
+In addition to regexp matches, *klogg* enables its users to mark any
 interesting line in the log. To do this, click on the round bullet in
-the left margin in front of the line that needs to be marked or select
-the line and press `'m'` hotkey.
-To mark several lines at once select them and use `'m'` hotkey or context menu.
+the left margin in front of the line that needs to be marked. Or, select
+the line and press the `'m'` hotkey.
+To mark several lines at once select them and use the `'m'` hotkey or context menu.
 
 Marks are combined with matches and are always visible
 in the filtered window. They also appears as blue lines in the match overview.
@@ -76,125 +76,125 @@ in the filtered window. They also appears as blue lines in the match overview.
 *klogg* provides several options for opening files:
 
 * using dedicated open file item in `File` menu or toolbar
-* dragging files from file manager
-* downloading file from provided url
-* providing one or many files via command line
-* using recent files or favorites menu items.
+* dragging files from the file manager
+* downloading files from a provided url
+* providing one or many files via the command line
+* using recent files or favorite menu items.
 
-On Winodws and Mac OS *klogg* installer configures operating system to open `.log` files by
-clicking them in file manager.
+On Windows and Mac OS, the *klogg* installer configures the operating system to open `.log` files by
+clicking them in the file manager.
 
 #### Archives
 
-*klogg* can open archives (`zip`, `7z`, and `tar`). Archive is extracted
-to temporary directory and standard open file dialog is presented to
-select files. Type of archive is determined automatically (by file
-content or extension).
+*klogg* can open archives (`zip`, `7z`, and `tar`). The archive is extracted
+to a temporary directory and standard open file dialog is presented to
+select files. The type of archive is determined automatically by file
+content or extension.
 
-*klogg* can open compressed files (`gzip`, `bzip2`, `xz`, `lzma`). Such file is
-decompressed to temporary folder and then opened. Compression type is
-determined automatically (by file content or extension).
+*klogg* can open compressed files (`gzip`, `bzip2`, `xz`, `lzma`). Such files are
+decompressed to a temporary folder and then opened. The compression type is
+determined automatically by file content or extension.
 
 #### Urls
 
-*klogg* can open files from remote urls. In that case *klogg* will
-download file to temporary directory and open it from there.
+*klogg* can open files from remote urls. In that case, *klogg* will
+download the file to a temporary directory and open it from there.
 
 #### Recent files
 
-*klogg* saves history of recent opened files. Up to 5 recent files are
-available from `File` menu.
+*klogg* saves a history of recent opened files. Up to 5 recent files are
+available from the `File` menu.
 
 #### Favorites
 
-Opened files can be added to `Favorites` menu either from
-`Favorites->Add to Favorites` or from toolbar.
+Opened files can be added to the `Favorites` menu either from
+`Favorites->Add to Favorites` or from the toolbar.
 
 This menu is used to provide fast access to files that are opened less
-often and don't end up in recent files.
+often and don't end up in the recent files section.
 
 #### Clipboard
 
-Pasting text from clipboard to *klogg* also works. In this case *klogg*
-will save pasted text to temporary file and open that file for
+Pasting text from the clipboard to *klogg* also works. In this case, *klogg*
+will save pasted text to a temporary file and open that file for
 exploring.
 
 #### Switching between opened files
 
-Switching from one opened file to another can be done from 
-`View->Opened files` menu or using `Ctrl+Shift+O` shortcut 
-that shows special dialog to choose between opened files.
+Switching from one opened file to another can be done from the
+`View->Opened files` menu or by using the `Ctrl+Shift+O` shortcut 
+which displays special dialogue to choose between opened files.
 
 ### Encodings
 
-*klogg* tries to guess encoding of opened file. If that guess happens to
-be wrong then desired encoding can be selected from `Encoding` menu.
+*klogg* tries to guess the encoding of an opened file. If that guess happens to
+be wrong, then the desired encoding can be selected from the `Encoding` menu.
 
 ### Using highlighters
 
-*Highlighters* can colorize some lines of the log being displayed, for
-example to draw attention to lines indicating an error, or to associate
-a color with each sort of event. 
+*Highlighters* can colorize some lines of the log being displayed
+to draw attention to lines indicating an error, or to associate
+a color with a certain type of event. 
 
 Highlighters are grouped into sets. One set of highlighters can be active
-at any given time. Current active set can be selected using either 
-context menu or `Tools->Highlighters` menu.
+at any given time. The current active set can be selected using either the
+context menu or the `Tools->Highlighters` menu.
 
 Any number of highlighters can be defined in a single set.
 Highlighter configuration includes a regular expression to match
-and color options. Another option is to use plain text patterns
-in cases when complex regular expression are not needed.
+as well as color options. Another option is to use plain text patterns
+in cases when complex regular expression are unnecessary.
 
-Each highlighter can be configured to apply fore and 
-back colors either to the whole line that matched its regular
-expression or only to matching parts of the line. In the latter case 
-if regular expression contains capture groups then only the captured
-parts of matching line are highlighted.
+Each highlighter can be configured to apply foreground and 
+background colors either to the whole line that matched its regular
+expression or only to matching parts of the line. In the latter case,
+if the regular expression contains capture groups then only the captured
+parts of the matching line are highlighted.
 
-Order of highlighters in the set does matter. For each line all
+The order of highlighters in the set is crucial. For each line all
 highlighters are tried from bottom to top. Each new matching 
-highlighter overrides colors for current line. 
+highlighter overrides colors for the current line. 
 
-Highlighters configuration can be exported to a file and 
-imported for example on another machine. Each set is identified
-by unique guid. Only new sets are imported from file.
+Highlighter configuration can be exported to a file and 
+imported on another machine. Each set is identified
+by unique guid. Only new sets are imported from the file.
 
 ### Browsing changing log files
 
 *klogg* can display and search through logs while they are written to
-disk, as it might be the case when debugging a running program or
+a disk. This might be the case when debugging a running program or
 server. The log is automatically updated when it grows, but the
 'Auto-refresh' option must be enabled if you want the search results to
-be automatically refreshed as well.
+be automatically refreshed.
 
-The `'f'` key might be used to follow the end of the file as it grows (a
+The `'f'` key may be used to follow the end of the file as it grows (a
 la `tail -f`).
 
-*klogg* detects if new lines have been appended to the file or it has
-been overwritten. In former case search results will be updated as new
-matching lines appear in the file. If file is overwritten then
+*klogg* detects if new lines have been appended to the file or if the file has
+been overwritten. In the former case, search results will be updated as new
+matching lines appear in the file. If the file is overwritten, then
 search results will be cleared. 
 
 *klogg* has two options to distinguish appends from overwrites.
-General and more stable options is to recalculate hash of indexed part
-of the file and check if it matches current file on disk. This is
-reliable but can be slow for large files and for slow filesystem
-(e.g. network shares). The other option is to check hashes for only
-first and last part of the file. This usually works fast 
-but can miss a change in the middle of the file. Appropriate option
-can be selected in `Settings->File` tab.
+The general and more stable option is to recalculate the hash of the 
+indexed part of the file and check if it matches current file on disk. 
+This is reliable but can be slow for large files and for slow filesystems
+(e.g. network shares). The other option is to check hashes for only the 
+first and last parts of the file. This usually works quickly 
+but can skip over changes in the middle of the file. You can choose your 
+preferred option in `Settings->File` tab.
 
-Following file requires monitoring filesystem for changes. If native
-monitoring or polling are both disabled in settings, then following file
+The following file requires monitoring of the filesystem for any changes. If native
+monitoring or polling are both disabled in settings, then the following file
 is also disabled.
 
 ### Scratchpad
 
 Sometimes in log files there are text in base64 encoding, unformatted
-xml/json, etc. For such cases *klogg* provides Scratchpad tool. Text can
-be copied to this window and transformed to human readable form.
+xml/json, etc. For such cases, *klogg* provides a Scratchpad tool. Text can
+be copied to this window and transformed to legible human language.
 
-New tabs can be opened in Scratchpad using `Ctrl+N` hotkey.
+New tabs can be opened in Scratchpad using the `Ctrl+N` hotkey.
 
 ## Settings
 
@@ -210,18 +210,18 @@ filtering lines for the bottom window, and when using QuickFind.
 *   Fixed Strings. Searches for the text exactly as it is written, no
     character is special
 
-If incremental quickfind is selected *klogg* will automatically restart
-quickfind search when search pattern changes. For performance reasons
+If incremental quickfind is selected, *klogg* will automatically restart
+quickfind search when the search pattern changes. For performance reasons,
 incremental quickfind can use only fixed strings patterns.
 
 #### Session options
 
-*   Load last session -- if enabled *klogg* will reopen files that were
+*   Load last session -- if enabled, *klogg* will reopen files that were
     opened when *klogg* was closed. View configuration, marked lines and
     `follow` mode settings are restored for each file.
-*   Follow file on load -- if enabled *klogg* will enter `follow` mode
+*   Follow file on load -- if enabled, *klogg* will enter `follow` mode
     for for all new opened files.
-*   Minimize to tray -- if enabled *klogg* will minimize to tray instead
+*   Minimize to tray -- if enabled, *klogg* will minimize to tray instead
     of closing main window. Use tray icon context menu of `File->Exit`
     to exit application. This option is not available on Mac OS.
 *   Enable multiple windows -- if enabled *klogg* will allow to open
@@ -232,10 +232,11 @@ incremental quickfind can use only fixed strings patterns.
 
 #### Version checking options
 
-If version checking is enabled then *klogg* will once a week try to grab a version
-information file from Github repository and see if new version has been released.
+If version checking is enabled then *klogg* will try to grab a version
+information file from the Github repository and see if a new version has been released
+once per week.
 
-Stable builds will check if new stable version is available and pop a dialog about it.
+Stable builds will check if a new stable version is available and pop a dialogue about it.
 Testing builds will check for new testing versions.
 
 ### View
@@ -244,88 +245,88 @@ Testing builds will check for new testing versions.
 
 The font used to display the log file. A clear, monospace font (like the
 free, open source, [DejaVu Mono](http://www.dejavu-fonts.org) for
-example) is recommended.
+example, is recommended.
 
-Font antialiasing can be forced if autodeteced options result in bad
+Font antialiasing can be forced if autodeteced options result in low-quality
 text rendering.
 
 #### Style
 
-Qt usually comes with several options of drawing application widgets.
-By default *klogg* uses style that matches current operating system.
-Other styles can be chosen from the dropdown.
+Qt usually comes with several options for drawing application widgets.
+By default, *klogg* uses a style that matches current operating systems.
+Other styles can be chosen from the dropdown menu.
 
-*klogg* will try to respect current display manager theme and 
+*klogg* will try to respect current display manager theme and to
 use white icons for dark themes. 
 
 Another option is to select Dark style. In this case *klogg*
-will use custom dark stylesheet.
+will use a custom dark mode stylesheet.
 
 #### High DPI
 
 Options in this group can be used in case *klogg* window looks 
-ugly on High DPI monitors. Usually Qt detects correct settings.
-However, especially for non-integer scale factors manual 
-overrides might be useful.
+bad on High DPI monitors. Usually, Qt detects the correct settings.
+However, these options may be useful, especially for non-integer
+scale factors manual overrides.
 
 ### File
 
 #### File change monitoring
 
-If file change monitoring is enabled *klogg* will use facilities
-provided by operating system to reload file when data is changed on
+If file change monitoring is enabled, *klogg* will use facilities
+provided by the operating system to reload the file when data is changed on the
 disk.
 
-Sometimes this kind of monitoring does not work reliably, for example on
-network shares or directories mounted via sftp. In that case polling can
+Sometimes this kind of monitoring is unreliable on
+network shares or directories mounted via sftp. In that case, polling can
 be enabled to make *klogg* check for changes.
 
-*klogg* tries to detect if file was changed in the already indexed
+*klogg* tries to detect if the file was changed in the already indexed
 area. This mechanism involves hash recalculation and can be slow for
 large files and network filesystems. If fast modification detection
-is enabled *klogg* will check hash for the first and last part of
-changed files. This is faster but can miss changes in the middle of
-the file, so should be used with caution.
+is enabled *klogg* will check hash for the first and last parts of
+changed files. This is faster but can skip over changes in the middle of
+the file. This feature should be used with caution.
 
 #### Archives
 
 If extract archives is selected then *klogg* will detect if opened file
 is of one of supported archives type or a single compressed file and
-will ask user permisson to extract archives content to temporary folder.
+will ask for user permisson to extract archives content to temporary folder.
 
-If you do not want *klogg* to ask for permisson check extract archives
+If you do not want *klogg* to ask for permisson, check extract archives
 without confirmation option.
 
 #### File download
 
-By default *klogg* will not download files using https if certificates
-can't be checked. In some development environments self-signed 
-certificates are used. In this case *klogg* can be instructed to ignore
+By default, *klogg* will not download files using https if certificates
+can't be checked. Some development environments use self-signed 
+certificates. In this case, *klogg* can be instructed to ignore
 SSL errors.
 
 ### Advanced options
 
-These options allow to customize performance related settings.
+These options refer to the customization of performance related settings.
 
-If parallel search is enabled *klogg* will try to use several cpu cores
+If parallel search is enabled, *klogg* will try to use several cpu cores
 for regular expression matching. This does not work with quickfind.
 
-If search results cache is enabled *klogg* will store numbers of lines
-that matched search pattern in memory. Repeating search for the same
-pattern will not go through all file but use cached line numbers
+If search results cache is enabled, *klogg* will store numbers of lines
+that matched the search pattern in its memory. Repeating searches for the same
+pattern will not go through all files but will use cached line numbers
 instead.
 
-When using *klogg* to monitor updating files this option should be
+When using *klogg* to monitor updating files, this option should be
 disabled.
 
-In case there is some problem with *klogg* logging can be enabled with
-desired level of verbosity. Log files are save to temporary directory.
-Log level of 4 or 5 is usually enough.
+In case there is an issue with *klogg*, logging can be enabled with
+a desired level of verbosity. Log files are saved to a temporary directory.
+A log level of 4 or 5 is usually enough.
 
 ## Crash reporting
 
 *klogg* uses Crashpad crash handler to collect minidump files in case of 
-unexpected crashes. At startup *klogg* checks for new minidumps and asks user
+unexpected crashes. At startup, *klogg* checks for new minidumps and asks  the user
 if these files should be sent to developers.
 
 Crash report provides information about:
@@ -335,7 +336,7 @@ Crash report provides information about:
 * modules that were loaded into *klogg* process: filename, size and hashes for symbols
 * stacktraces for all running threads in *klogg* process
 
-These minidumps do not include full content of *klogg* process memory during the crash.
+These minidumps do not include the full content of *klogg* process memory during the crash.
 
 ## Keyboard commands
 
