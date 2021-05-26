@@ -148,6 +148,8 @@ void LogFilteredData::interruptSearch()
 
 void LogFilteredData::clearSearch()
 {
+    interruptSearch();
+    
     currentRegExp_ = {};
     matching_lines_ = {};
     marks_and_matches_ = marks_;

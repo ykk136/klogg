@@ -38,6 +38,7 @@
 
 // This file implements LogData, the content of a log file.
 
+#include <cstddef>
 #include <iostream>
 
 #include <cassert>
@@ -482,9 +483,12 @@ std::vector<QString> LogData::RawLines::decodeLines() const
 std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
 {
     std::vector<std::string_view> lines;
-    lines.reserve( numberOfLines.get() );
+    if ( numberOfLines == 0_lcount || textDecoder.decoder == nullptr ) {
+        return lines;
+    }
 
     try {
+        lines.reserve( numberOfLines.get() );
         const auto utf16Data
             = textDecoder.decoder->toUnicode( buffer.data(), static_cast<int>( buffer.size() ) );
 
