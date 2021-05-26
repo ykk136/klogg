@@ -80,40 +80,40 @@ struct CrawlerWidget::access_by<CrawlerWidgetPrivate> {
 
     void selectAllInMainView()
     {
-        crawler->logMainView->selectAll();
+        crawler->logMainView_->selectAll();
     }
 
     void selectAllInFilteredView()
     {
-        crawler->filteredView->selectAll();
+        crawler->filteredView_->selectAll();
     }
 
     QString mainViewSelectedText()
     {
-        return crawler->logMainView->getSelection();
+        return crawler->logMainView_->getSelection();
     }
 
     QString filteredViewSelectedText()
     {
-        return crawler->filteredView->getSelection();
+        return crawler->filteredView_->getSelection();
     }
 
     void setSearchPattern( const QString& pattern )
     {
-        QTest::keyClicks( crawler->searchLineEdit, pattern );
-        QTest::keyClick( crawler->searchLineEdit, Qt::Key_Enter );
+        QTest::keyClicks( crawler->searchLineEdit_, pattern );
+        QTest::keyClick( crawler->searchLineEdit_, Qt::Key_Enter );
     }
 
     void runSearch()
     {
-        SafeQSignalSpy searchProgressSpy{ crawler->logFilteredData_,
+        SafeQSignalSpy searchProgressSpy{ crawler->logFilteredData_.get(),
                                           &LogFilteredData::searchProgressed };
 
-        QTest::mouseClick( crawler->searchButton, Qt::LeftButton );
+        QTest::mouseClick( crawler->searchButton_, Qt::LeftButton );
 
         QTest::qWait( 100 );
 
-        waitUiState( [ & ]() { return crawler->stopButton->isHidden(); } );
+        waitUiState( [ & ]() { return crawler->stopButton_->isHidden(); } );
     }
 
     void render()
