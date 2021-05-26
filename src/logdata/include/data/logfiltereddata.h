@@ -191,7 +191,7 @@ class LogFilteredData : public AbstractLogData {
     Mutex searchProgressMutex_;
     std::tuple<LinesCount, int, LineNumber> searchProgress_;
 
-    KDToolBox::KDSignalLeadingThrottler searchProgressThrottler_;
+    KDToolBox::KDSignalThrottler searchProgressThrottler_;
 
   private:
     struct CachedSearchResult {
