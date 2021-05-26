@@ -42,8 +42,10 @@
 
 #include <QCommandLineOption>
 
-#ifdef KLOGG_OVERRIDE_MALLOC
+#if defined(KLOGG_USE_TBBMALLOC)
 #include <tbb/tbbmalloc_proxy.h>
+#elif defined(KLOGG_USE_MIMALLOC)
+#include <mimalloc.h>
 #endif
 
 #include "kloggapp.h"
@@ -264,6 +266,10 @@ void applyStyle()
 
 int main( int argc, char* argv[] )
 {
+#ifdef KLOGG_USE_MIMALLOC
+    mi_stats_reset();
+#endif
+
     setApplicationAttributes();
 
     KloggApp app( argc, argv );
