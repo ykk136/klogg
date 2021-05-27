@@ -33,6 +33,7 @@ namespace {
 struct MatcherContext {
     const std::vector<std::string>& patternIds;
     robin_hood::unordered_flat_set<std::string>& matchingPatterns;
+    bool hasMatch = false;
 };
 
 int matchCallback( unsigned int id, unsigned long long from, unsigned long long to,
@@ -42,10 +43,15 @@ int matchCallback( unsigned int id, unsigned long long from, unsigned long long 
     Q_UNUSED( to );
     Q_UNUSED( flags );
 
-    MatcherContext* matchResult = static_cast<MatcherContext*>( context );
+    MatcherContext* matchContext = static_cast<MatcherContext*>( context );
 
-    const auto& patternId = matchResult->patternIds[ id ];
-    matchResult->matchingPatterns.insert( patternId );
+    if ( matchContext->patternIds.size() == 1 ) {
+        matchContext->hasMatch = true;
+    }
+    else {
+        const auto& patternId = matchContext->patternIds[ id ];
+        matchContext->matchingPatterns.insert( patternId );
+    }
 
     return 0;
 }
@@ -59,29 +65,33 @@ HsMatcher::HsMatcher( HsDatabase db, HsScratch scratch, const std::vector<std::s
 {
 }
 
-robin_hood::unordered_flat_map<std::string, bool> HsMatcher::match( const std::string_view& utf8Data ) const
+MatchingResult HsMatcher::match( const std::string_view& utf8Data ) const
 {
-    robin_hood::unordered_flat_set<std::string> matchingPatterns;
 
     if ( !scratch_ || !database_ ) {
         return {};
     }
-
+    robin_hood::unordered_flat_set<std::string> matchingPatterns;
+    
     MatcherContext context{ patternIds_, matchingPatterns };
-
     hs_scan( database_.get(), utf8Data.data(), static_cast<unsigned int>( utf8Data.size() ), 0,
              scratch_.get(), matchCallback, static_cast<void*>( &context ) );
 
-    robin_hood::unordered_map<std::string, bool> results;
-    for ( const auto& patternId : patternIds_ ) {
-        results[ patternId ] = false;
-    }
+    if ( patternIds_.size() > 1 ) {
+        robin_hood::unordered_map<std::string, bool> results;
+        for ( const auto& patternId : patternIds_ ) {
+            results[ patternId ] = false;
+        }
 
-    for ( const auto& match : matchingPatterns ) {
-        results[ match ] = true;
-    }
+        for ( const auto& match : matchingPatterns ) {
+            results[ match ] = true;
+        }
 
-    return results;
+        return results;
+    }
+    else {
+        return context.hasMatch;
+    }
 }
 
 HsRegularExpression::HsRegularExpression( const RegularExpressionPattern& pattern )

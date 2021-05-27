@@ -39,6 +39,9 @@
 
 #include "regularexpressionpattern.h"
 
+using MatchedPatterns = robin_hood::unordered_flat_map<std::string, bool>;
+using MatchingResult = std::variant<bool, MatchedPatterns>;
+
 class DefaultRegularExpressionMatcher {
   public:
     explicit DefaultRegularExpressionMatcher(
@@ -60,14 +63,18 @@ class DefaultRegularExpressionMatcher {
         return matchingPatterns;
     }
 
-    robin_hood::unordered_flat_map<std::string, bool> match( const std::string_view& utf8Data ) const
+    MatchingResult match( const std::string_view& utf8Data ) const
     {
-        robin_hood::unordered_flat_map<std::string, bool> matchingPatterns;
+        MatchedPatterns matchingPatterns;
         for ( const auto& regexp : regexp_ ) {
             const auto hasMatch = regexp.second
                                       .match( QString::fromUtf8(
                                           utf8Data.data(), static_cast<int>( utf8Data.size() ) ) )
                                       .hasMatch();
+            if ( regexp_.size() == 1 ) {
+                return hasMatch;
+            }
+
             matchingPatterns.emplace( regexp.first, hasMatch );
         }
         return matchingPatterns;
@@ -93,7 +100,7 @@ class HsMatcher {
     HsMatcher( HsMatcher&& other ) = default;
     HsMatcher& operator=( HsMatcher&& other ) = default;
 
-    robin_hood::unordered_map<std::string, bool> match( const std::string_view& utf8Data ) const;
+    MatchingResult match( const std::string_view& utf8Data ) const;
 
   private:
     HsDatabase database_;

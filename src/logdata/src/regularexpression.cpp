@@ -27,6 +27,7 @@
 
 #include "configuration.h"
 #include "log.h"
+#include "overload_visitor.h"
 #include "uuid.h"
 
 #include "regularexpression.h"
@@ -144,6 +145,7 @@ class BooleanExpressionEvaluator {
 
 RegularExpression::RegularExpression( const RegularExpressionPattern& pattern )
     : isInverse_( pattern.isExclude )
+    , isBooleanCombination_( pattern.isBoolean )
     , expression_( pattern.pattern )
 {
     try {
@@ -190,6 +192,8 @@ std::unique_ptr<PatternMatcher> RegularExpression::createMatcher() const
 
 PatternMatcher::PatternMatcher( const RegularExpression& expression )
     : isInverse_( expression.isInverse_ )
+    , isBooleanCombination_( expression.isBooleanCombination_ )
+    , mainPatternId_( expression.subPatterns_.front().id() )
     , matcher_( expression.hsExpression_.createMatcher() )
     , evaluator_( std::make_unique<BooleanExpressionEvaluator>(
           expression.expression_.toStdString(), expression.subPatterns_ ) )
@@ -214,9 +218,19 @@ bool PatternMatcher::hasMatchInternal( std::string_view line ) const
     const auto results
         = std::visit( [ &line ]( const auto& m ) { return m.match( line ); }, matcher_ );
 
-    if ( results.size() == 1 ) {
-        return results.begin()->second;
-    }
-
-    return evaluator_->evaluate( results );
+    return std::visit( makeOverloadVisitor(
+                           [ this ]( bool hasMatch ) {
+                               if ( !isBooleanCombination_ ) {
+                                   return hasMatch;
+                               }
+                               else {
+                                   MatchedPatterns matchedPatterns;
+                                   matchedPatterns.emplace( mainPatternId_, hasMatch );
+                                   return evaluator_->evaluate( matchedPatterns );
+                               }
+                           },
+                           [ this ]( const MatchedPatterns& matchedPatterns ) {
+                               return evaluator_->evaluate( matchedPatterns );
+                           } ),
+                       results );
 }

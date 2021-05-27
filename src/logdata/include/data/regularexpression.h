@@ -26,8 +26,6 @@
 
 #include <QString>
 
-
-
 #include "hsregularexpression.h"
 
 class PatternMatcher;
@@ -35,7 +33,7 @@ class BooleanExpressionEvaluator;
 
 class RegularExpression {
   public:
-    RegularExpression( const RegularExpressionPattern& pattern);
+    RegularExpression( const RegularExpressionPattern& pattern );
 
     std::unique_ptr<PatternMatcher> createMatcher() const;
 
@@ -44,6 +42,7 @@ class RegularExpression {
 
   private:
     bool isInverse_ = false;
+    bool isBooleanCombination_ = false;
 
     QString expression_;
     std::vector<RegularExpressionPattern> subPatterns_;
@@ -68,6 +67,10 @@ class PatternMatcher {
 
   private:
     bool isInverse_ = false;
+    bool isBooleanCombination_ = false;
+
+    std::string mainPatternId_;
+    
     MatcherVariant matcher_;
 
     std::unique_ptr<BooleanExpressionEvaluator> evaluator_;
