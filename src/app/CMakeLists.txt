@@ -15,17 +15,22 @@ add_custom_command (OUTPUT ${DOCUMENTATION_HTML}
         DEPENDS maddy ${DOCUMENTATION_FILE})
 
 set(MAIN_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/crashhandler.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/messagereceiver.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/kloggapp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/cli.h
     ${CMAKE_CURRENT_SOURCE_DIR}/klogg.qrc
+)
+
+set(KLOGG_UI_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/messagereceiver.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/crashhandler.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/kloggapp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${DOCUMENTATION_RESOURCE}
     ${ICON_FILE})
 
+set(KLOGG_GREP_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/klogg_grep.cpp)
 
-
-set(MAIN_LIBS ui cli11 singleapp)
+set(MAIN_LIBS logdata cli11 singleapp)
 if(KLOGG_OVERRIDE_MALLOC)
     LIST(PREPEND MAIN_LIBS klogg_malloc_proxy)
     if(KLOGG_USE_MIMALLOC AND NOT WIN32)
@@ -33,10 +38,11 @@ if(KLOGG_OVERRIDE_MALLOC)
     endif()
 endif()
 
-add_executable(klogg ${OS_BUNDLE} ${MAIN_SOURCES})
-add_executable(klogg_portable ${OS_BUNDLE} ${MAIN_SOURCES})
+add_executable(klogg ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES})
+add_executable(klogg_portable ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES})
+add_executable(klogg_grep ${MAIN_SOURCES} ${KLOGG_GREP_SOURCES} )
 
-add_dependencies(ci_build klogg)
+add_dependencies(ci_build klogg klogg_grep)
 if (WIN32)
     add_dependencies(ci_build klogg_portable)
 endif()
@@ -45,14 +51,19 @@ set_target_properties(klogg PROPERTIES AUTORCC ON)
 set_target_properties(klogg PROPERTIES AUTOMOC ON)
 set_target_properties(klogg_portable PROPERTIES AUTORCC ON)
 set_target_properties(klogg_portable PROPERTIES AUTOMOC ON)
+set_target_properties(klogg_grep PROPERTIES AUTORCC ON)
+set_target_properties(klogg_grep PROPERTIES AUTOMOC ON)
 
 if (${KLOGG_USE_LTO})
 set_property(TARGET klogg PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 set_property(TARGET klogg_portable PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+set_property(TARGET klogg_grep PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 endif()
 
-target_link_libraries(klogg PUBLIC ${MAIN_LIBS})
-target_link_libraries(klogg_portable PUBLIC ${MAIN_LIBS})
+target_link_libraries(klogg PUBLIC ${MAIN_LIBS} ui)
+target_link_libraries(klogg_portable PUBLIC ${MAIN_LIBS} ui)
+target_link_libraries(klogg_grep PUBLIC ${MAIN_LIBS})
 
 target_compile_definitions(klogg_portable PUBLIC -DKLOGG_PORTABLE)
 
@@ -60,6 +71,7 @@ if (WIN32)
 
     target_sources(klogg PRIVATE ${ProductVersionResourceFiles})
     target_sources(klogg_portable PRIVATE ${ProductVersionResourceFiles})
+    target_sources(klogg_grep PRIVATE ${ProductVersionResourceFiles})
 
 elseif (APPLE)
     set_source_files_properties(${ICON_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)

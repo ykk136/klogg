@@ -36,18 +36,20 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 
-#include <QCommandLineOption>
+#include <thread>
 
-#if defined(KLOGG_USE_TBBMALLOC)
+#if defined( KLOGG_USE_TBBMALLOC )
 #include <tbb/tbbmalloc_proxy.h>
-#elif defined(KLOGG_USE_MIMALLOC)
+#elif defined( KLOGG_USE_MIMALLOC )
 #include <mimalloc.h>
 #endif
 
+#include "cli.h"
 #include "kloggapp.h"
 
 #ifdef Q_OS_WIN
@@ -73,8 +75,6 @@ const bool PersistentInfo::ForcePortable = true;
 #else
 const bool PersistentInfo::ForcePortable = false;
 #endif
-
-static void print_version();
 
 void setApplicationAttributes()
 {
@@ -119,106 +119,6 @@ void setApplicationAttributes()
 
 #endif
 }
-
-struct CliParameters {
-    bool new_session = false;
-    bool load_session = false;
-    bool multi_instance = false;
-    bool log_to_file = false;
-    bool follow_file = false;
-    int64_t log_level = static_cast<int64_t>( plog::warning );
-
-    std::vector<QString> filenames;
-
-    int window_width = 0;
-    int window_height = 0;
-
-    CliParameters( QCoreApplication& app )
-    {
-        QCommandLineParser parser;
-        parser.setApplicationDescription( "Test helper" );
-        const auto helpOption = parser.addHelpOption();
-        const auto versionOption = parser.addVersionOption();
-
-        const QCommandLineOption multiInstanceOption(
-            QStringList() << "m"
-                          << "multi",
-            "allow multiple instance of klogg to run simultaneously (use together with -s)" );
-        parser.addOption( multiInstanceOption );
-
-        const QCommandLineOption loadSessionOption(
-            QStringList() << "s"
-                          << "load-session",
-            "load the previous session (default when no file is passed)" );
-        parser.addOption( loadSessionOption );
-
-        const QCommandLineOption newSessionOption(
-            QStringList() << "n"
-                          << "new-session",
-            "do not load the previous session (default when a file is passed)" );
-        parser.addOption( newSessionOption );
-
-        const QCommandLineOption logToFileOption( QStringList() << "l"
-                                                                << "log",
-                                                  "save the log to a file" );
-        parser.addOption( logToFileOption );
-
-        const QCommandLineOption followOption( QStringList() << "f"
-                                                             << "follow",
-                                               "follow initial opened files" );
-        parser.addOption( followOption );
-
-        const QCommandLineOption debugOption(
-            QStringList() << "d"
-                          << "debug",
-            "output more debug (increase number for more verbosity)", "debug_level", "0" );
-        parser.addOption( debugOption );
-
-        const QCommandLineOption windowWidthOption( "window-width", "new window width" );
-        parser.addOption( windowWidthOption );
-
-        const QCommandLineOption windowHeightOption( "window-height", "new window height" );
-        parser.addOption( windowHeightOption );
-
-        parser.process( app );
-
-        if ( parser.isSet( helpOption ) ) {
-            parser.showHelp( EXIT_SUCCESS );
-        }
-
-        if ( parser.isSet( versionOption ) ) {
-            print_version();
-            exit( EXIT_SUCCESS );
-        }
-
-        if ( parser.isSet( multiInstanceOption ) ) {
-            multi_instance = true;
-        }
-
-        if ( parser.isSet( loadSessionOption ) ) {
-            load_session = true;
-        }
-
-        if ( parser.isSet( newSessionOption ) ) {
-            new_session = true;
-        }
-
-        if ( parser.isSet( logToFileOption ) ) {
-            log_to_file = true;
-        }
-
-        if ( parser.isSet( followOption ) ) {
-            follow_file = true;
-        }
-
-        log_level = static_cast<int64_t>( plog::warning ) + parser.value( debugOption ).toInt();
-
-        for ( const auto& file : parser.positionalArguments() ) {
-            const auto fileInfo = QFileInfo( file );
-            filenames.emplace_back( fileInfo.absoluteFilePath() );
-        }
-    }
-};
 
 void applyStyle()
 {
@@ -324,16 +224,4 @@ int main( int argc, char* argv[] )
     }
 
     return app.exec();
-}
-
-static void print_version()
-{
-    std::cout << "klogg " << kloggVersion().data() << "\n";
-    std::cout << "Built " << kloggBuildDate().data() << " from " << kloggCommit().data() << "("
-              << kloggGitVersion().data() << ")\n";
-
-    std::cout << "Copyright (C) 2020 Nicolas Bonnefon, Anton Filimonov and other contributors\n";
-    std::cout << "This is free software.  You may redistribute copies of it under the terms of\n";
-    std::cout << "the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n";
-    std::cout << "There is NO WARRANTY, to the extent permitted by law.\n";
 }
