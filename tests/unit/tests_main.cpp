@@ -26,6 +26,7 @@
 #include <plog/Appenders/ConsoleAppender.h>
 
 #include <persistentinfo.h>
+#include "configuration.h"
 
 const bool PersistentInfo::ForcePortable = true;
 
@@ -34,6 +35,8 @@ int main(int argc, char *argv[]) {
 
     plog::ConsoleAppender<plog::GloggFormatter> appender;
     plog::init( plog::info, &appender );
+
+    Configuration::getSynced();
 
     return Catch::Session().run( argc, argv );
 }
