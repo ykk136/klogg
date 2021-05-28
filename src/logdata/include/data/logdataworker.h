@@ -42,7 +42,6 @@
 #include <oneapi/tbb/task_group.h>
 #include <variant>
 
-
 #include <QObject>
 #include <QTextCodec>
 
@@ -213,6 +212,8 @@ class IndexingData {
 
     QTextCodec* encodingGuess_{};
     QTextCodec* encodingForced_{};
+
+    bool useFastModificationDetection_ = true;
 
     friend ConstAccessor;
     friend MutateAccessor;

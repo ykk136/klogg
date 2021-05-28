@@ -217,15 +217,6 @@ class Configuration final : public Persistable<Configuration> {
         keepFileClosed_ = shouldKeepClosed;
     }
 
-    bool useLineEndingCache() const
-    {
-        return useLineEndingCache_;
-    }
-    void setUseLineEndingCache( bool useLineEndingCache )
-    {
-        useLineEndingCache_ = useLineEndingCache;
-    }
-
     RegexpEngine regexpEngine() const
     {
         return regexpEngine_;
@@ -432,8 +423,6 @@ class Configuration final : public Persistable<Configuration> {
     int searchReadBufferSizeLines_ = 5000;
     int searchThreadPoolSize_ = 0;
     bool keepFileClosed_ = false;
-
-    bool useLineEndingCache_ = true;
 
     bool enableLogging_ = false;
     uint8_t loggingLevel_ = 4;

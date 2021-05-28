@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>617</width>
-    <height>619</height>
+    <height>711</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -562,31 +562,24 @@
           <property name="labelAlignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="useLineEndingCacheCheckBox">
+          <item row="0" column="0" colspan="2">
+           <widget class="QCheckBox" name="searchResultsCacheCheckBox">
             <property name="text">
-             <string>Use line ending cache</string>
+             <string>Enable search results cache</string>
             </property>
             <property name="checked">
              <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="QCheckBox" name="searchResultsCacheCheckBox">
-            <property name="text">
-             <string>Enable search results cache</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
              <string>Search cache size (lines):</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="1" column="1">
            <widget class="QSpinBox" name="searchCacheSpinBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -596,6 +589,9 @@
             </property>
             <property name="maximum">
              <number>10000000</number>
+            </property>
+            <property name="value">
+             <number>100000</number>
             </property>
            </widget>
           </item>

@@ -255,7 +255,7 @@ void CompressedLinePositionStorage::append( LineOffset pos )
     current_pos_ = pos;
     ++nb_lines_;
 
-    const auto shrinkBlock = [this]( auto& blockPool ) {
+    const auto shrinkBlock = [ this ]( auto& blockPool ) {
         const auto effective_block_size = previous_block_offset_.get();
 
         // We allocate extra space for the last element in case it
@@ -287,7 +287,6 @@ void CompressedLinePositionStorage::append( LineOffset pos )
 
 LineOffset CompressedLinePositionStorage::at( LineNumber index ) const
 {
-    const auto& config = Configuration::get();
     auto& last_read = cache_.local();
 
     const uint8_t* block = nullptr;
@@ -297,7 +296,7 @@ LineOffset CompressedLinePositionStorage::at( LineNumber index ) const
     if ( index < first_long_line_ ) {
         block = pool32_[ index.get() / IndexBlockSize ];
 
-        if ( config.useLineEndingCache() && ( index.get() == last_read.index.get() + 1 )
+        if ( ( index.get() == last_read.index.get() + 1 )
              && ( index.get() % IndexBlockSize != 0 ) ) {
             position = last_read.position;
             offset = last_read.offset;
@@ -317,7 +316,7 @@ LineOffset CompressedLinePositionStorage::at( LineNumber index ) const
         const auto index_in_64 = index - first_long_line_;
         block = pool64_[ index_in_64.get() / IndexBlockSize ];
 
-        if ( config.useLineEndingCache() && ( index.get() == last_read.index.get() + 1 )
+        if ( ( index.get() == last_read.index.get() + 1 )
              && ( index_in_64.get() % IndexBlockSize != 0 ) ) {
             position = last_read.position;
             offset = last_read.offset;

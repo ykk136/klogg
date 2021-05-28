@@ -115,8 +115,7 @@ void IndexingData::addAll( const QByteArray& block, LineLength length,
     if ( !block.isEmpty() ) {
         hash_.size += block.size();
 
-        const auto& config = Configuration::get();
-        if ( !config.fastModificationDetection() ) {
+        if ( !useFastModificationDetection_ ) {
             hashBuilder_.addData( block.data(), static_cast<size_t>( block.size() ) );
             hash_.fullDigest = hashBuilder_.digest();
         }
@@ -133,6 +132,9 @@ void IndexingData::clear()
     linePosition_ = LinePositionArray();
     encodingGuess_ = nullptr;
     encodingForced_ = nullptr;
+
+    const auto& config = Configuration::get();
+    useFastModificationDetection_ = config.fastModificationDetection();
 }
 
 size_t IndexingData::allocatedSize() const
