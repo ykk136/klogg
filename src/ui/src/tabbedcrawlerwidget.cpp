@@ -63,13 +63,13 @@ TabbedCrawlerWidget::TabbedCrawlerWidget()
     QString tabCloseButtonHoverStyle = " QTabBar::close-button:hover { %1 }";
 
     const auto& config = Configuration::get();
-    if ( config.style() == DarkStyleKey ) {
+    if ( config.style() == StyleManager::DarkStyleKey ) {
         tabCloseButtonStyle
             = tabCloseButtonStyle.arg( "image: url(:/images/icons8-close-window-16_inverse.png);" );
         tabCloseButtonStyle.append( tabCloseButtonHoverStyle.arg(
             "image: url(:/images/icons8-close-window-hover-16_inverse.png);" ) );
     }
-    else if ( config.style() == FusionKey ) {
+    else if ( config.style() == StyleManager::FusionKey ) {
         tabCloseButtonStyle
             = tabCloseButtonStyle.arg( "image: url(:/images/icons8-close-window-16.png);" );
         tabCloseButtonStyle.append( tabCloseButtonHoverStyle.arg(

@@ -89,6 +89,8 @@ void setApplicationAttributes( bool enableQtHdpi, int scaleFactorRounding )
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 14, 0 )
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
             static_cast<Qt::HighDpiScaleFactorRoundingPolicy>( scaleFactorRounding ) );
+#else
+    Q_UNUSED(scaleFactorRounding);
 #endif
     }
     else {
