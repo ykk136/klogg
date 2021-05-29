@@ -83,15 +83,35 @@
 #pragma warning( disable : 4244 )
 #endif
 
-namespace {
-int mapPullToFollowLength( int length );
+#ifdef _MSC_VER
+#include <intrin.h>
+inline int countLeadingZeroes( uint32_t value )
+{
+    DWORD leading_zero = 0;
+
+    if ( _BitScanReverse( &leading_zero, value ) ) {
+        return 31 - leading_zero;
+    }
+    else {
+        // Same remarks as above
+        return 32;
+    }
 }
+#else
+inline int countLeadingZeroes( uint32_t value )
+{
+    return __builtin_clz( value);
+}
+#endif
 
 namespace {
+
+int mapPullToFollowLength( int length );
+
 
 int intLog2( uint32_t x )
 {
-    return 31 - __builtin_clz( x | 1 );
+    return 31 - countLeadingZeroes( x | 1 );
 }
 
 // see https://lemire.me/blog/2021/05/28/computing-the-number-of-digits-of-an-integer-quickly/
