@@ -19,7 +19,7 @@
  */
 
 /*
- * Copyright (C) 2016 -- 2019 Anton Filimonov and other contributors
+ * Copyright (C) 2016 -- 2021 Anton Filimonov and other contributors
  *
  * This file is part of klogg.
  *
@@ -60,9 +60,9 @@ class QAction;
 
 class LineChunk {
   public:
-    LineChunk( int first_col, int end_col, QColor foreColor, QColor backColor )
-        : start_{ first_col }
-        , end_{ end_col }
+    LineChunk( int firstCol, int endCol, QColor foreColor, QColor backColor )
+        : start_{ firstCol }
+        , end_{ endCol }
         , foreColor_{ foreColor }
         , backColor_{ backColor }
     {
@@ -105,8 +105,8 @@ class LineChunk {
 // each chunk having a different colour
 class LineDrawer {
   public:
-    explicit LineDrawer( const QColor& back_color )
-        : backColor_( back_color )
+    explicit LineDrawer( const QColor& backColor )
+        : backColor_( backColor )
     {
     }
 
@@ -115,7 +115,7 @@ class LineDrawer {
     // An empty chunk will be ignored.
     // the first column will be set to 0 if negative
     // The column are relative to the screen
-    void addChunk( int first_col, int last_col, const QColor& fore, const QColor& back );
+    void addChunk( int firstCol, int lastCol, const QColor& fore, const QColor& back );
     void addChunk( const LineChunk& chunk );
 
     // Draw the current line of text using the given painter,
@@ -124,7 +124,7 @@ class LineDrawer {
     // leftExtraBackgroundPx is the an extra margin to start drawing
     // the coloured // background, going all the way to the element
     // left of the line looks better.
-    void draw( QPainter& painter, int xPos, int yPos, int line_width, const QString& line,
+    void draw( QPainter& painter, int xPos, int yPos, int lineWidth, const QString& line,
                int leftExtraBackgroundPx );
 
   private:
@@ -153,7 +153,7 @@ class DigitsBuffer : public QObject {
 
   private:
     // Duration of the timeout in milliseconds.
-    static constexpr int timeout_ = 2000;
+    static constexpr int DigitsTimeout = 2000;
 
     QString digits_;
 
@@ -177,10 +177,10 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     ~AbstractLogView() override;
 
     // rule of 5
-    AbstractLogView(const AbstractLogView&) = delete;
-    AbstractLogView(AbstractLogView&&) = delete;
-    AbstractLogView& operator=(const AbstractLogView&) = delete;
-    AbstractLogView& operator=(AbstractLogView&&) = delete;
+    AbstractLogView( const AbstractLogView& ) = delete;
+    AbstractLogView( AbstractLogView&& ) = delete;
+    AbstractLogView& operator=( const AbstractLogView& ) = delete;
+    AbstractLogView& operator=( AbstractLogView&& ) = delete;
 
     // Refresh the widget when the data set has changed.
     void updateData();
@@ -232,7 +232,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
         return overview_;
     }
     // Set the Overview and OverviewWidget
-    void setOverview( Overview* overview, OverviewWidget* overview_widget );
+    void setOverview( Overview* overview, OverviewWidget* overviewWidget );
 
     // Returns the current "position" of the view as a line number,
     // it is either the selected line or the middle of the view.
@@ -302,9 +302,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     // Signal the on/off status of the overview has been changed.
     void refreshOverview();
 
-    // Make the view jump to the specified line, regardless of weither it
-    // is on the screen or not.
-    // (does NOT emit followDisabled() )
+    // Make the view jump to the specified line, regardless of it
+    // being on the screen or not. (does NOT emit followDisabled() )
     void jumpToLine( LineNumber line );
 
     // Configure the setting of whether to show line number margin
@@ -335,9 +334,9 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
   private:
     // Graphic parameters
-    static constexpr int OVERVIEW_WIDTH = 27;
-    static constexpr int HOOK_THRESHOLD = 300;
-    static constexpr int PULL_TO_FOLLOW_HOOKED_HEIGHT = 10;
+    static constexpr int OverviewWidth = 27;
+    static constexpr int HookThreshold = 300;
+    static constexpr int PullToFollowHookedHeight = 10;
 
     // Width of the bullet zone, including decoration
     int bulletZoneWidthPx_;
@@ -468,15 +467,16 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     void createMenu();
 
-    void considerMouseHovering( int x_pos, int y_pos );
+    void considerMouseHovering( int xPos, int yPos );
 
     // Search functions (for n/N)
-    void searchUsingFunction( void ( QuickFind::*search_function )( Selection, QuickFindMatcher ) );
+    using QuickFindSearchFn = void ( QuickFind::* )( Selection, QuickFindMatcher );
+    void searchUsingFunction( QuickFindSearchFn searchFunction );
 
     void updateScrollBars();
 
-    void drawTextArea( QPaintDevice* paint_device );
-    QPixmap drawPullToFollowBar( int width, qreal pixel_ratio );
+    void drawTextArea( QPaintDevice* paintDevice );
+    QPixmap drawPullToFollowBar( int width, qreal pixelRatio );
 
     void disableFollow();
 
