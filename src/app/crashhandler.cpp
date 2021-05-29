@@ -244,7 +244,7 @@ CrashHandler::CrashHandler()
     sentry_set_tag( "qt", qVersion() );
     sentry_set_tag( "build_arch", QSysInfo::buildCpuArchitecture().toLatin1().data() );
 
-    auto addExtra = []( const char* name, size_t value ) {
+    auto addExtra = []( const char* name, auto value ) {
         sentry_set_extra( name, sentry_value_new_string( std::to_string( value ).c_str() ) );
         LOG_INFO << "Process stats: " << name << " - " << value;
     };
