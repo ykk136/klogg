@@ -36,12 +36,15 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <chrono>
-#include <cstdlib>
-#include <iostream>
-#include <memory>
+#include <QtGlobal>
 
-#include <thread>
+#ifdef Q_OS_WIN
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#if defined( KLOGG_USE_MIMALLOC )
+#include <mimalloc-new-delete.h>
+#endif
+#endif // _WIN32
 
 #if defined( KLOGG_USE_TBBMALLOC )
 #include <tbb/tbbmalloc_proxy.h>
@@ -49,26 +52,13 @@
 #include <mimalloc.h>
 #endif
 
+#include "configuration.h"
+#include "log.h"
+#include "mainwindow.h"
+#include "styles.h"
+
 #include "cli.h"
 #include "kloggapp.h"
-
-#ifdef Q_OS_WIN
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif // _WIN32
-
-#include "configuration.h"
-#include "klogg_version.h"
-#include "mainwindow.h"
-#include "persistentinfo.h"
-#include "recentfiles.h"
-#include "savedsearches.h"
-#include "styles.h"
-#include "versionchecker.h"
-
-#include <QFileInfo>
-#include <QStyleFactory>
-#include <QtCore/QJsonDocument>
 
 #ifdef KLOGG_PORTABLE
 const bool PersistentInfo::ForcePortable = true;
@@ -76,7 +66,7 @@ const bool PersistentInfo::ForcePortable = true;
 const bool PersistentInfo::ForcePortable = false;
 #endif
 
-void setApplicationAttributes()
+void setApplicationAttributes( bool enableQtHdpi, int scaleFactorRounding )
 {
     // When QNetworkAccessManager is instantiated it regularly starts polling
     // all network interfaces to see if anything changes and if so, what. This
@@ -90,9 +80,7 @@ void setApplicationAttributes()
     // - https://bugreports.qt.io/browse/QTBUG-46015
     qputenv( "QT_BEARER_POLL_TIMEOUT", QByteArray::number( std::numeric_limits<int>::max() ) );
 
-    const auto& config = Configuration::getSynced();
-
-    if ( config.enableQtHighDpi() ) {
+    if ( enableQtHdpi ) {
         // This attribute must be set before QGuiApplication is constructed:
         QCoreApplication::setAttribute( Qt::AA_EnableHighDpiScaling );
         // We support high-dpi (aka Retina) displays
@@ -100,7 +88,7 @@ void setApplicationAttributes()
 
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 14, 0 )
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
-            static_cast<Qt::HighDpiScaleFactorRoundingPolicy>( config.scaleFactorRounding() ) );
+            static_cast<Qt::HighDpiScaleFactorRoundingPolicy>( scaleFactorRounding ) );
 #endif
     }
     else {
@@ -109,59 +97,9 @@ void setApplicationAttributes()
 
     QCoreApplication::setAttribute( Qt::AA_DontShowIconsInMenus );
 
-    if ( config.enableQtHighDpi() ) {
-    }
-
-    // fractional scaling
-
 #ifdef Q_OS_WIN
     QCoreApplication::setAttribute( Qt::AA_DisableWindowContextHelpButton );
-
 #endif
-}
-
-void applyStyle()
-{
-    const auto& config = Configuration::get();
-    auto style = config.style();
-    LOG_INFO << "Setting style to " << style;
-    if ( style == DarkStyleKey ) {
-
-        // based on https://gist.github.com/QuantumCD/6245215
-
-        QColor darkGray( 53, 53, 53 );
-        QColor gray( 128, 128, 128 );
-        QColor black( 40, 40, 40 );
-        QColor white( 240, 240, 240 );
-        QColor blue( 42, 130, 218 );
-
-        QPalette darkPalette;
-        darkPalette.setColor( QPalette::Window, darkGray );
-        darkPalette.setColor( QPalette::WindowText, white );
-        darkPalette.setColor( QPalette::Base, black );
-        darkPalette.setColor( QPalette::AlternateBase, darkGray );
-        darkPalette.setColor( QPalette::ToolTipBase, blue );
-        darkPalette.setColor( QPalette::ToolTipText, white );
-        darkPalette.setColor( QPalette::Text, white );
-        darkPalette.setColor( QPalette::Button, darkGray );
-        darkPalette.setColor( QPalette::ButtonText, white );
-        darkPalette.setColor( QPalette::Link, blue );
-        darkPalette.setColor( QPalette::Highlight, blue );
-        darkPalette.setColor( QPalette::HighlightedText, black.darker() );
-
-        darkPalette.setColor( QPalette::Active, QPalette::Button, gray.darker() );
-        darkPalette.setColor( QPalette::Disabled, QPalette::ButtonText, gray );
-        darkPalette.setColor( QPalette::Disabled, QPalette::WindowText, gray );
-        darkPalette.setColor( QPalette::Disabled, QPalette::Text, gray );
-        darkPalette.setColor( QPalette::Disabled, QPalette::Light, darkGray );
-
-        qApp->setStyle( QStyleFactory::create( "Fusion" ) );
-        qApp->setPalette( darkPalette );
-    }
-    else {
-        QApplication::setStyle( style );
-        qApp->setStyleSheet( "" );
-    }
 }
 
 int main( int argc, char* argv[] )
@@ -170,13 +108,15 @@ int main( int argc, char* argv[] )
     mi_stats_reset();
 #endif
 
-    setApplicationAttributes();
+    const auto& config = Configuration::getSynced();
+    setApplicationAttributes( config.enableQtHighDpi(), config.scaleFactorRounding() );
 
     KloggApp app( argc, argv );
     CliParameters parameters( app );
 
     app.initLogger( static_cast<plog::Severity>( parameters.log_level ), parameters.log_to_file );
     app.initCrashHandler();
+    plog::enableLogging( config.enableLogging(), config.loggingLevel() );
 
     LOG_INFO << "Klogg instance " << app.instanceId();
 
@@ -185,13 +125,7 @@ int main( int argc, char* argv[] )
         app.sendFilesToPrimaryInstance( parameters.filenames );
     }
     else {
-        Configuration::getSynced();
-
-        // Load the existing session if needed
-        const auto& config = Configuration::get();
-        plog::enableLogging( config.enableLogging(), config.loggingLevel() );
-
-        applyStyle();
+        StyleManager::applyStyle( config.style() );
 
         auto startNewSession = true;
         MainWindow* mw = nullptr;
@@ -204,7 +138,6 @@ int main( int argc, char* argv[] )
         else {
             mw = app.newWindow();
             mw->reloadGeometry();
-            LOG_DEBUG << "MainWindow created.";
             mw->show();
         }
 

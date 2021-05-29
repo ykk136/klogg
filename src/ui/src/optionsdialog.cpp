@@ -131,7 +131,7 @@ void OptionsDialog::setupRegexp()
 
 void OptionsDialog::setupStyles()
 {
-    styleComboBox->addItems( availableStyles() );
+    styleComboBox->addItems( StyleManager::availableStyles() );
 }
 
 void OptionsDialog::setupPolling()

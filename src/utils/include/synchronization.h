@@ -21,11 +21,16 @@
 #define KLOGG_SYNCHRONIZATION_H
 
 #include <mutex>
+#include <shared_mutex>
 
 using Mutex = std::mutex;
 using ScopedLock = std::scoped_lock<Mutex>;
 
-using RecursiveMutex= std::recursive_mutex;
+using RecursiveMutex = std::recursive_mutex;
 using ScopedRecursiveLock = std::scoped_lock<RecursiveMutex>;
+
+using SharedMutex = std::shared_mutex;
+using SharedLock = std::shared_lock<SharedMutex>;
+using UniqueLock = std::shared_lock<SharedMutex>;
 
 #endif
