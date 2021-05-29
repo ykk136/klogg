@@ -86,12 +86,22 @@ int mapPullToFollowLength( int length );
 
 namespace {
 
-int countDigits( quint64 n )
+int intLog2( uint32_t x )
 {
-    if ( n == 0 )
-        return 1;
+    return 31 - __builtin_clz( x | 1 );
+}
 
-    return static_cast<int>( qFloor( qLn( static_cast<qreal>( n ) ) / qLn( 10 ) + 1 ) );
+//see https://lemire.me/blog/2021/05/28/computing-the-number-of-digits-of-an-integer-quickly/
+int countDigits( uint32_t x )
+{
+    int l2 = intLog2( x );
+    int ans = ( ( 77 * l2 ) >> 8 );
+    static uint32_t table[]
+        = { 9, 99, 999, 9999, 99999, 999999, 9999999, 99999999, 999999999, 0xFFFFFFFF };
+    if ( x > table[ ans ] ) {
+        ans += 1;
+    }
+    return ans + 1;
 }
 
 int textWidth( const QFontMetrics& fm, const QString& text )
