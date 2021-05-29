@@ -49,6 +49,7 @@
 
 #include "data/abstractlogdata.h"
 #include "data/linetypes.h"
+#include "data/regularexpressionpattern.h"
 #include "overviewwidget.h"
 #include "quickfind.h"
 #include "quickfindmux.h"
@@ -202,6 +203,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     }
 
     void allowFollowMode( bool allow );
+
+    void setSearchPattern(const RegularExpressionPattern& pattern);
 
   protected:
     void mousePressEvent( QMouseEvent* mouseEvent ) override;
@@ -383,6 +386,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     OptionalLineNumber markingClickLine_;
 
     Selection selection_;
+    RegularExpressionPattern searchPattern_;
 
     // Position of the view, those are crucial to control drawing
     // firstLine gives the position of the view,

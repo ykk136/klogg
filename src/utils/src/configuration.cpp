@@ -39,6 +39,7 @@
 #include <mutex>
 
 #include <QFontInfo>
+#include <qcolor.h>
 
 #include "configuration.h"
 #include "log.h"
@@ -117,6 +118,20 @@ void Configuration::retrieveFromStorage( QSettings& settings )
     quickfindIncremental_
         = settings.value( "quickfind.incremental", DefaultConfiguration.quickfindIncremental_ )
               .toBool();
+
+    enableMainSearchHighlight_
+        = settings
+              .value( "regexpType.mainHighlight", DefaultConfiguration.enableMainSearchHighlight_ )
+              .toBool();
+              
+    mainSearchBackColor_.setNamedColor(
+        settings
+            .value( "regexpType.mainBackColor", DefaultConfiguration.mainSearchBackColor_.name() )
+            .toString() );
+
+    qfBackColor_.setNamedColor(
+        settings.value( "regexpType.quickfindBackColor", DefaultConfiguration.qfBackColor_.name() )
+            .toString() );
 
     // "Advanced" settings
     nativeFileWatchEnabled_
@@ -249,14 +264,22 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "mainFont.family", fi.family() );
     settings.setValue( "mainFont.size", fi.pointSize() );
     settings.setValue( "mainFont.antialiasing", forceFontAntialiasing_ );
-    settings.setValue( "regexpType.main", static_cast<int>( mainRegexpType_ ) );
-    settings.setValue( "regexpType.quickfind", static_cast<int>( quickfindRegexpType_ ) );
+
     settings.setValue( "regexpType.engine", static_cast<int>( regexpEngine_ ) );
+
+    settings.setValue( "regexpType.main", static_cast<int>( mainRegexpType_ ) );
+    settings.setValue( "regexpType.mainBackColor", mainSearchBackColor_.name() );
+    settings.setValue( "regexpType.mainHighlight", enableMainSearchHighlight_ );
+
+    settings.setValue( "regexpType.quickfind", static_cast<int>( quickfindRegexpType_ ) );
+    settings.setValue( "regexpType.quickfindBackColor", qfBackColor_.name() );
     settings.setValue( "quickfind.incremental", quickfindIncremental_ );
+
     settings.setValue( "filewatch.useNative", nativeFileWatchEnabled_ );
     settings.setValue( "filewatch.usePolling", pollingEnabled_ );
     settings.setValue( "filewatch.pollingIntervalMs", pollIntervalMs_ );
     settings.setValue( "filewatch.fastModificationDetection", fastModificationDetection_ );
+
     settings.setValue( "session.loadLast", loadLastSession_ );
     settings.setValue( "session.multipleWindows", allowMultipleWindows_ );
     settings.setValue( "session.followOnLoad", followFileOnLoad_ );

@@ -50,7 +50,6 @@
 #include "quickfind.h"
 
 constexpr Qt::GlobalColor QfForeColor = Qt::black;
-constexpr Qt::GlobalColor QfBackColor = Qt::yellow;
 
 bool QuickFindMatcher::isLineMatching( const QString& line, int column ) const
 {
@@ -146,16 +145,19 @@ void QuickFindPattern::changeSearchPattern( const QString& pattern, bool ignoreC
     changeSearchPattern( pattern );
 }
 
-bool QuickFindPattern::matchLine( const QString& line, std::vector<HighlightedMatch>& matches ) const
+bool QuickFindPattern::matchLine( const QString& line,
+                                  std::vector<HighlightedMatch>& matches ) const
 {
     matches.clear();
 
     if ( active_ ) {
         QRegularExpressionMatchIterator matchIterator = regexp_.globalMatch( line );
-
+        const auto& config = Configuration::get();
+        const auto backColor = config.qfBackColor();
         while ( matchIterator.hasNext() ) {
             QRegularExpressionMatch match = matchIterator.next();
-            matches.emplace_back( match.capturedStart(), match.capturedLength(), QfForeColor, QfBackColor );
+            matches.emplace_back( match.capturedStart(), match.capturedLength(), QfForeColor,
+                                  backColor );
         }
     }
 

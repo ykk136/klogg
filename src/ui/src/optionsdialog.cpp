@@ -36,15 +36,18 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QColorDialog>
 #include <QMessageBox>
 #include <QtGui>
+#include <qabstractbutton.h>
+#include <qpushbutton.h>
 
 #include "log.h"
 #include "optionsdialog.h"
 #include "styles.h"
 
-static constexpr int POLL_INTERVAL_MIN = 10;
-static constexpr int POLL_INTERVAL_MAX = 3600000;
+static constexpr int PollIntervalMin = 10;
+static constexpr int PollIntervalMax = 3600000;
 
 // Constructor
 OptionsDialog::OptionsDialog( QWidget* parent )
@@ -58,8 +61,7 @@ OptionsDialog::OptionsDialog( QWidget* parent )
     setupStyles();
 
     // Validators
-    QValidator* pollingIntervalValidator
-        = new QIntValidator( POLL_INTERVAL_MIN, POLL_INTERVAL_MAX, this );
+    QValidator* pollingIntervalValidator = new QIntValidator( PollIntervalMin, PollIntervalMax );
     pollIntervalLineEdit->setValidator( pollingIntervalValidator );
 
     connect( buttonBox, &QDialogButtonBox::clicked, this, &OptionsDialog::onButtonBoxClicked );
@@ -71,6 +73,9 @@ OptionsDialog::OptionsDialog( QWidget* parent )
 
     connect( extractArchivesCheckBox, &QCheckBox::toggled,
              [ this ]( auto ) { this->setupArchives(); } );
+
+    connect( mainSearchColorButton, &QPushButton::clicked, this, &OptionsDialog::changeMainColor );
+    connect( quickFindColorButton, &QPushButton::clicked, this, &OptionsDialog::changeQfColor );
 
     updateDialogFromConfig();
 
@@ -252,9 +257,14 @@ void OptionsDialog::updateDialogFromConfig()
 
     // Regexp types
     mainSearchBox->setCurrentIndex( getRegexpTypeIndex( config.mainRegexpType() ) );
+    mainSearchColor_ = config.mainSearchBackColor();
+    updateIcon( mainSearchColorButton, mainSearchColor_ );
     quickFindSearchBox->setCurrentIndex( getRegexpTypeIndex( config.quickfindRegexpType() ) );
+    qfSearchColor_ = config.qfBackColor();
+    updateIcon( quickFindColorButton, qfSearchColor_ );
     regexpEngineComboBox->setCurrentIndex( getRegexpEngineIndex( config.regexpEngine() ) );
 
+    highlightMainSearchCheckBox->setChecked( config.mainSearchHighlight() );
     incrementalCheckBox->setChecked( config.isQuickfindIncremental() );
 
     // Polling
@@ -314,6 +324,47 @@ void OptionsDialog::updateFontSize( const QString& fontFamily )
         fontSizeBox->setCurrentIndex( i );
 }
 
+void OptionsDialog::updateIcon( QPushButton* button, const QColor& color )
+{
+    QPixmap CustomPixmap( 20, 10 );
+    CustomPixmap.fill( color );
+    button->setIcon( QIcon( CustomPixmap ) );
+}
+
+void OptionsDialog::changeMainColor()
+{
+    QColor newColor;
+    if ( showColorPicker( mainSearchColor_, newColor ) ) {
+        mainSearchColor_ = newColor;
+        updateIcon( mainSearchColorButton, mainSearchColor_ );
+    }
+}
+
+void OptionsDialog::changeQfColor()
+{
+    QColor newColor;
+    if ( showColorPicker( qfSearchColor_, newColor ) ) {
+        qfSearchColor_ = newColor;
+        updateIcon( quickFindColorButton, qfSearchColor_ );
+    }
+}
+
+bool OptionsDialog::showColorPicker( const QColor& in, QColor& out )
+{
+    QColorDialog dialog;
+
+    // non native dialog ensures they will have a default
+    // set of colors to pick from in a pallette. For example,
+    // on some linux desktops, the basic palette is missing
+    dialog.setOption( QColorDialog::DontUseNativeDialog, true );
+    dialog.setModal( true );
+    dialog.setCurrentColor( in );
+    dialog.exec();
+    out = dialog.currentColor();
+
+    return ( dialog.result() == QDialog::Accepted );
+}
+
 void OptionsDialog::updateConfigFromDialog()
 {
     auto& config = Configuration::get();
@@ -325,17 +376,20 @@ void OptionsDialog::updateConfigFromDialog()
     config.setScaleFactorRounding( scaleRoundingComboBox->currentIndex() + 1 );
 
     config.setMainRegexpType( getRegexpTypeFromIndex( mainSearchBox->currentIndex() ) );
+    config.setMainSearchBackColor( mainSearchColor_ );
+    config.setEnableMainSearchHighlight( highlightMainSearchCheckBox->isChecked() );
     config.setQuickfindRegexpType( getRegexpTypeFromIndex( quickFindSearchBox->currentIndex() ) );
+    config.setQfBackColor( qfSearchColor_ );
     config.setQuickfindIncremental( incrementalCheckBox->isChecked() );
     config.setRegexpEnging( getRegexpEngineFromIndex( regexpEngineComboBox->currentIndex() ) );
 
     config.setNativeFileWatchEnabled( nativeFileWatchCheckBox->isChecked() );
     config.setPollingEnabled( pollingCheckBox->isChecked() );
     auto pollInterval = pollIntervalLineEdit->text().toInt();
-    if ( pollInterval < POLL_INTERVAL_MIN )
-        pollInterval = POLL_INTERVAL_MIN;
-    else if ( pollInterval > POLL_INTERVAL_MAX )
-        pollInterval = POLL_INTERVAL_MAX;
+    if ( pollInterval < PollIntervalMin )
+        pollInterval = PollIntervalMin;
+    else if ( pollInterval > PollIntervalMax )
+        pollInterval = PollIntervalMax;
 
     config.setPollIntervalMs( pollInterval );
     config.setFastModificationDetection( fastModificationDetectionCheckBox->isChecked() );

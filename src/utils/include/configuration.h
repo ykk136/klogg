@@ -40,8 +40,10 @@
 #ifndef KLOGG_CONFIGURATION_H
 #define KLOGG_CONFIGURATION_H
 
+#include <QColor>
 #include <QFont>
 #include <QSettings>
+#include <qcolor.h>
 
 #include "persistable.h"
 
@@ -377,6 +379,33 @@ class Configuration final : public Persistable<Configuration> {
         scaleFactorRounding_ = rounding;
     }
 
+    bool mainSearchHighlight() const
+    {
+        return enableMainSearchHighlight_;
+    }
+    void setEnableMainSearchHighlight( bool enable )
+    {
+        enableMainSearchHighlight_ = enable;
+    }
+
+    QColor mainSearchBackColor() const
+    {
+        return mainSearchBackColor_;
+    }
+    void setMainSearchBackColor( QColor color )
+    {
+        mainSearchBackColor_ = color;
+    }
+
+    QColor qfBackColor() const
+    {
+        return qfBackColor_;
+    }
+    void setQfBackColor( QColor color )
+    {
+        qfBackColor_ = color;
+    }
+
     // Reads/writes the current config in the QSettings object passed
     void saveToStorage( QSettings& settings ) const;
     void retrieveFromStorage( QSettings& settings );
@@ -440,6 +469,10 @@ class Configuration final : public Persistable<Configuration> {
     int scaleFactorRounding_ = 1;
 
     RegexpEngine regexpEngine_ = RegexpEngine::Hyperscan;
+
+    QColor qfBackColor_ = Qt::yellow;
+    QColor mainSearchBackColor_ = Qt::lightGray;
+    bool enableMainSearchHighlight_ = false;
 };
 
 #endif

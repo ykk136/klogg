@@ -62,10 +62,13 @@
 #include <QRect>
 #include <QScrollBar>
 #include <QtCore>
+#include <qnamespace.h>
+#include <qpalette.h>
 #include <utility>
 
 #include <tbb/flow_graph.h>
 
+#include "data/regularexpressionpattern.h"
 #include "log.h"
 
 #include "configuration.h"
@@ -91,7 +94,7 @@ int intLog2( uint32_t x )
     return 31 - __builtin_clz( x | 1 );
 }
 
-//see https://lemire.me/blog/2021/05/28/computing-the-number-of-digits-of-an-integer-quickly/
+// see https://lemire.me/blog/2021/05/28/computing-the-number-of-digits-of-an-integer-quickly/
 int countDigits( uint32_t x )
 {
     int l2 = intLog2( x );
@@ -967,6 +970,13 @@ void AbstractLogView::allowFollowMode( bool allow )
     followElasticHook_.allowHook( allow );
 }
 
+void AbstractLogView::setSearchPattern( const RegularExpressionPattern& pattern )
+{
+    searchPattern_ = pattern;
+    textAreaCache_.invalid_ = true;
+    update();
+}
+
 void AbstractLogView::followSet( bool checked )
 {
     followMode_ = checked;
@@ -1794,6 +1804,9 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     // Lines to write
     const auto expandedLines = logData_->getExpandedLines( firstLine_, nbLines );
 
+    const auto mainSearchBackColor = Configuration::get().mainSearchBackColor();
+    const auto highlightPatternMatches = Configuration::get().mainSearchHighlight();
+
     // Then draw each line
     for ( auto currentLine = 0_lcount; currentLine < nbLines; ++currentLine ) {
         const auto lineNumber = firstLine_ + currentLine;
@@ -1828,24 +1841,41 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             }
         }
 
+        if ( highlightPatternMatches && !searchPattern_.isBoolean && !searchPattern_.isExclude
+             && !searchPattern_.pattern.isEmpty() ) {
+            Highlighter patternHighlight;
+            patternHighlight.setHighlightOnlyMatch( true );
+            patternHighlight.setPattern( searchPattern_.pattern );
+            patternHighlight.setIgnoreCase( !searchPattern_.isCaseSensitive );
+            patternHighlight.setUseRegex( !searchPattern_.isPlainText );
+
+            patternHighlight.setBackColor( mainSearchBackColor );
+            patternHighlight.setForeColor( Qt::black );
+
+            std::vector<HighlightedMatch> patternMatches;
+            patternHighlight.matchLine( logLine, patternMatches );
+
+            highlighterMatches.insert( highlighterMatches.end(), patternMatches.begin(),
+                                       patternMatches.end() );
+        }
+
+        const auto untabifyHighlight = [ &logLine ]( const auto& match ) {
+            const auto prefix = logLine.leftRef( match.startColumn() );
+            const auto expandedPrefixLength = untabify( prefix ).length();
+            auto startDelta = expandedPrefixLength - prefix.length();
+
+            const auto matchPart = logLine.midRef( match.startColumn(), match.length() );
+            const auto expandedMatchLength = untabify( matchPart, expandedPrefixLength ).length();
+            auto lengthDelta = expandedMatchLength - matchPart.length();
+
+            return HighlightedMatch{ match.startColumn() + startDelta, match.length() + lengthDelta,
+                                     match.foreColor(), match.backColor() };
+        };
+
         std::vector<HighlightedMatch> allHighlights;
         allHighlights.reserve( highlighterMatches.size() );
         std::transform( highlighterMatches.begin(), highlighterMatches.end(),
-                        std::back_inserter( allHighlights ), [ &logLine ]( const auto& match ) {
-                            const auto prefix = logLine.leftRef( match.startColumn() );
-                            const auto expandedPrefixLength = untabify( prefix ).length();
-                            auto startDelta = expandedPrefixLength - prefix.length();
-
-                            const auto matchPart
-                                = logLine.midRef( match.startColumn(), match.length() );
-                            const auto expandedMatchLength
-                                = untabify( matchPart, expandedPrefixLength ).length();
-                            auto lengthDelta = expandedMatchLength - matchPart.length();
-
-                            return HighlightedMatch{ match.startColumn() + startDelta,
-                                                     match.length() + lengthDelta,
-                                                     match.foreColor(), match.backColor() };
-                        } );
+                        std::back_inserter( allHighlights ), untabifyHighlight );
 
         // string to print, cut to fit the length and position of the view
         const QString expandedLine = expandedLines[ currentLine.get() ];

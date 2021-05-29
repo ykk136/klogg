@@ -40,6 +40,8 @@
 #define OPTIONSDIALOG_H
 
 #include <QDialog>
+#include <QPushButton>
+#include <qcolor.h>
 
 #include "configuration.h"
 
@@ -66,6 +68,9 @@ class OptionsDialog : public QDialog, public Ui::OptionsDialog {
     // Called when a ok/cancel/apply button is clicked.
     void onButtonBoxClicked( QAbstractButton* button );
 
+    void changeMainColor();
+    void changeQfColor();
+
   private:
     void setupTabs();
     void setupFontList();
@@ -76,6 +81,9 @@ class OptionsDialog : public QDialog, public Ui::OptionsDialog {
     void setupArchives();
     void setupStyles();
 
+    void updateIcon( QPushButton* button, const QColor& color );
+    static bool showColorPicker( const QColor& in, QColor& out );
+
     int getRegexpTypeIndex( SearchRegexpType syntax ) const;
     SearchRegexpType getRegexpTypeFromIndex( int index ) const;
 
@@ -83,6 +91,9 @@ class OptionsDialog : public QDialog, public Ui::OptionsDialog {
     RegexpEngine getRegexpEngineFromIndex( int index ) const;
 
     void updateDialogFromConfig();
+
+    QColor mainSearchColor_;
+    QColor qfSearchColor_;
 };
 
 #endif

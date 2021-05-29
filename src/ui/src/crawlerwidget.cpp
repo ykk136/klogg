@@ -1228,6 +1228,8 @@ void CrawlerWidget::replaceCurrentSearch( const QString& searchText )
             // Accept auto-refresh of the search
             searchState_.startSearch();
             searchInfoLine_->hide();
+            logMainView_->setSearchPattern( regexpPattern );
+            filteredView_->setSearchPattern( regexpPattern );
         }
         else {
             // The regexp is wrong
@@ -1247,6 +1249,9 @@ void CrawlerWidget::replaceCurrentSearch( const QString& searchText )
             searchInfoLine_->setPalette( ErrorPalette );
             searchInfoLine_->setText( errorMessage );
             searchInfoLine_->show();
+
+            logMainView_->setSearchPattern( {} );
+            filteredView_->setSearchPattern( {} );
         }
     }
     else {
