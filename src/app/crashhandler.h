@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Anton Filimonov and other contributors
+ * Copyright (C) 2020, 2021 Anton Filimonov and other contributors
  *
  * This file is part of klogg.
  *
@@ -36,8 +36,8 @@ class CrashHandler {
 #else
 class CrashHandler {
   public:
-    CrashHandler(){}
-    ~CrashHandler(){}
+    CrashHandler() = default;
+    ~CrashHandler() = default;
 };
 #endif
 

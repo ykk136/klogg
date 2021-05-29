@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Anton Filimonov and other contributors
+ * Copyright (C) 2020, 2021 Anton Filimonov and other contributors
  *
  * This file is part of klogg.
  *
@@ -19,18 +19,6 @@
 
 #include "crashhandler.h"
 
-#include "sentry.h"
-
-#ifdef KLOGG_USE_MIMALLOC
-#include <mimalloc.h>
-#endif
-
-#include "issuereporter.h"
-#include "klogg_version.h"
-#include "log.h"
-#include "memory_info.h"
-#include "openfilehelper.h"
-
 #include <QByteArray>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -47,8 +35,20 @@
 #include <QTimer>
 #include <QUrlQuery>
 #include <QVBoxLayout>
+#include <string_view>
+
+#ifdef KLOGG_USE_MIMALLOC
+#include <mimalloc.h>
+#endif
 
 #include "client/crash_report_database.h"
+#include "sentry.h"
+
+#include "issuereporter.h"
+#include "klogg_version.h"
+#include "log.h"
+#include "memory_info.h"
+#include "openfilehelper.h"
 
 namespace {
 
@@ -177,7 +177,6 @@ bool checkCrashpadReports( const QString& databasePath )
 
 #ifdef Q_OS_WIN
         const auto reportFile = QString::fromStdWString( report.file_path.value() );
-
 #else
         const auto reportFile = QString::fromStdString( report.file_path.value() );
 #endif
@@ -245,22 +244,40 @@ CrashHandler::CrashHandler()
     sentry_set_tag( "qt", qVersion() );
     sentry_set_tag( "build_arch", QSysInfo::buildCpuArchitecture().toLatin1().data() );
 
-    const auto totalMemory = std::to_string( physicalMemory() );
-    LOG_INFO << "Physical memory " << totalMemory;
+    auto addExtra = []( const char* name, size_t value ) {
+        sentry_set_extra( name, sentry_value_new_string( std::to_string( value ).c_str() ) );
+        LOG_INFO << "Process stats: " << name << " - " << value;
+    };
 
-    sentry_set_extra( "memory", sentry_value_new_string( totalMemory.c_str() ) );
+    addExtra( "memory", physicalMemory() );
 
     memoryUsageTimer_ = std::make_unique<QTimer>();
-    QObject::connect( memoryUsageTimer_.get(), &QTimer::timeout, []() {
-        const auto vmUsed = std::to_string( usedMemory() );
-        sentry_set_extra( "vm_used", sentry_value_new_string( vmUsed.c_str() ) );
-        LOG_INFO << "Process stats, vm_used " << vmUsed;
+    QObject::connect( memoryUsageTimer_.get(), &QTimer::timeout, [ addExtra ]() {
+        const auto vmUsed = usedMemory();
+        addExtra( "vm_used", vmUsed );
+
+#ifdef KLOGG_USE_MIMALLOC
+        size_t elapsedMsecs, userMsecs, systemMsecs, currentRss, peakRss, currentCommit,
+            peakCommit, pageFaults;
+
+        mi_process_info( &elapsedMsecs, &userMsecs, &systemMsecs, &currentRss, &peakRss,
+                         &currentCommit, &peakCommit, &pageFaults );
+
+        addExtra( "elapsed_msecs", elapsedMsecs );
+        addExtra( "user_msecs", userMsecs );
+        addExtra( "system_msecs", systemMsecs );
+        addExtra( "current_rss", currentRss );
+        addExtra( "peak_rss", peakRss );
+        addExtra( "current_commit", currentCommit );
+        addExtra( "peak_commit", peakCommit );
+        addExtra( "page_faults", pageFaults );
+#endif
     } );
     memoryUsageTimer_->start( 10000 );
 
     if ( needWaitForUpload ) {
         QProgressDialog progressDialog;
-        progressDialog.setLabelText( QString( "Uploading crash reports" ) );
+        progressDialog.setLabelText( "Uploading crash reports" );
         progressDialog.setRange( 0, 0 );
 
         QTimer::singleShot( 30 * 1000, &progressDialog, &QProgressDialog::cancel );

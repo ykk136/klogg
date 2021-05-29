@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (C) 2016 -- 2019 Anton Filimonov and other contributors
+ * Copyright (C) 2016 -- 2021 Anton Filimonov and other contributors
  *
  * This file is part of klogg.
  *
