@@ -761,24 +761,62 @@ void CrawlerWidget::changeFilteredViewVisibility( int index )
     }
 }
 
-void CrawlerWidget::addToSearch( const QString& string )
+QString CrawlerWidget::escapeSearchPattern( const QString& pattern ) const
 {
-    QString text = searchLineEdit_->currentText();
+    auto escapedPattern
+        = useRegexpButton_->isChecked() ? QRegularExpression::escape( pattern ) : pattern;
 
-    if ( !text.isEmpty() && useRegexpButton_->isChecked() ) {
-        text.append( '|' );
+    if ( booleanButton_->isChecked() ) {
+        escapedPattern.replace( '"', "\"" ).prepend( '"' ).append( '"' );
     }
 
-    text.append( useRegexpButton_->isChecked() ? QRegularExpression::escape( string ) : string );
-
-    setSearchPattern( text );
+    return escapedPattern;
 }
 
-void CrawlerWidget::replaceSearch( const QString& string )
+void CrawlerWidget::addToSearch( const QString& searchString )
 {
-    const auto newPattern
-        = useRegexpButton_->isChecked() ? QRegularExpression::escape( string ) : string;
-    setSearchPattern( newPattern );
+    const auto newPattern = escapeSearchPattern( searchString );
+
+    QString currentPattern = searchLineEdit_->currentText();
+
+    if ( !currentPattern.isEmpty() ) {
+        if ( booleanButton_->isChecked() ) {
+            currentPattern.append( " or " );
+        }
+        else if ( useRegexpButton_->isChecked() ) {
+            currentPattern.append( '|' );
+        }
+    }
+
+    currentPattern.append( newPattern );
+
+    setSearchPattern( currentPattern );
+}
+
+void CrawlerWidget::excludeFromSearch( const QString& searchString )
+{
+    QString currentPattern = searchLineEdit_->currentText();
+
+    const auto wasInBooleanCombinationMode = booleanButton_->isChecked();
+    if ( !wasInBooleanCombinationMode ) {
+        currentPattern.replace( '"', "\"" ).prepend( '"' ).append( '"' );
+    }
+
+    booleanButton_->setChecked( true );
+
+    const auto newPattern = escapeSearchPattern( searchString );
+
+    if ( !currentPattern.isEmpty() ) {
+        currentPattern.append( " and " );
+    }
+
+    currentPattern.append( "not(" ).append( newPattern ).append( ')' );
+    setSearchPattern( currentPattern );
+}
+
+void CrawlerWidget::replaceSearch( const QString& searchString )
+{
+    setSearchPattern( escapeSearchPattern( searchString ) );
 }
 
 void CrawlerWidget::setSearchPattern( const QString& searchPattern )
@@ -1050,6 +1088,11 @@ void CrawlerWidget::setup()
              &CrawlerWidget::addToSearch );
     connect( filteredView_, QOverload<const QString&>::of( &FilteredView::addToSearch ), this,
              &CrawlerWidget::addToSearch );
+
+    connect( logMainView_, QOverload<const QString&>::of( &LogMainView::excludeFromSearch ), this,
+             &CrawlerWidget::excludeFromSearch );
+    connect( filteredView_, QOverload<const QString&>::of( &FilteredView::excludeFromSearch ), this,
+             &CrawlerWidget::excludeFromSearch );
 
     connect( logMainView_, QOverload<const QString&>::of( &LogMainView::replaceSearch ), this,
              &CrawlerWidget::replaceSearch );

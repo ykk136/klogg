@@ -1016,6 +1016,17 @@ void AbstractLogView::replaceSearch()
     }
 }
 
+void AbstractLogView::excludeFromSearch()
+{
+    if ( selection_.isPortion() ) {
+        LOG_DEBUG << "AbstractLogView::excludeFromSearch()";
+        emit excludeFromSearch( selection_.getSelectedText( logData_ ) );
+    }
+    else {
+        LOG_ERROR << "AbstractLogView::excludeFromSearch called for a wrong type of selection";
+    }
+}
+
 // Find next occurrence of the selected text (*)
 void AbstractLogView::findNextSelected()
 {
@@ -1577,14 +1588,19 @@ void AbstractLogView::createMenu()
     connect( findPreviousAction_, &QAction::triggered,
              [ this ]( auto ) { this->findPreviousSelected(); } );
 
-    addToSearchAction_ = new QAction( tr( "&Add to search" ), this );
-    addToSearchAction_->setStatusTip( tr( "Add the selection to the current search" ) );
-    connect( addToSearchAction_, &QAction::triggered, [ this ]( auto ) { this->addToSearch(); } );
-
     replaceSearchAction_ = new QAction( tr( "&Replace search" ), this );
     replaceSearchAction_->setStatusTip( tr( "Replace the search expression with the selection" ) );
     connect( replaceSearchAction_, &QAction::triggered,
              [ this ]( auto ) { this->replaceSearch(); } );
+
+    addToSearchAction_ = new QAction( tr( "&Add to search" ), this );
+    addToSearchAction_->setStatusTip( tr( "Add the selection to the current search" ) );
+    connect( addToSearchAction_, &QAction::triggered, [ this ]( auto ) { this->addToSearch(); } );
+
+    excludeFromSearchAction_ = new QAction( tr( "&Exclude from search" ), this );
+    excludeFromSearchAction_->setStatusTip( tr( "Excludes the selection from search" ) );
+    connect( excludeFromSearchAction_, &QAction::triggered,
+             [ this ]( auto ) { this->excludeFromSearch(); } );
 
     setSearchStartAction_ = new QAction( tr( "Set search start" ), this );
     connect( setSearchStartAction_, &QAction::triggered,
@@ -1619,8 +1635,10 @@ void AbstractLogView::createMenu()
     popupMenu_->addSeparator();
     popupMenu_->addAction( findNextAction_ );
     popupMenu_->addAction( findPreviousAction_ );
-    popupMenu_->addAction( addToSearchAction_ );
+    popupMenu_->addSeparator();
     popupMenu_->addAction( replaceSearchAction_ );
+    popupMenu_->addAction( addToSearchAction_ );
+    popupMenu_->addAction( excludeFromSearchAction_ );
     popupMenu_->addSeparator();
     popupMenu_->addAction( setSearchStartAction_ );
     popupMenu_->addAction( setSearchEndAction_ );

@@ -258,6 +258,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void addToSearch( const QString& selection );
     // Sent up when the user wants to replace the search with the selection
     void replaceSearch( const QString& selection );
+    void excludeFromSearch( const QString& selection );
     // Sent up when the mouse is hovered over a line's margin
     void mouseHoveredOverLine( LineNumber line );
     // Sent up when the mouse leaves a line's margin
@@ -319,6 +320,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void handlePatternUpdated();
     void addToSearch();
     void replaceSearch();
+    void excludeFromSearch();
     void findNextSelected();
     void findPreviousSelected();
     void copy();
@@ -409,6 +411,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     QAction* findPreviousAction_;
     QAction* addToSearchAction_;
     QAction* replaceSearchAction_;
+    QAction* excludeFromSearchAction_;
     QAction* setSearchStartAction_;
     QAction* setSearchEndAction_;
     QAction* clearSearchLimitAction_;

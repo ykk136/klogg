@@ -221,6 +221,10 @@ class CrawlerWidget : public QSplitter,
     // Called when the user replaces the search with the selection string
     void replaceSearch( const QString& string );
 
+    // Called when the user excludes selection string from search
+    // works only in boolean combination mode
+    void excludeFromSearch( const QString& string );
+
     // Clear the search items
     void clearSearchItems();
 
@@ -304,6 +308,7 @@ class CrawlerWidget : public QSplitter,
     // Reload predefined filters after changing settings
     void reloadPredefinedFilters() const;
 
+    QString escapeSearchPattern(const QString& searchPattern) const;
     void setSearchPattern( const QString& searchPattern );
 
     void resetStateOnSearchPatternChanges();
