@@ -99,8 +99,8 @@ struct ShortcutAction {
             shortcuts.emplace( CrawlerDecreaseTopViewSize,
                                QStringList() << QKeySequence( Qt::Key_Minus ).toString() );
 
-            shortcuts.emplace( QfFindNext, getKeyBindings( QKeySequence::FindNext ) );
-            shortcuts.emplace( QfFindPrev, getKeyBindings( QKeySequence::FindPrevious ) );
+            // shortcuts.emplace( QfFindNext, getKeyBindings( QKeySequence::FindNext ) );
+            // shortcuts.emplace( QfFindPrev, getKeyBindings( QKeySequence::FindPrevious ) );
 
             shortcuts.emplace( LogViewMark, QStringList() << QKeySequence( Qt::Key_M ).toString() );
 
@@ -233,8 +233,10 @@ struct ShortcutAction {
                 shortcut->second->setKey( QKeySequence( key ) );
             }
             else {
-                shortcutsStorage.emplace(
-                    key, new QShortcut( QKeySequence( key ), shortcutsParent, func, context ) );
+                auto newShortcut = new QShortcut( QKeySequence( key ), shortcutsParent );
+                newShortcut->setContext( context );
+                newShortcut->connect( newShortcut, &QShortcut::activated, [ func ]() { func(); } );
+                shortcutsStorage.emplace( key, newShortcut );
             }
         }
     }

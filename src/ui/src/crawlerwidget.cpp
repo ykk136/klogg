@@ -1170,7 +1170,7 @@ void CrawlerWidget::registerShortcuts()
 
     ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
                                       ShortcutAction::CrawlerDecreaseTopViewSize,
-                                      [ this ]() { changeTopViewSize( 1 ); } );
+                                      [ this ]() { changeTopViewSize( -1 ); } );
 
     logMainView_->registerShortcuts();
     filteredView_->registerShortcuts();

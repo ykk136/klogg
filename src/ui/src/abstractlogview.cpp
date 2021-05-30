@@ -550,7 +550,7 @@ void AbstractLogView::doRegisterShortcuts()
     registerShortcut( ShortcutAction::LogViewScrollUp, [ this ]() {
         verticalScrollBar()->triggerAction( QScrollBar::SliderPageStepSub );
     } );
-    registerShortcut( ShortcutAction::LogViewSelectionDown, [ this ]() {
+    registerShortcut( ShortcutAction::LogViewScrollDown, [ this ]() {
         verticalScrollBar()->triggerAction( QScrollBar::SliderPageStepAdd );
     } );
     registerShortcut( ShortcutAction::LogViewScrollLeft, [ this ]() {
@@ -576,9 +576,7 @@ void AbstractLogView::doRegisterShortcuts()
     registerShortcut( ShortcutAction::LogViewJumpToEndOfLine, [ this ]() { jumpToEndOfLine(); } );
     registerShortcut( ShortcutAction::LogViewJumpToRightOfScreen,
                       [ this ]() { jumpToRightOfScreen(); } );
-    registerShortcut( ShortcutAction::LogViewJumpToRightOfScreen,
-                      [ this ]() { jumpToRightOfScreen(); } );
-
+                      
     registerShortcut( ShortcutAction::LogViewQfForward, [ this ]() { emit searchNext(); } );
     registerShortcut( ShortcutAction::LogViewQfBackward, [ this ]() { emit searchPrevious(); } );
     registerShortcut( ShortcutAction::LogViewQfSelectedForward,
