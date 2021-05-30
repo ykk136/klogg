@@ -36,18 +36,24 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <mutex>
 
 #include <QFontInfo>
-#include <qcolor.h>
+#include <QKeySequence>
+#include <qglobal.h>
+#include <qmap.h>
+#include <qvariant.h>
 
 #include "configuration.h"
 #include "log.h"
+#include "shortcuts.h"
 #include "styles.h"
 
 namespace {
 std::once_flag fontInitFlag;
 static const Configuration DefaultConfiguration = {};
+
 } // namespace
 
 Configuration::Configuration()
@@ -123,7 +129,7 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         = settings
               .value( "regexpType.mainHighlight", DefaultConfiguration.enableMainSearchHighlight_ )
               .toBool();
-              
+
     mainSearchBackColor_.setNamedColor(
         settings
             .value( "regexpType.mainBackColor", DefaultConfiguration.mainSearchBackColor_.name() )
@@ -253,6 +259,15 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         std::transform( sizes.begin(), sizes.end(), std::back_inserter( splitterSizes_ ),
                         []( auto v ) { return v.toInt(); } );
     }
+
+    if ( settings.contains( "shortcuts.mapping" ) ) {
+        shortcuts_.clear();
+
+        const auto mapping = settings.value( "shortcuts.mapping" ).toMap();
+        for ( auto keys = mapping.begin(); keys != mapping.end(); ++keys ) {
+            shortcuts_.emplace( keys.key().toStdString(), keys.value().toStringList() );
+        }
+    }
 }
 
 void Configuration::saveToStorage( QSettings& settings ) const
@@ -320,4 +335,10 @@ void Configuration::saveToStorage( QSettings& settings ) const
                     []( auto s ) { return QVariant::fromValue( s ); } );
 
     settings.setValue( "DefaultConfigurationView.splitterSizes", splitterSizes );
+
+    QMap<QString, QVariant> shortcutMappings;
+    for ( const auto& mapping : shortcuts_ ) {
+        shortcutMappings.insert( QString::fromStdString( mapping.first ), mapping.second );
+    }
+    settings.setValue( "shortcuts.mapping", shortcutMappings );
 }

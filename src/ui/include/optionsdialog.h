@@ -41,11 +41,28 @@
 
 #include <QDialog>
 #include <QPushButton>
-#include <qcolor.h>
+#include <QLabel>
+#include <QKeySequenceEdit>
+#include <QHBoxLayout>
+#include <QColor>
 
 #include "configuration.h"
 
 #include "ui_optionsdialog.h"
+
+class KeySequencePresenter : public QWidget {
+    Q_OBJECT
+  public:
+    explicit KeySequencePresenter( const QString& keySequence );
+
+  QString keySequence() const;
+
+  private slots:
+    void showEditor();
+
+  private:
+    QLabel* keySequenceLabel_;
+};
 
 // Implements the main option dialog box
 class OptionsDialog : public QDialog, public Ui::OptionsDialog {
@@ -83,6 +100,8 @@ class OptionsDialog : public QDialog, public Ui::OptionsDialog {
 
     void updateIcon( QPushButton* button, const QColor& color );
     static bool showColorPicker( const QColor& in, QColor& out );
+
+    void buildShortcutsTable();
 
     int getRegexpTypeIndex( SearchRegexpType syntax ) const;
     SearchRegexpType getRegexpTypeFromIndex( int index ) const;

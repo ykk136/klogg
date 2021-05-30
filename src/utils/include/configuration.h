@@ -44,6 +44,7 @@
 #include <QFont>
 #include <QSettings>
 #include <qcolor.h>
+#include <string_view>
 
 #include "persistable.h"
 
@@ -90,9 +91,9 @@ class Configuration final : public Persistable<Configuration> {
     {
         quickfindRegexpType_ = type;
     }
-    void setQuickfindIncremental( bool is_incremental )
+    void setQuickfindIncremental( bool isIncremental )
     {
-        quickfindIncremental_ = is_incremental;
+        quickfindIncremental_ = isIncremental;
     }
 
     // "Advanced" settings
@@ -304,17 +305,17 @@ class Configuration final : public Persistable<Configuration> {
     {
         return searchAutoRefresh_;
     }
-    void setSearchAutoRefreshDefault( bool auto_refresh )
+    void setSearchAutoRefreshDefault( bool autoRefresh )
     {
-        searchAutoRefresh_ = auto_refresh;
+        searchAutoRefresh_ = autoRefresh;
     }
     bool isSearchIgnoreCaseDefault() const
     {
         return searchIgnoreCase_;
     }
-    void setSearchIgnoreCaseDefault( bool ignore_case )
+    void setSearchIgnoreCaseDefault( bool ignoreCase )
     {
-        searchIgnoreCase_ = ignore_case;
+        searchIgnoreCase_ = ignoreCase;
     }
     QList<int> splitterSizes() const
     {
@@ -406,6 +407,15 @@ class Configuration final : public Persistable<Configuration> {
         qfBackColor_ = color;
     }
 
+    std::map<std::string, QStringList> shortcuts() const
+    {
+        return shortcuts_;
+    }
+    void setShortcuts(const std::map<std::string, QStringList>& shortcuts)
+    {
+        shortcuts_ = shortcuts;
+    }
+
     // Reads/writes the current config in the QSettings object passed
     void saveToStorage( QSettings& settings ) const;
     void retrieveFromStorage( QSettings& settings );
@@ -473,6 +483,8 @@ class Configuration final : public Persistable<Configuration> {
     QColor qfBackColor_ = Qt::yellow;
     QColor mainSearchBackColor_ = Qt::lightGray;
     bool enableMainSearchHighlight_ = false;
+
+    std::map<std::string, QStringList> shortcuts_;
 };
 
 #endif

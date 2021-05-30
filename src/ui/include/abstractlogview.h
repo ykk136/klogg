@@ -40,8 +40,12 @@
 #ifndef ABSTRACTLOGVIEW_H
 #define ABSTRACTLOGVIEW_H
 
+#include <functional>
+#include <string_view>
+
 #include <QAbstractScrollArea>
 #include <QBasicTimer>
+#include <QEvent>
 
 #ifdef GLOGG_PERF_MEASURE_FPS
 #include "perfcounter.h"
@@ -58,6 +62,7 @@
 
 class QMenu;
 class QAction;
+class QShortcut;
 
 class LineChunk {
   public:
@@ -204,7 +209,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     void allowFollowMode( bool allow );
 
-    void setSearchPattern(const RegularExpressionPattern& pattern);
+    void setSearchPattern( const RegularExpressionPattern& pattern );
+    void registerShortcuts();
 
   protected:
     void mousePressEvent( QMouseEvent* mouseEvent ) override;
@@ -240,6 +246,9 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     // Returns the current "position" of the view as a line number,
     // it is either the selected line or the middle of the view.
     LineNumber getViewPosition() const;
+
+    virtual void doRegisterShortcuts();
+    void registerShortcut( const std::string& action, std::function<void()> func );
 
   signals:
     // Sent when a new line has been selected by the user.
@@ -422,6 +431,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     QAction* setSelectionEndAction_;
     QAction* saveDefaultSplitterSizesAction_;
     QMenu* highlightersMenu_;
+
+    std::map<QString, QShortcut*> shortcuts_;
 
     // Pointer to the CrawlerWidget's QFP object
     const QuickFindPattern* const quickFindPattern_;

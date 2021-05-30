@@ -37,14 +37,27 @@
  */
 
 #include <QColorDialog>
+#include <QKeySequenceEdit>
 #include <QMessageBox>
+#include <QToolButton>
 #include <QtGui>
 #include <qabstractbutton.h>
+#include <qboxlayout.h>
+#include <qdialog.h>
+#include <qdialogbuttonbox.h>
+#include <qkeysequenceedit.h>
+#include <qlabel.h>
 #include <qpushbutton.h>
+#include <qsizepolicy.h>
+#include <qtablewidget.h>
+#include <qtoolbutton.h>
+#include <qwidget.h>
 
 #include "log.h"
-#include "optionsdialog.h"
+#include "shortcuts.h"
 #include "styles.h"
+
+#include "optionsdialog.h"
 
 static constexpr int PollIntervalMin = 10;
 static constexpr int PollIntervalMax = 3600000;
@@ -298,6 +311,8 @@ void OptionsDialog::updateDialogFromConfig()
 
     // downloads
     verifySslCheckBox->setChecked( config.verifySslPeers() );
+
+    buildShortcutsTable();
 }
 
 //
@@ -423,6 +438,24 @@ void OptionsDialog::updateConfigFromDialog()
 
     config.setStyle( styleComboBox->currentText() );
 
+    auto shortcuts = config.shortcuts();
+    for ( auto shortcutRow = 0; shortcutRow < shortcutsTable->rowCount(); ++shortcutRow ) {
+        QStringList actionKeys;
+
+        auto primaryKeySequence
+            = static_cast<KeySequencePresenter*>( shortcutsTable->cellWidget( shortcutRow, 1 ) )
+                  ->keySequence();
+        auto secondaryKeySequence
+            = static_cast<KeySequencePresenter*>( shortcutsTable->cellWidget( shortcutRow, 2 ) )
+                  ->keySequence();
+        actionKeys << primaryKeySequence << secondaryKeySequence;
+
+        auto action
+            = shortcutsTable->item( shortcutRow, 0 )->data( Qt::UserRole ).toString().toStdString();
+        shortcuts[ action ] = actionKeys;
+    }
+    config.setShortcuts( shortcuts );
+
     config.save();
 
     emit optionsChanged();
@@ -439,4 +472,88 @@ void OptionsDialog::onButtonBoxClicked( QAbstractButton* button )
         accept();
     else if ( role == QDialogButtonBox::RejectRole )
         reject();
+}
+
+KeySequencePresenter::KeySequencePresenter( const QString& keySequence )
+{
+    keySequenceLabel_ = new QLabel( keySequence );
+
+    auto editButton = new QPushButton();
+    editButton->setText( "..." );
+
+    auto layout = new QHBoxLayout();
+
+    connect( editButton, &QPushButton::clicked, this, &KeySequencePresenter::showEditor );
+    layout->addWidget( keySequenceLabel_ );
+    layout->addStretch();
+    layout->addWidget( editButton );
+    layout->setContentsMargins( 4, 4, 4, 4 );
+
+    this->setLayout( layout );
+}
+
+QString KeySequencePresenter::keySequence() const
+{
+    return keySequenceLabel_->text();
+}
+
+void KeySequencePresenter::showEditor()
+{
+    QDialog keyEditDialog;
+
+    auto label = new QLabel( "Press new key combination" );
+    auto editor = new QKeySequenceEdit( QKeySequence( keySequenceLabel_->text() ) );
+    auto dialogButtons = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel );
+
+    auto layout = new QVBoxLayout();
+    layout->addWidget( label );
+    layout->addWidget( editor );
+    layout->addWidget( dialogButtons );
+    keyEditDialog.setLayout( layout );
+
+    connect( dialogButtons, &QDialogButtonBox::accepted, &keyEditDialog, &QDialog::accept );
+    connect( dialogButtons, &QDialogButtonBox::rejected, &keyEditDialog, &QDialog::reject );
+
+    if ( keyEditDialog.exec() == QDialog::Accepted ) {
+        keySequenceLabel_->setText( editor->keySequence().toString() );
+    }
+}
+
+void OptionsDialog::buildShortcutsTable()
+{
+    const auto& config = Configuration::get();
+
+    auto shortcuts = config.shortcuts();
+
+    const auto& defaultShortcuts = ShortcutAction::defaultShortcuts();
+
+    for ( const auto& defaultMapping : defaultShortcuts ) {
+        if ( shortcuts.count( defaultMapping.first ) == 0 ) {
+            shortcuts.emplace( defaultMapping.first, defaultMapping.second );
+        }
+    }
+
+    for ( const auto& mapping : shortcuts ) {
+        auto currentRow = shortcutsTable->rowCount();
+        shortcutsTable->insertRow( currentRow );
+
+        auto keyItem = new QTableWidgetItem( ShortcutAction::actionName( mapping.first ) );
+        keyItem->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable );
+        keyItem->setData( Qt::UserRole, QString::fromStdString( mapping.first ) );
+        shortcutsTable->setItem( currentRow, 0, keyItem );
+
+        auto primaryKeySequence
+            = new KeySequencePresenter( mapping.second.size() > 0 ? mapping.second[ 0 ] : "" );
+        shortcutsTable->setCellWidget( currentRow, 1, primaryKeySequence );
+
+        auto secondaryKeySequence
+            = new KeySequencePresenter( mapping.second.size() > 1 ? mapping.second[ 1 ] : "" );
+        shortcutsTable->setCellWidget( currentRow, 2, secondaryKeySequence );
+    }
+
+    shortcutsTable->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    shortcutsTable->verticalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    shortcutsTable->setHorizontalHeaderItem( 0, new QTableWidgetItem( "Action" ) );
+    shortcutsTable->setHorizontalHeaderItem( 1, new QTableWidgetItem( "Primary shortcut" ) );
+    shortcutsTable->setHorizontalHeaderItem( 2, new QTableWidgetItem( "Secondary shortcut" ) );
 }

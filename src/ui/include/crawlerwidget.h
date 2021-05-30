@@ -40,6 +40,8 @@
 #ifndef CRAWLERWIDGET_H
 #define CRAWLERWIDGET_H
 
+#include <optional>
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QHBoxLayout>
@@ -49,8 +51,6 @@
 #include <QSplitter>
 #include <QToolButton>
 #include <QVBoxLayout>
-
-#include <optional>
 
 #include "data/loadingstatus.h"
 #include "data/logdata.h"
@@ -105,6 +105,8 @@ class CrawlerWidget : public QSplitter,
     // Returns whether follow is enabled in this crawler
     bool isFollowEnabled() const;
 
+    void registerShortcuts();
+
   public slots:
     // Stop the asynchoronous loading of the file if one is in progress
     // The file is identified by the view attached to it.
@@ -140,7 +142,6 @@ class CrawlerWidget : public QSplitter,
     // Implementation of the MuxableDocumentInterface
     void doSendAllStateSignals() override;
 
-    void keyPressEvent( QKeyEvent* keyEvent ) override;
     void changeEvent( QEvent* event ) override;
 
   signals:
@@ -297,6 +298,7 @@ class CrawlerWidget : public QSplitter,
 
     // Private functions
     void setup();
+    void setShortcuts();
     void replaceCurrentSearch( const QString& searchText );
     void updateSearchCombo();
     AbstractLogView* activeView() const;
@@ -308,7 +310,7 @@ class CrawlerWidget : public QSplitter,
     // Reload predefined filters after changing settings
     void reloadPredefinedFilters() const;
 
-    QString escapeSearchPattern(const QString& searchPattern) const;
+    QString escapeSearchPattern( const QString& searchPattern ) const;
     void setSearchPattern( const QString& searchPattern );
 
     void resetStateOnSearchPatternChanges();
@@ -352,6 +354,8 @@ class CrawlerWidget : public QSplitter,
     QToolButton* inverseButton_;
     QToolButton* booleanButton_;
     QToolButton* searchRefreshButton_;
+
+    std::map<QString, QShortcut*> shortcuts_;
 
     // Default palette to be remembered
     QPalette searchInfoLineDefaultPalette_;

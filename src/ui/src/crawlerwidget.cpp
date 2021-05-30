@@ -53,8 +53,10 @@
 #include <QFileInfo>
 #include <QHeaderView>
 #include <QJsonDocument>
+#include <QKeySequence>
 #include <QLineEdit>
 #include <QListView>
+#include <QShortcut>
 #include <QStandardItemModel>
 #include <QStringListModel>
 
@@ -69,6 +71,7 @@
 #include "quickfindpattern.h"
 #include "quickfindwidget.h"
 #include "savedsearches.h"
+#include "shortcuts.h"
 
 // Palette for error signaling (yellow background)
 const QPalette CrawlerWidget::ErrorPalette( Qt::darkYellow );
@@ -225,37 +228,6 @@ void CrawlerWidget::doSendAllStateSignals()
     emit updateLineNumber( currentLineNumber_ );
     if ( !loadingInProgress_ )
         emit loadingFinished( LoadingStatus::Successful );
-}
-
-void CrawlerWidget::keyPressEvent( QKeyEvent* keyEvent )
-{
-    keyEvent->accept();
-    const auto noModifier = keyEvent->modifiers() == Qt::NoModifier;
-
-    if ( keyEvent->key() == Qt::Key_V && noModifier ) {
-        visibilityBox_->setCurrentIndex( ( visibilityBox_->currentIndex() + 1 )
-                                         % visibilityBox_->count() );
-    }
-    else if ( keyEvent->matches( QKeySequence::Cancel ) ) {
-        const auto activeView = this->activeView();
-        if ( activeView ) {
-            activeView->setFocus();
-        }
-    }
-    else {
-        switch ( keyEvent->key() ) {
-        case Qt::Key_Plus:
-            changeTopViewSize( 1 );
-            break;
-        case Qt::Key_Minus:
-            changeTopViewSize( -1 );
-            break;
-        default:
-            keyEvent->ignore();
-            QSplitter::keyPressEvent( keyEvent );
-            break;
-        }
-    }
 }
 
 void CrawlerWidget::changeEvent( QEvent* event )
@@ -552,6 +524,8 @@ void CrawlerWidget::applyConfiguration()
     QFont font = config.mainFont();
 
     LOG_DEBUG << "CrawlerWidget::applyConfiguration";
+
+    registerShortcuts();
 
     // Whatever font we use, we should NOT use kerning
     font.setKerning( false );
@@ -1049,6 +1023,7 @@ void CrawlerWidget::setup()
     // Default splitter position (usually overridden by the config file)
     setSizes( config.splitterSizes() );
 
+    registerShortcuts();
     loadIcons();
 
     // Connect the signals
@@ -1169,6 +1144,36 @@ void CrawlerWidget::setup()
              QOverload<>::of( &FilteredView::setFocus ) );
     connect( filteredView_, &FilteredView::exitView, logMainView_,
              QOverload<>::of( &LogMainView::setFocus ) );
+}
+
+void CrawlerWidget::registerShortcuts()
+{
+    for ( auto& shortcut : shortcuts_ ) {
+        shortcut.second->deleteLater();
+    }
+
+    shortcuts_.clear();
+
+    const auto& config = Configuration::get();
+    const auto& configuredShortcuts = config.shortcuts();
+
+    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+                                      ShortcutAction::CrawlerChangeVisibility, [ this ]() {
+                                          visibilityBox_->setCurrentIndex(
+                                              ( visibilityBox_->currentIndex() + 1 )
+                                              % visibilityBox_->count() );
+                                      } );
+
+    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+                                      ShortcutAction::CrawlerIncreseTopViewSize,
+                                      [ this ]() { changeTopViewSize( 1 ); } );
+
+    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+                                      ShortcutAction::CrawlerDecreaseTopViewSize,
+                                      [ this ]() { changeTopViewSize( 1 ); } );
+
+    logMainView_->registerShortcuts();
+    filteredView_->registerShortcuts();
 }
 
 void CrawlerWidget::loadIcons()

@@ -43,16 +43,14 @@
 
 #include "logmainview.h"
 
+#include "data/abstractlogdata.h"
 #include "data/logfiltereddata.h"
 #include "overview.h"
 
-#include <QKeyEvent>
+#include "shortcuts.h"
 
-LogMainView::LogMainView( const LogData* newLogData,
-        const QuickFindPattern* const quickFindPattern,
-        Overview* overview,
-        OverviewWidget* overview_widget,
-        QWidget* parent)
+LogMainView::LogMainView( const LogData* newLogData, const QuickFindPattern* const quickFindPattern,
+                          Overview* overview, OverviewWidget* overview_widget, QWidget* parent )
     : AbstractLogView( newLogData, quickFindPattern, parent )
 {
     filteredData_ = nullptr;
@@ -78,26 +76,19 @@ AbstractLogData::LineType LogMainView::lineType( LineNumber lineNumber ) const
     return AbstractLogData::LineTypeFlags::Plain;
 }
 
-void LogMainView::keyPressEvent( QKeyEvent* keyEvent )
+void LogMainView::doRegisterShortcuts()
 {
-    const auto noModifier = keyEvent->modifiers() == Qt::NoModifier;
-
-    if ( keyEvent->key() == Qt::Key_BracketLeft && noModifier ) {
-        const auto line = filteredData_->getMarkBefore( getViewPosition() );
-        if ( line.has_value() ) {
-            selectAndDisplayLine( *line );
-        }
-        keyEvent->accept();
-    }
-    else if ( keyEvent->key() == Qt::Key_BracketRight && noModifier ) {
+    AbstractLogView::doRegisterShortcuts();
+    registerShortcut( ShortcutAction::LogViewNextMark, [ this ] {
         const auto line = filteredData_->getMarkAfter( getViewPosition() );
         if ( line.has_value() ) {
             selectAndDisplayLine( *line );
         }
-        keyEvent->accept();
-    }
-    else {
-        keyEvent->ignore();
-        AbstractLogView::keyPressEvent( keyEvent );
-    }
+    } );
+    registerShortcut( ShortcutAction::LogViewPrevMark, [ this ] {
+        const auto line = filteredData_->getMarkBefore( getViewPosition() );
+        if ( line.has_value() ) {
+            selectAndDisplayLine( *line );
+        }
+    } );
 }

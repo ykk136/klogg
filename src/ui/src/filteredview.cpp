@@ -43,9 +43,10 @@
 #include <cassert>
 
 #include "filteredview.h"
+#include "shortcuts.h"
 
 FilteredView::FilteredView( LogFilteredData* newLogData,
-        const QuickFindPattern* const quickFindPattern, QWidget* parent )
+                            const QuickFindPattern* const quickFindPattern, QWidget* parent )
     : AbstractLogView( newLogData, quickFindPattern, parent )
 {
     // We keep a copy of the filtered data for fast lookup of the line type
@@ -74,7 +75,7 @@ LineNumber FilteredView::displayLineNumber( LineNumber lineNumber ) const
     return logFilteredData_->getMatchingLineNumber( lineNumber ) + 1_lcount;
 }
 
-LineNumber FilteredView::lineIndex(LineNumber lineNumber ) const
+LineNumber FilteredView::lineIndex( LineNumber lineNumber ) const
 {
     return logFilteredData_->getLineIndexNumber( lineNumber );
 }
@@ -84,52 +85,36 @@ LineNumber FilteredView::maxDisplayLineNumber() const
     return LineNumber( logFilteredData_->getNbTotalLines().get() );
 }
 
-void FilteredView::keyPressEvent( QKeyEvent* keyEvent )
+void FilteredView::doRegisterShortcuts()
 {
-    const auto noModifier = keyEvent->modifiers() == Qt::NoModifier;
-    keyEvent->ignore();
 
-    if ( noModifier ) {
-        switch ( keyEvent->key() ) {
-            case Qt::Key_BracketLeft:
-            {
-                using LineTypeFlags = LogFilteredData::LineTypeFlags;
-                auto i = getViewPosition() - 1_lcount;
-                bool foundMark = false;
-                for (; i != 0_lnum; --i ) {
-                    if ( lineType( i ).testFlag( LineTypeFlags::Mark ) ) {
-                        foundMark = true;
-                        break;
-                    }
-                }
-
-                if ( !foundMark ) {
-                    foundMark = lineType( i ).testFlag( LineTypeFlags::Mark );
-                }
-
-                if ( foundMark ) {
-                    selectAndDisplayLine( i );
-                    keyEvent->accept();
-                }
-
-                break;
-            }
-            case Qt::Key_BracketRight:
-            {
-                const auto nbLines = logFilteredData_->getNbLine();
-                for ( auto i = getViewPosition() + 1_lcount; i < nbLines; ++i ) {
-                    if ( lineType( i ).testFlag( LogFilteredData::LineTypeFlags::Mark ) ) {
-                        selectAndDisplayLine( i );
-                        break;
-                    }
-                }
-                keyEvent->accept();
+    AbstractLogView::doRegisterShortcuts();
+    registerShortcut( ShortcutAction::LogViewNextMark, [ this ] {
+        using LineTypeFlags = LogFilteredData::LineTypeFlags;
+        auto i = getViewPosition() - 1_lcount;
+        bool foundMark = false;
+        for ( ; i != 0_lnum; --i ) {
+            if ( lineType( i ).testFlag( LineTypeFlags::Mark ) ) {
+                foundMark = true;
                 break;
             }
         }
-    }
 
-    if ( !keyEvent->isAccepted() ) {
-        AbstractLogView::keyPressEvent( keyEvent );
-    }
+        if ( !foundMark ) {
+            foundMark = lineType( i ).testFlag( LineTypeFlags::Mark );
+        }
+
+        if ( foundMark ) {
+            selectAndDisplayLine( i );
+        }
+    } );
+    registerShortcut( ShortcutAction::LogViewPrevMark, [ this ] {
+        const auto nbLines = logFilteredData_->getNbLine();
+        for ( auto i = getViewPosition() + 1_lcount; i < nbLines; ++i ) {
+            if ( lineType( i ).testFlag( LogFilteredData::LineTypeFlags::Mark ) ) {
+                selectAndDisplayLine( i );
+                break;
+            }
+        }
+    } );
 }

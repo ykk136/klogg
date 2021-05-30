@@ -44,7 +44,15 @@
 // pattern.
 
 #include <cassert>
+#include <cstdint>
+#include <functional>
 #include <iostream>
+#include <plog/Log.h>
+#include <qcoreevent.h>
+#include <qevent.h>
+#include <qglobal.h>
+#include <string_view>
+#include <utility>
 
 #include <QAction>
 #include <QActionGroup>
@@ -58,13 +66,12 @@
 #include <QMenu>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QPalette>
 #include <QProgressDialog>
 #include <QRect>
 #include <QScrollBar>
+#include <QShortcut>
 #include <QtCore>
-#include <qnamespace.h>
-#include <qpalette.h>
-#include <utility>
 
 #include <tbb/flow_graph.h>
 
@@ -78,6 +85,7 @@
 #include "overview.h"
 #include "quickfind.h"
 #include "quickfindpattern.h"
+#include "shortcuts.h"
 
 #ifdef Q_OS_WIN
 #pragma warning( disable : 4244 )
@@ -100,14 +108,13 @@ inline int countLeadingZeroes( uint32_t value )
 #else
 inline int countLeadingZeroes( uint32_t value )
 {
-    return __builtin_clz( value);
+    return __builtin_clz( value );
 }
 #endif
 
 namespace {
 
 int mapPullToFollowLength( int length );
-
 
 int intLog2( uint32_t x )
 {
@@ -242,16 +249,13 @@ AbstractLogView::AbstractLogView( const AbstractLogData* newLogData,
     , quickFindPattern_( quickFindPattern )
     , quickFind_( new QuickFind( *newLogData ) )
 {
-    // Create the viewport QWidget
     setViewport( nullptr );
 
     // Hovering
     setMouseTracking( true );
 
-    // Init the popup menu
     createMenu();
 
-    // Signals
     connect( quickFindPattern_, SIGNAL( patternUpdated() ), this, SLOT( handlePatternUpdated() ) );
     connect( quickFind_, SIGNAL( notify( const QFNotification& ) ), this,
              SIGNAL( notifyQuickFind( const QFNotification& ) ) );
@@ -517,148 +521,121 @@ void AbstractLogView::moveSelectionDown()
     moveSelection( delta );
 }
 
-void AbstractLogView::keyPressEvent( QKeyEvent* keyEvent )
+void AbstractLogView::registerShortcut( const std::string& action, std::function<void()> func )
 {
-    LOG_DEBUG << "keyPressEvent received";
+    const auto& config = Configuration::get();
+    const auto& configuredShortcuts = config.shortcuts();
 
-    const auto controlModifier = keyEvent->modifiers().testFlag( Qt::ControlModifier );
-    const auto shiftModifier = keyEvent->modifiers().testFlag( Qt::ShiftModifier );
-    const auto altModifier = keyEvent->modifiers().testFlag( Qt::AltModifier );
-    const auto noModifier = keyEvent->modifiers() == Qt::NoModifier;
+    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this, Qt::WidgetShortcut,
+                                      action, func );
+}
 
-    const auto jumpToBottomLine = [ this ]() {
+void AbstractLogView::registerShortcuts()
+{
+    LOG_INFO << "Reloading shortcuts";
+    doRegisterShortcuts();
+}
+
+void AbstractLogView::doRegisterShortcuts()
+{
+    for (auto& shortcut : shortcuts_) {
+        shortcut.second->deleteLater();
+    }
+
+    shortcuts_.clear();
+
+    registerShortcut( ShortcutAction::LogViewSelectionUp, [ this ]() { moveSelectionUp(); } );
+    registerShortcut( ShortcutAction::LogViewSelectionDown, [ this ]() { moveSelectionDown(); } );
+
+    registerShortcut( ShortcutAction::LogViewScrollUp, [ this ]() {
+        verticalScrollBar()->triggerAction( QScrollBar::SliderPageStepSub );
+    } );
+    registerShortcut( ShortcutAction::LogViewSelectionDown, [ this ]() {
+        verticalScrollBar()->triggerAction( QScrollBar::SliderPageStepAdd );
+    } );
+    registerShortcut( ShortcutAction::LogViewScrollLeft, [ this ]() {
+        horizontalScrollBar()->triggerAction( QScrollBar::SliderPageStepSub );
+    } );
+    registerShortcut( ShortcutAction::LogViewScrollRight, [ this ]() {
+        horizontalScrollBar()->triggerAction( QScrollBar::SliderPageStepAdd );
+    } );
+
+    registerShortcut( ShortcutAction::LogViewJumpToTop,
+                      [ this ]() { selectAndDisplayLine( 0_lnum ); } );
+    registerShortcut( ShortcutAction::LogViewJumpToButtom, [ this ]() {
         disableFollow();
         const auto line = LineNumber( logData_->getNbLine().get() ) - 1_lcount;
         selection_.selectLine( line );
         emit updateLineNumber( line );
         emit newSelection( line );
         jumpToBottom();
+    } );
+
+    registerShortcut( ShortcutAction::LogViewJumpToStartOfLine,
+                      [ this ]() { jumpToStartOfLine(); } );
+    registerShortcut( ShortcutAction::LogViewJumpToEndOfLine, [ this ]() { jumpToEndOfLine(); } );
+    registerShortcut( ShortcutAction::LogViewJumpToRightOfScreen,
+                      [ this ]() { jumpToRightOfScreen(); } );
+    registerShortcut( ShortcutAction::LogViewJumpToRightOfScreen,
+                      [ this ]() { jumpToRightOfScreen(); } );
+
+    registerShortcut( ShortcutAction::LogViewQfForward, [ this ]() { emit searchNext(); } );
+    registerShortcut( ShortcutAction::LogViewQfBackward, [ this ]() { emit searchPrevious(); } );
+    registerShortcut( ShortcutAction::LogViewQfSelectedForward,
+                      [ this ]() { findNextSelected(); } );
+    registerShortcut( ShortcutAction::LogViewQfSelectedBackward,
+                      [ this ]() { findPreviousSelected(); } );
+
+    registerShortcut( ShortcutAction::LogViewMark, [ this ]() { markSelected(); } );
+
+    auto trySelectLine = [ this ]( uint32_t newLine ) {
+        auto lineToSelect = LineNumber( static_cast<LineNumber::UnderlyingType>( newLine ) );
+        if ( lineToSelect >= logData_->getNbLine() ) {
+            lineToSelect = lineToSelect - 1_lcount;
+        }
+
+        selectAndDisplayLine( lineToSelect );
     };
 
-    if ( keyEvent->key() == Qt::Key_Up && noModifier )
-        moveSelectionUp();
-    else if ( keyEvent->key() == Qt::Key_Down && noModifier )
-        moveSelectionDown();
-    else if ( keyEvent->key() == Qt::Key_Up && controlModifier )
-        verticalScrollBar()->triggerAction( QScrollBar::SliderSingleStepSub );
-    else if ( keyEvent->key() == Qt::Key_Down && controlModifier )
-        verticalScrollBar()->triggerAction( QScrollBar::SliderSingleStepAdd );
-    else if ( keyEvent->key() == Qt::Key_Left && noModifier )
-        horizontalScrollBar()->triggerAction( QScrollBar::SliderPageStepSub );
-    else if ( keyEvent->key() == Qt::Key_Right && noModifier )
-        horizontalScrollBar()->triggerAction( QScrollBar::SliderPageStepAdd );
-    else if ( keyEvent->key() == Qt::Key_Home && !controlModifier )
-        jumpToStartOfLine();
-    else if ( keyEvent->key() == Qt::Key_End && !controlModifier )
-        jumpToRightOfScreen();
-    else if ( keyEvent->key() == Qt::Key_End && controlModifier ) {
-        jumpToBottomLine(); // Same as G
-    }
-    else if ( keyEvent->key() == Qt::Key_Home && controlModifier )
-        selectAndDisplayLine( 0_lnum );
-    else if ( keyEvent->key() == Qt::Key_F3 && !shiftModifier )
-        emit searchNext(); // duplicate of 'n' action.
-    else if ( keyEvent->key() == Qt::Key_F3 && shiftModifier )
-        emit searchPrevious(); // duplicate of 'N' action.
-    else if ( keyEvent->key() == Qt::Key_Space && noModifier )
-        emit exitView();
-    else {
-        switch ( keyEvent->key() ) {
-        case Qt::Key_J:
-            moveSelectionDown();
-            break;
-        case Qt::Key_K:
-            moveSelectionUp();
-            break;
-        case Qt::Key_H:
-            horizontalScrollBar()->triggerAction( QScrollBar::SliderSingleStepSub );
-            break;
-        case Qt::Key_L:
-            horizontalScrollBar()->triggerAction( QScrollBar::SliderSingleStepAdd );
-            break;
-        case Qt::Key_AsciiCircum:
+    registerShortcut( ShortcutAction::LogViewJumpToLine, [ this, trySelectLine ]() {
+        bool isLineSelected = true;
+        const auto newLine = QInputDialog::getInt( this, "Jump to line", "Line", 1, 1,
+                                                   static_cast<int>( logData_->getNbLine().get() ),
+                                                   1, &isLineSelected );
+        if ( isLineSelected ) {
+            trySelectLine( static_cast<uint32_t>( newLine - 1 ) );
+        }
+    } );
+
+    registerShortcut( ShortcutAction::LogViewJumpToLineNumber, [ this, trySelectLine ]() {
+        const auto newLine = qMax( 0, digitsBuffer_.content() - 1 );
+        trySelectLine( static_cast<uint32_t>( newLine ) );
+    } );
+
+    registerShortcut( ShortcutAction::LogViewExitView, [ this ]() { emit exitView(); } );
+}
+
+void AbstractLogView::keyPressEvent( QKeyEvent* keyEvent )
+{
+    LOG_DEBUG << "keyPressEvent received " << keyEvent->text();
+
+    const auto text = keyEvent->text();
+
+    if ( keyEvent->modifiers() == Qt::NoModifier && text.count() == 1 ) {
+        const auto character = text.at( 0 ).toLatin1();
+        if ( ( ( character > '0' ) && ( character <= '9' ) )
+             || ( !digitsBuffer_.isEmpty() && character == '0' ) ) {
+            // Adds the digit to the timed buffer
+            digitsBuffer_.add( character );
+            keyEvent->accept();
+        }
+        else if ( digitsBuffer_.isEmpty() && character == '0' ) {
             jumpToStartOfLine();
-            break;
-        case Qt::Key_Dollar:
-            jumpToEndOfLine();
-            break;
-        case Qt::Key_Asterisk:
-        case Qt::Key_Period:
-            // Use the selected 'word' and search forward
-            findNextSelected();
-            break;
-        case Qt::Key_Slash:
-        case Qt::Key_Comma:
-            // Use the selected 'word' and search backward
-            findPreviousSelected();
-            break;
-        case Qt::Key_M: {
-            markSelected();
-            break;
+            keyEvent->accept();
         }
-        case Qt::Key_G:
-            if ( controlModifier ) {
-                if ( shiftModifier ) {
-                    emit searchPrevious();
-                }
-                else {
-                    emit searchNext();
-                }
-                break;
-            }
-            if ( shiftModifier ) {
-                jumpToBottomLine();
-            }
-            else {
-                bool isLineSelected = true;
-                int newLine = 0;
-                if ( altModifier ) {
-                    newLine = QInputDialog::getInt( this, "Jump to line", "Line", 1, 1,
-                                                    static_cast<int>( logData_->getNbLine().get() ),
-                                                    1, &isLineSelected );
-                    newLine -= 1;
-                }
-                else {
-                    newLine = qMax( 0, digitsBuffer_.content() - 1 );
-                }
-
-                auto lineToSelect
-                    = LineNumber( static_cast<LineNumber::UnderlyingType>( newLine ) );
-                if ( lineToSelect >= logData_->getNbLine() ) {
-                    lineToSelect = lineToSelect - 1_lcount;
-                }
-
-                if ( isLineSelected ) {
-                    selectAndDisplayLine( lineToSelect );
-                }
-            }
-            break;
-        case Qt::Key_N:
-            if ( shiftModifier ) {
-                emit searchPrevious();
-            }
-            else {
-                emit searchNext();
-            }
-            break;
-        default:
-            const auto text = keyEvent->text();
-
-            if ( keyEvent->modifiers() == Qt::NoModifier && text.count() == 1 ) {
-                const auto character = text.at( 0 ).toLatin1();
-                if ( ( ( character > '0' ) && ( character <= '9' ) )
-                     || ( !digitsBuffer_.isEmpty() && character == '0' ) ) {
-                    // Adds the digit to the timed buffer
-                    digitsBuffer_.add( character );
-                }
-                else if ( digitsBuffer_.isEmpty() && character == '0' ) {
-                    jumpToStartOfLine();
-                }
-            }
-            else {
-                keyEvent->ignore();
-            }
-        }
+    }
+    else {
+        keyEvent->ignore();
     }
 
     if ( keyEvent->isAccepted() ) {
@@ -736,7 +713,7 @@ bool AbstractLogView::event( QEvent* e )
     // Make sure we ignore the gesture events as
     // they seem to be accepted by default.
     if ( e->type() == QEvent::Gesture ) {
-        const auto gestureEvent = dynamic_cast<QGestureEvent*>( e );
+        const auto gestureEvent = static_cast<QGestureEvent*>( e );
         if ( gestureEvent ) {
             const auto gestures = gestureEvent->gestures();
             for ( QGesture* gesture : gestures ) {

@@ -66,7 +66,7 @@ class FilteredView : public AbstractLogView
     LineNumber lineIndex( LineNumber lineNumber ) const override;
     LineNumber maxDisplayLineNumber() const override;
 
-    void keyPressEvent( QKeyEvent* keyEvent ) override;
+    void doRegisterShortcuts() override;
 
   private:
     LogFilteredData* logFilteredData_;
