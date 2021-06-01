@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(klogg
-        VERSION 21.05.0
+        VERSION 21.06.0
         DESCRIPTION "klogg log viewer"
         LANGUAGES C CXX ASM)
 
@@ -47,7 +47,9 @@ set(BUILD_NUMBER "" CACHE STRING "build number")
 
 set(NOTICE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/NOTICE)
 set(COPYING_FILE ${CMAKE_CURRENT_SOURCE_DIR}/COPYING)
+
 set(README_FILE ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
+
 set(DOCUMENTATION_FILE ${CMAKE_CURRENT_SOURCE_DIR}/DOCUMENTATION.md)
 set(DOCUMENTATION_HTML ${CMAKE_BINARY_DIR}/generated/documentation.html)
 set(DOCUMENTATION_RESOURCE ${CMAKE_BINARY_DIR}/generated/documentation.qrc)
