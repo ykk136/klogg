@@ -36,7 +36,7 @@
  * @param options Optional flags to toggle specific behaviour
  * @param timeout Maximum time blocking functions are allowed during app load
  */
-SingleApplication::SingleApplication( int &argc, char *argv[], bool allowSecondary, Options options, int timeout )
+SingleApplication::SingleApplication( int &argc, char *argv[], bool allowSecondary, Options options, int timeout, const QString &userData )
     : app_t( argc, argv ), d_ptr( new SingleApplicationPrivate( this ) )
 {
     Q_D( SingleApplication );
@@ -51,13 +51,17 @@ SingleApplication::SingleApplication( int &argc, char *argv[], bool allowSeconda
     // Store the current mode of the program
     d->options = options;
 
+    // Add any unique user data
+    if ( ! userData.isEmpty() )
+        d->addAppData( userData );
+
     // Generating an application ID used for identifying the shared memory
     // block and QLocalServer
     d->genBlockServerName();
 
     // To mitigate QSharedMemory issues with large amount of processes
     // attempting to attach at the same time
-    d->randomSleep();
+    SingleApplicationPrivate::randomSleep();
 
 #ifdef Q_OS_UNIX
     // By explicitly attaching it and then deleting it we make sure that the
@@ -117,7 +121,7 @@ SingleApplication::SingleApplication( int &argc, char *argv[], bool allowSeconda
         qDebug() << "SingleApplication: Unable to unlock memory for random wait.";
         qDebug() << d->memory->errorString();
       }
-      d->randomSleep();
+      SingleApplicationPrivate::randomSleep();
       if( ! d->memory->lock() ){
         qCritical() << "SingleApplication: Unable to lock memory after random wait.";
         abortSafely();
@@ -168,9 +172,9 @@ SingleApplication::~SingleApplication()
  * Checks if the current application instance is primary.
  * @return Returns true if the instance is primary, false otherwise.
  */
-bool SingleApplication::isPrimary()
+bool SingleApplication::isPrimary() const
 {
-    Q_D( SingleApplication );
+    Q_D( const SingleApplication );
     return d->server != nullptr;
 }
 
@@ -178,9 +182,9 @@ bool SingleApplication::isPrimary()
  * Checks if the current application instance is secondary.
  * @return Returns true if the instance is secondary, false otherwise.
  */
-bool SingleApplication::isSecondary()
+bool SingleApplication::isSecondary() const
 {
-    Q_D( SingleApplication );
+    Q_D( const SingleApplication );
     return d->server == nullptr;
 }
 
@@ -190,9 +194,9 @@ bool SingleApplication::isSecondary()
  * only incremented afterwards.
  * @return Returns a unique instance id.
  */
-quint32 SingleApplication::instanceId()
+quint32 SingleApplication::instanceId() const
 {
-    Q_D( SingleApplication );
+    Q_D( const SingleApplication );
     return d->instanceNumber;
 }
 
@@ -202,9 +206,9 @@ quint32 SingleApplication::instanceId()
  * specific APIs.
  * @return Returns the primary instance PID.
  */
-qint64 SingleApplication::primaryPid()
+qint64 SingleApplication::primaryPid() const
 {
-    Q_D( SingleApplication );
+    Q_D( const SingleApplication );
     return d->primaryPid();
 }
 
@@ -212,9 +216,9 @@ qint64 SingleApplication::primaryPid()
  * Returns the username the primary instance is running as.
  * @return Returns the username the primary instance is running as.
  */
-QString SingleApplication::primaryUser()
+QString SingleApplication::primaryUser() const
 {
-    Q_D( SingleApplication );
+    Q_D( const SingleApplication );
     return d->primaryUser();
 }
 
@@ -222,10 +226,9 @@ QString SingleApplication::primaryUser()
  * Returns the username the current instance is running as.
  * @return Returns the username the current instance is running as.
  */
-QString SingleApplication::currentUser()
+QString SingleApplication::currentUser() const
 {
-    Q_D( SingleApplication );
-    return d->getUsername();
+    return SingleApplicationPrivate::getUsername();
 }
 
 /**
@@ -245,10 +248,7 @@ bool SingleApplication::sendMessage( const QByteArray &message, int timeout )
     if( ! d->connectToPrimary( timeout,  SingleApplicationPrivate::Reconnect ) )
       return false;
 
-    d->socket->write( message );
-    bool dataWritten = d->socket->waitForBytesWritten( timeout );
-    d->socket->flush();
-    return dataWritten;
+    return d->writeConfirmedMessage( timeout, message );
 }
 
 /**
@@ -262,4 +262,10 @@ void SingleApplication::abortSafely()
     qCritical() << "SingleApplication: " << d->memory->error() << d->memory->errorString();
     delete d;
     ::exit( EXIT_FAILURE );
+}
+
+QStringList SingleApplication::userData() const
+{
+    Q_D( const SingleApplication );
+    return d->appData();
 }

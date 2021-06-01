@@ -61,27 +61,34 @@ public:
         Reconnect = 3
     };
     enum ConnectionStage : quint8 {
-        StageHeader = 0,
-        StageBody = 1,
-        StageConnected = 2,
+        StageInitHeader = 0,
+        StageInitBody = 1,
+        StageConnectedHeader = 2,
+        StageConnectedBody = 3,
     };
     Q_DECLARE_PUBLIC(SingleApplication)
 
     SingleApplicationPrivate( SingleApplication *q_ptr );
     ~SingleApplicationPrivate() override;
 
-    QString getUsername();
+    static QString getUsername();
     void genBlockServerName();
-    void initializeMemoryBlock();
+    void initializeMemoryBlock() const;
     void startPrimary();
     void startSecondary();
-    bool connectToPrimary(int msecs, ConnectionType connectionType );
-    quint16 blockChecksum();
-    qint64 primaryPid();
-    QString primaryUser();
-    void readInitMessageHeader(QLocalSocket *socket);
+    bool connectToPrimary( int msecs, ConnectionType connectionType );
+    quint16 blockChecksum() const;
+    qint64 primaryPid() const;
+    QString primaryUser() const;
+    bool isFrameComplete(QLocalSocket *sock);
+    void readMessageHeader(QLocalSocket *socket, ConnectionStage nextStage);
     void readInitMessageBody(QLocalSocket *socket);
-    void randomSleep();
+    void writeAck(QLocalSocket *sock);
+    bool writeConfirmedFrame(int msecs, const QByteArray &msg);
+    bool writeConfirmedMessage(int msecs, const QByteArray &msg);
+    static void randomSleep();
+    void addAppData(const QString &data);
+    QStringList appData() const;
 
     SingleApplication *q_ptr;
     QSharedMemory *memory;
@@ -91,6 +98,7 @@ public:
     QString blockServerName;
     SingleApplication::Options options;
     QMap<QLocalSocket*, ConnectionInfo> connectionMap;
+    QStringList appDataList;
 
 public Q_SLOTS:
     void slotConnectionEstablished();
