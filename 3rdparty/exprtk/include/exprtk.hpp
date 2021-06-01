@@ -3370,7 +3370,7 @@ namespace exprtk
 
          private:
 
-            std::unordered_set<std::string/*details::ilesscompare*/> ignore_set_;
+            robin_hood::unordered_set<std::string/*details::ilesscompare*/> ignore_set_;
          };
 
          class operator_joiner : public token_joiner
@@ -17596,7 +17596,7 @@ namespace exprtk
 
             std::list<T>               local_symbol_list_;
             std::list<std::string>     local_stringvar_list_;
-            std::unordered_set<std::string>      reserved_symbol_table_;
+            robin_hood::unordered_set<std::string>      reserved_symbol_table_;
             std::vector<ifunction<T>*> free_function_list_;
          };
 
@@ -19180,7 +19180,7 @@ namespace exprtk
 
       typedef robin_hood::unordered_map<binary_functor_t,operator_t> inv_binary_op_map_t;
       typedef std::multimap<std::string,details::base_operation_t/*,details::ilesscompare*/> base_ops_map_t;
-      typedef std::unordered_set<std::string/*,details::ilesscompare*/> disabled_func_set_t;
+      typedef robin_hood::unordered_set<std::string/*,details::ilesscompare*/> disabled_func_set_t;
 
       typedef details::T0oT1_define<T, cref_t , cref_t > vov_t;
       typedef details::T0oT1_define<T, const_t, cref_t > cov_t;
@@ -20277,7 +20277,7 @@ namespace exprtk
       {
       private:
 
-         typedef std::unordered_set<std::string/*,details::ilesscompare*/> disabled_entity_set_t;
+         typedef robin_hood::unordered_set<std::string/*,details::ilesscompare*/> disabled_entity_set_t;
          typedef disabled_entity_set_t::iterator des_itr_t;
 
       public:
@@ -36520,7 +36520,7 @@ namespace exprtk
          };
 
          static inline bool collection_pass(const std::string& expression_string,
-                                            std::unordered_set<std::string>& symbol_set,
+                                            robin_hood::unordered_set<std::string>& symbol_set,
                                             const bool collect_variables,
                                             const bool collect_functions,
                                             const bool vector_pass,
@@ -36578,7 +36578,7 @@ namespace exprtk
 
       collect_t::symbol_table_t null_symbol_table;
 
-      std::unordered_set<std::string> symbol_set;
+      robin_hood::unordered_set<std::string> symbol_set;
 
       const bool variable_pass = collect_t::collection_pass
                                     (expression, symbol_set, true, false, false, null_symbol_table);
@@ -36588,7 +36588,7 @@ namespace exprtk
       if (!variable_pass && !vector_pass)
          return false;
 
-      std::unordered_set<std::string>::iterator itr = symbol_set.begin();
+      robin_hood::unordered_set<std::string>::iterator itr = symbol_set.begin();
 
       while (symbol_set.end() != itr)
       {
@@ -36608,7 +36608,7 @@ namespace exprtk
    {
       typedef details::collector_helper<T> collect_t;
 
-      std::unordered_set<std::string> symbol_set;
+      robin_hood::unordered_set<std::string> symbol_set;
 
       const bool variable_pass = collect_t::collection_pass
                                     (expression, symbol_set, true, false, false, extrnl_symbol_table);
@@ -36618,7 +36618,7 @@ namespace exprtk
       if (!variable_pass && !vector_pass)
          return false;
 
-      std::unordered_set<std::string>::iterator itr = symbol_set.begin();
+      robin_hood::unordered_set<std::string>::iterator itr = symbol_set.begin();
 
       while (symbol_set.end() != itr)
       {
@@ -36639,7 +36639,7 @@ namespace exprtk
 
       collect_t::symbol_table_t null_symbol_table;
 
-      std::unordered_set<std::string> symbol_set;
+      robin_hood::unordered_set<std::string> symbol_set;
 
       const bool variable_pass = collect_t::collection_pass
                                     (expression, symbol_set, false, true, false, null_symbol_table);
@@ -36649,7 +36649,7 @@ namespace exprtk
       if (!variable_pass && !vector_pass)
          return false;
 
-      std::unordered_set<std::string>::iterator itr = symbol_set.begin();
+      robin_hood::unordered_set<std::string>::iterator itr = symbol_set.begin();
 
       while (symbol_set.end() != itr)
       {
@@ -36669,7 +36669,7 @@ namespace exprtk
    {
       typedef details::collector_helper<T> collect_t;
 
-      std::unordered_set<std::string> symbol_set;
+      robin_hood::unordered_set<std::string> symbol_set;
 
       const bool variable_pass = collect_t::collection_pass
                                     (expression, symbol_set, false, true, false, extrnl_symbol_table);
@@ -36679,7 +36679,7 @@ namespace exprtk
       if (!variable_pass && !vector_pass)
          return false;
 
-      std::unordered_set<std::string>::iterator itr = symbol_set.begin();
+      robin_hood::unordered_set<std::string>::iterator itr = symbol_set.begin();
 
       while (symbol_set.end() != itr)
       {
