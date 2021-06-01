@@ -19,10 +19,10 @@
 
 #include <exception>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <variant>
 
-#include <exprtk.hpp>
 #include <robin_hood.h>
 
 #include "configuration.h"
@@ -30,6 +30,7 @@
 #include "overload_visitor.h"
 #include "uuid.h"
 
+#include "booleanevaluator.h"
 #include "regularexpression.h"
 
 namespace {
@@ -95,53 +96,6 @@ parseBooleanExpressions( QString& pattern, bool isCaseSensitive, bool isPlainTex
 }
 
 } // namespace
-
-class BooleanExpressionEvaluator {
-  public:
-    BooleanExpressionEvaluator( const std::string& expression,
-                                const std::vector<RegularExpressionPattern>& patterns )
-    {
-        for ( const auto& p : patterns ) {
-            symbols_.create_variable( p.id() );
-        }
-        expression_.register_symbol_table( symbols_ );
-        isValid_ = parser_.compile( expression, expression_ );
-        if ( !isValid_ ) {
-            errorString_ = parser_.error();
-        }
-    }
-
-    bool isValid() const
-    {
-        return isValid_;
-    }
-
-    std::string errorString() const
-    {
-        return errorString_;
-    }
-
-    bool evaluate( const robin_hood::unordered_flat_map<std::string, bool>& variables )
-    {
-        if ( !isValid() ) {
-            return false;
-        }
-
-        for ( const auto& result : variables ) {
-            symbols_.get_variable( result.first )->ref() = result.second ? 1 : 0;
-        }
-
-        return expression_.value() > 0;
-    }
-
-  private:
-    bool isValid_ = true;
-    std::string errorString_;
-
-    exprtk::symbol_table<double> symbols_;
-    exprtk::expression<double> expression_;
-    exprtk::parser<double> parser_;
-};
 
 RegularExpression::RegularExpression( const RegularExpressionPattern& pattern )
     : isInverse_( pattern.isExclude )

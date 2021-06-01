@@ -16,8 +16,7 @@ add_library(logdata STATIC
          ${CMAKE_CURRENT_SOURCE_DIR}/include/data/hsregularexpression.h
          ${CMAKE_CURRENT_SOURCE_DIR}/include/data/regularexpression.h
          ${CMAKE_CURRENT_SOURCE_DIR}/include/data/regularexpressionpattern.h
-
-
+         ${CMAKE_CURRENT_SOURCE_DIR}/include/data/booleanevaluator.h
 
         ${CMAKE_CURRENT_SOURCE_DIR}/src/abstractlogdata.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/blockpool.cpp
@@ -32,6 +31,7 @@ add_library(logdata STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/filedigest.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hsregularexpression.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/regularexpression.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/booleanevaluator.cpp
 
         src/filedigest.cpp)
 
