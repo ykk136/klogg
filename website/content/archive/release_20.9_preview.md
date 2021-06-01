@@ -3,6 +3,9 @@ title: "Version 20.9 preview"
 date: 2020-04-26T01:46+03:00
 anchor: "v20_9_preview"
 weight: 40
+bookhidden: true
+aliases:
+    - /docs/news/release_20.9_preview
 ---
 
 ## Version 20.9

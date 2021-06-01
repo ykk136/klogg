@@ -3,6 +3,9 @@ title: "Version 20.4 released"
 date: 2020-04-26T01:46+03:00
 anchor: "v20_4"
 weight: 45
+bookhidden: true
+aliases:
+    - /docs/news/release_20.4
 ---
 
 ## Version 20.4

@@ -1,7 +1,7 @@
 ---
 title: "Allocation matters"
-date: 2021-04-16T01:46+03:00
-anchor: "alloacation"
+date: 2021-05-16T01:46+03:00
+anchor: "allocation"
 weight: 27
 ---
 
@@ -40,13 +40,13 @@ internal TBB malloc code. There is also some impact from the __TBB_malloc_safer_
 Perf report shows that a lot of time is wasted destroying vectors of `QString`.
 When search is executing there is one thread that reads raw data from the file,
 and several threads that do searching through the blocks of lines. Block size is
-configurable in settings. Typically it is 5000 or 10000 lines. When a thread
+configurable in settings. Typically, it is 5000 or 10000 lines. When a thread
 gets new raw data from file, it first transforms raw bytes to a vector of
 `QString` objects converting each line from file text encoding to UTF16 (internal
-Qt string representation). Finally each line is converted to UTF8 so it can be
+Qt string representation). Finally, each line is converted to UTF8, so it can be
 passed to the Hyperscan regex matching engine.
 
-So during search operation klogg creates and destroys `QString` and `QByteArray` 
+So during search operation _Klogg_ creates and destroys `QString` and `QByteArray` 
 objects for each line in the file. `QString` is used to do conversion from 
 the file encoding to Qt internal representation and `QByteArray` holds
 UTF8 data for the Hyperscan engine.
@@ -68,7 +68,7 @@ improvement.
 
 ### Switching application-wide memory allocator
 
-Klogg has been using the scalable memory allocator provided by the Intel
+_Klogg_ has been using the scalable memory allocator provided by the Intel
 TBB library for several years. It is designed to work well for multi-threaded
 applications. Using it instead of the default system memory allocator resulted in
 5-10% performance improvement. It is very easy to use the TBB malloc to override
@@ -96,8 +96,8 @@ use of the LD_PRELOAD environment variable. So I used static override option. To
 klogg executable is linked with the mimalloc-override.o file. This file must be provided first so
 the linker chooses symbols from it for all global memory allocation functions.
 
-After some more performance testing it looks like the mimalloc allocator is indeed faster in typical
-klogg use cases. Both indexing and search are around 5% faster.
+After doing some more performance testing it looks like the mimalloc allocator is indeed faster in typical
+klogg use cases. Both indexing and search are around 10% faster.
 
 Final perf report now looks like this:
 ```

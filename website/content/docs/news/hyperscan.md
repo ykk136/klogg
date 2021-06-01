@@ -108,7 +108,7 @@ Overall search is now about 2 times faster. And there is still room for improvem
 However, there is a downside. Hyperscan library needs boost and ragel to compile.
 And compilation takes a lot of time. CI builds now run 2 times slower.
 
-One more drawback of Hyprescan library is that does not support full PCRE2 syntax. 
+One more drawback of Hyperscan library is that does not support full PCRE2 syntax. 
 In particular these constructs are not supported:
 
  - Backreferences and capturing sub-expressions.
