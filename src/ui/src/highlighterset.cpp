@@ -39,7 +39,10 @@
 // This file implements classes Highlighter and HighlighterSet
 
 #include <QSettings>
+#include <random>
+#include <utility>
 
+#include "crc32.h"
 #include "highlighterset.h"
 #include "log.h"
 #include "uuid.h"
@@ -104,6 +107,25 @@ void Highlighter::setHighlightOnlyMatch( bool onlyMatch )
     highlightOnlyMatch_ = onlyMatch;
 }
 
+bool Highlighter::variateColors() const
+{
+    return variateColors_;
+}
+void Highlighter::setVariateColors( bool variateColors )
+{
+    variateColors_ = variateColors;
+}
+
+int Highlighter::colorVariance() const
+{
+    return colorVariance_;
+}
+
+void Highlighter::setColorVariance( int colorVariance )
+{
+    colorVariance_ = colorVariance;
+}
+
 const QColor& Highlighter::foreColor() const
 {
     return foreColor_;
@@ -124,6 +146,21 @@ void Highlighter::setBackColor( const QColor& backColor )
     backColor_ = backColor;
 }
 
+std::pair<QColor, QColor> Highlighter::vairateColors( const QString& match ) const
+{
+    if ( !variateColors_ && !highlightOnlyMatch_ ) {
+        return std::make_pair( foreColor_, backColor_ );
+    }
+
+    std::uniform_int_distribution<int> colorDistribution( 100 - colorVariance_,
+                                                          100 + colorVariance_ );
+
+    std::minstd_rand0 generator( Crc32::calculate( match.toUtf8() ) );
+    const auto factor = colorDistribution( generator );
+
+    return std::make_pair( foreColor_.darker( factor ), backColor_.darker( factor ) );
+}
+
 bool Highlighter::matchLine( const QString& line, std::vector<HighlightedMatch>& matches ) const
 {
     matches.clear();
@@ -139,13 +176,18 @@ bool Highlighter::matchLine( const QString& line, std::vector<HighlightedMatch>&
         QRegularExpressionMatch match = matchIterator.next();
         if ( matchingRegex.captureCount() > 0 ) {
             for ( int i = 1; i <= match.lastCapturedIndex(); ++i ) {
+
+                const auto colors = vairateColors( match.captured( i ) );
+
                 matches.emplace_back( match.capturedStart( i ), match.capturedLength( i ),
-                                      foreColor_, backColor_ );
+                                      colors.first, colors.second );
             }
         }
         else {
-            matches.emplace_back( match.capturedStart( 0 ), match.capturedLength( 0 ), foreColor_,
-                                  backColor_ );
+            const auto colors = vairateColors( match.captured( 0 ) );
+
+            matches.emplace_back( match.capturedStart( 0 ), match.capturedLength( 0 ), colors.first,
+                                  colors.second );
         }
     }
 
@@ -220,6 +262,8 @@ void Highlighter::saveToStorage( QSettings& settings ) const
                                           QRegularExpression::CaseInsensitiveOption ) );
     settings.setValue( "match_only", highlightOnlyMatch_ );
     settings.setValue( "use_regex", useRegex_ );
+    settings.setValue( "variate_colors", variateColors_ );
+    settings.setValue( "color_variance", colorVariance_ );
     // save colors as user friendly strings in config
     settings.setValue( "fore_colour", foreColor_.name() );
     settings.setValue( "back_colour", backColor_.name() );
@@ -234,6 +278,8 @@ void Highlighter::retrieveFromStorage( QSettings& settings )
         getPatternOptions( settings.value( "ignore_case", false ).toBool() ) );
     highlightOnlyMatch_ = settings.value( "match_only", false ).toBool();
     useRegex_ = settings.value( "use_regex", true ).toBool();
+    variateColors_ = settings.value( "variate_colors", false ).toBool();
+    colorVariance_ = settings.value( "color_variance", 15 ).toInt();
     foreColor_ = QColor( settings.value( "fore_colour" ).toString() );
     backColor_ = QColor( settings.value( "back_colour" ).toString() );
 }

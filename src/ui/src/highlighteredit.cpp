@@ -24,6 +24,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QPushButton>
+#include <qspinbox.h>
 
 HighlighterEdit::HighlighterEdit( Highlighter defaultHighlighter, QWidget* parent )
     : QWidget( parent )
@@ -41,6 +42,9 @@ HighlighterEdit::HighlighterEdit( Highlighter defaultHighlighter, QWidget* paren
     connect( ignoreCaseCheckBox, &QCheckBox::toggled, this, &HighlighterEdit::setIgnoreCase );
     connect( onlyMatchCheckBox, &QCheckBox::toggled, this,
              &HighlighterEdit::setHighlightOnlyMatch );
+    connect( variateColorsCheckBox, &QCheckBox::toggled, this, &HighlighterEdit::setVariateColors );
+    connect( variationSpinBox, QOverload<int>::of( &QSpinBox::valueChanged ), this,
+             &HighlighterEdit::setColorVariance );
 
     connect( foreColorButton, &QPushButton::clicked, this, &HighlighterEdit::changeForeColor );
     connect( backColorButton, &QPushButton::clicked, this, &HighlighterEdit::changeBackColor );
@@ -53,11 +57,14 @@ void HighlighterEdit::reset()
     patternEdit->clear();
     patternEdit->setEnabled( false );
     ignoreCaseCheckBox->setEnabled( false );
+    onlyMatchCheckBox->setEnabled( false );
     foreColorButton->setEnabled( false );
     backColorButton->setEnabled( false );
 
     ignoreCaseCheckBox->setChecked( defaultHighlighter_.ignoreCase() );
-    ignoreCaseCheckBox->setChecked( defaultHighlighter_.highlightOnlyMatch() );
+    onlyMatchCheckBox->setChecked( defaultHighlighter_.highlightOnlyMatch() );
+    variateColorsCheckBox->setChecked( defaultHighlighter_.variateColors() );
+    variationSpinBox->setValue( defaultHighlighter_.colorVariance() );
 
     updateIcon( foreColorButton, defaultHighlighter_.foreColor() );
     updateIcon( backColorButton, defaultHighlighter_.backColor() );
@@ -74,6 +81,10 @@ void HighlighterEdit::setHighlighter( Highlighter highlighter )
     patternEdit->setText( highlighter_.pattern() );
     ignoreCaseCheckBox->setChecked( highlighter_.ignoreCase() );
     onlyMatchCheckBox->setChecked( highlighter_.highlightOnlyMatch() );
+
+    variateColorsCheckBox->setChecked( highlighter_.variateColors() );
+    variationSpinBox->setValue( highlighter_.colorVariance() );
+
     updateIcon( foreColorButton, highlighter_.foreColor() );
     updateIcon( backColorButton, highlighter_.backColor() );
 
@@ -82,6 +93,9 @@ void HighlighterEdit::setHighlighter( Highlighter highlighter )
     onlyMatchCheckBox->setEnabled( true );
     foreColorButton->setEnabled( true );
     backColorButton->setEnabled( true );
+
+    variateColorsCheckBox->setEnabled( highlighter_.highlightOnlyMatch() );
+    variationSpinBox->setEnabled( highlighter_.highlightOnlyMatch() );
 
     if ( highlighter.useRegex() ) {
         patternTypeComboBox->setCurrentIndex( 0 );
@@ -111,6 +125,21 @@ void HighlighterEdit::setIgnoreCase( bool ignoreCase )
 void HighlighterEdit::setHighlightOnlyMatch( bool onlyMatch )
 {
     highlighter_.setHighlightOnlyMatch( onlyMatch );
+    variateColorsCheckBox->setEnabled( onlyMatch );
+    variationSpinBox->setEnabled( onlyMatch );
+    emit changed();
+}
+
+void HighlighterEdit::setVariateColors( bool variateColors )
+{
+    highlighter_.setVariateColors( variateColors );
+    highlighter_.setColorVariance( variationSpinBox->value() );
+    emit changed();
+}
+
+void HighlighterEdit::setColorVariance( int colorVariance )
+{
+    highlighter_.setColorVariance( colorVariance );
     emit changed();
 }
 

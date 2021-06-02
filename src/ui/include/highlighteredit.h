@@ -44,6 +44,8 @@ class HighlighterEdit : public QWidget, public Ui::HighlighterEdit {
     void setPattern( const QString& pattern );
     void setIgnoreCase( bool ignoreCase );
     void setHighlightOnlyMatch( bool onlyMatch );
+    void setVariateColors( bool variateColors );
+    void setColorVariance( int colorVariance );
     void setPatternType( int index );
 
   private:
