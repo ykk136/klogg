@@ -148,7 +148,7 @@ void Highlighter::setBackColor( const QColor& backColor )
 
 std::pair<QColor, QColor> Highlighter::vairateColors( const QString& match ) const
 {
-    if ( !variateColors_ && !highlightOnlyMatch_ ) {
+    if ( !( variateColors_ && highlightOnlyMatch_ ) ) {
         return std::make_pair( foreColor_, backColor_ );
     }
 
