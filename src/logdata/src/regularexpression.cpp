@@ -20,10 +20,7 @@
 #include <exception>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <variant>
-
-#include <robin_hood.h>
 
 #include "configuration.h"
 #include "log.h"
@@ -179,7 +176,7 @@ bool PatternMatcher::hasMatchInternal( std::string_view line ) const
                                }
                                else {
                                    MatchedPatterns matchedPatterns;
-                                   matchedPatterns.emplace( mainPatternId_, hasMatch );
+                                   matchedPatterns.push_back( hasMatch );
                                    return evaluator_->evaluate( matchedPatterns );
                                }
                            },

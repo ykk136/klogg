@@ -19,10 +19,11 @@
 
 #include <algorithm>
 #include <iterator>
-#include <qregularexpression.h>
-#include <robin_hood.h>
 #include <string_view>
 #include <vector>
+
+#include <QRegularExpression>
+
 #ifdef KLOGG_HAS_HS
 #include "hsregularexpression.h"
 
@@ -31,8 +32,8 @@
 namespace {
 
 struct MatcherContext {
-    const std::vector<std::string>& patternIds;
-    robin_hood::unordered_flat_set<std::string>& matchingPatterns;
+    const std::size_t patternsCount = 0;
+    MatchedPatterns& matchingPatterns;
     bool hasMatch = false;
 };
 
@@ -45,12 +46,12 @@ int matchCallback( unsigned int id, unsigned long long from, unsigned long long 
 
     MatcherContext* matchContext = static_cast<MatcherContext*>( context );
 
-    if ( matchContext->patternIds.size() == 1 ) {
+    if ( matchContext->patternsCount == 1 ) {
         matchContext->hasMatch = true;
+        return 1;
     }
     else {
-        const auto& patternId = matchContext->patternIds[ id ];
-        matchContext->matchingPatterns.insert( patternId );
+        matchContext->matchingPatterns[ id ] = true;
     }
 
     return 0;
@@ -71,26 +72,17 @@ MatchingResult HsMatcher::match( const std::string_view& utf8Data ) const
     if ( !scratch_ || !database_ ) {
         return {};
     }
-    robin_hood::unordered_flat_set<std::string> matchingPatterns;
-    
-    MatcherContext context{ patternIds_, matchingPatterns };
+    MatchedPatterns matchingPatterns( patternIds_.size() );
+
+    MatcherContext context{ patternIds_.size(), matchingPatterns };
     hs_scan( database_.get(), utf8Data.data(), static_cast<unsigned int>( utf8Data.size() ), 0,
              scratch_.get(), matchCallback, static_cast<void*>( &context ) );
 
-    if ( patternIds_.size() > 1 ) {
-        robin_hood::unordered_map<std::string, bool> results;
-        for ( const auto& patternId : patternIds_ ) {
-            results[ patternId ] = false;
-        }
-
-        for ( const auto& match : matchingPatterns ) {
-            results[ match ] = true;
-        }
-
-        return results;
+    if ( context.patternsCount == 1 ) {
+        return context.hasMatch;
     }
     else {
-        return context.hasMatch;
+        return matchingPatterns;
     }
 }
 

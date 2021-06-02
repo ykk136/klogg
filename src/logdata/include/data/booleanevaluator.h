@@ -18,7 +18,6 @@
  */
 
 #include <exprtk.hpp>
-#include <robin_hood.h>
 
 #include "regularexpressionpattern.h"
 
@@ -37,13 +36,17 @@ class BooleanExpressionEvaluator {
         return errorString_;
     }
 
-    bool evaluate( const robin_hood::unordered_flat_map<std::string, bool>& variables );
+    bool evaluate( const std::vector<unsigned char>& variables );
 
   private:
     bool isValid_ = true;
     std::string errorString_;
 
+    
+
     exprtk::symbol_table<double> symbols_;
     exprtk::expression<double> expression_;
     exprtk::parser<double> parser_;
+
+    std::vector<double*> variables_;
 };

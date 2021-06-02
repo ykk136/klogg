@@ -20,16 +20,12 @@
 #ifndef KLOGG_HS_REGULAR_EXPRESSION
 #define KLOGG_HS_REGULAR_EXPRESSION
 
-#include <qregularexpression.h>
 #include <string_view>
-#include <unordered_map>
 #include <variant>
+#include <vector>
 
 #include <QRegularExpression>
 #include <QString>
-#include <vector>
-
-#include <robin_hood.h>
 
 #ifdef KLOGG_HAS_HS
 #include <hs.h>
@@ -39,7 +35,7 @@
 
 #include "regularexpressionpattern.h"
 
-using MatchedPatterns = robin_hood::unordered_flat_map<std::string, bool>;
+using MatchedPatterns = std::vector<unsigned char>;
 using MatchingResult = std::variant<bool, MatchedPatterns>;
 
 class DefaultRegularExpressionMatcher {
@@ -48,26 +44,27 @@ class DefaultRegularExpressionMatcher {
         const std::vector<RegularExpressionPattern>& patterns )
     {
         for ( const auto& pattern : patterns ) {
-            regexp_.emplace( pattern.id(), static_cast<QRegularExpression>( pattern ) );
+            regexp_.push_back( static_cast<QRegularExpression>( pattern ) );
         }
     }
 
-    std::vector<std::string> match( const QString& data ) const
-    {
-        std::vector<std::string> matchingPatterns;
-        for ( const auto& regexp : regexp_ ) {
-            if ( regexp.second.match( data ).hasMatch() ) {
-                matchingPatterns.push_back( regexp.first );
-            }
-        }
-        return matchingPatterns;
-    }
+    // std::vector<std::string> match( const QString& data ) const
+    // {
+    //     std::vector<std::string> matchingPatterns;
+    //     for ( const auto& regexp : regexp_ ) {
+    //         if ( regexp.second.match( data ).hasMatch() ) {
+    //             matchingPatterns.push_back( regexp.first );
+    //         }
+    //     }
+    //     return matchingPatterns;
+    // }
 
     MatchingResult match( const std::string_view& utf8Data ) const
     {
         MatchedPatterns matchingPatterns;
-        for ( const auto& regexp : regexp_ ) {
-            const auto hasMatch = regexp.second
+        matchingPatterns.resize( regexp_.size() );
+        for ( auto index = 0u; index < regexp_.size(); ++index ) {
+            const auto hasMatch = regexp_[ index ]
                                       .match( QString::fromUtf8(
                                           utf8Data.data(), static_cast<int>( utf8Data.size() ) ) )
                                       .hasMatch();
@@ -75,13 +72,14 @@ class DefaultRegularExpressionMatcher {
                 return hasMatch;
             }
 
-            matchingPatterns.emplace( regexp.first, hasMatch );
+            matchingPatterns[ index ] = hasMatch;
         }
+
         return matchingPatterns;
     }
 
   private:
-    robin_hood::unordered_flat_map<std::string, QRegularExpression> regexp_;
+    std::vector<QRegularExpression> regexp_;
 };
 
 #ifdef KLOGG_HAS_HS

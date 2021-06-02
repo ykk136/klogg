@@ -19,12 +19,19 @@
 
 #include "booleanevaluator.h"
 
+#include "log.h"
+
 BooleanExpressionEvaluator::BooleanExpressionEvaluator(
     const std::string& expression, const std::vector<RegularExpressionPattern>& patterns )
 {
+    variables_.reserve( patterns.size() );
+
     for ( const auto& p : patterns ) {
-        symbols_.create_variable( p.id() );
+        if ( symbols_.create_variable( p.id() ) ) {
+            variables_.push_back( &symbols_.get_variable( p.id() )->ref() );
+        }
     }
+
     expression_.register_symbol_table( symbols_ );
     isValid_ = parser_.compile( expression, expression_ );
     if ( !isValid_ ) {
@@ -32,15 +39,19 @@ BooleanExpressionEvaluator::BooleanExpressionEvaluator(
     }
 }
 
-bool BooleanExpressionEvaluator::evaluate(
-    const robin_hood::unordered_flat_map<std::string, bool>& variables )
+bool BooleanExpressionEvaluator::evaluate( const std::vector<unsigned char>& variables )
 {
     if ( !isValid() ) {
         return false;
     }
 
-    for ( const auto& result : variables ) {
-        symbols_.get_variable( result.first )->ref() = result.second ? 1 : 0;
+    if ( variables_.size() != variables.size() ) {
+        LOG_ERROR << "Wrong number of matched patterns";
+        return false;
+    }
+
+    for ( auto index = 0u; index < variables_.size(); ++index ) {
+        *variables_[ index ] = variables[ index ];
     }
 
     return expression_.value() > 0;
