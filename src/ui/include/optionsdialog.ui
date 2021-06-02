@@ -53,7 +53,7 @@
                <enum>Qt::LeftToRight</enum>
               </property>
               <property name="text">
-               <string>Incremental QuickFind</string>
+               <string>Incremental</string>
               </property>
              </widget>
             </item>
@@ -109,6 +109,13 @@
              <widget class="QCheckBox" name="highlightMainSearchCheckBox">
               <property name="text">
                <string>Highlight matches</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QCheckBox" name="variateHighlightCheckBox">
+              <property name="text">
+               <string>Variate highlight</string>
               </property>
              </widget>
             </item>

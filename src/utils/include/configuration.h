@@ -389,6 +389,15 @@ class Configuration final : public Persistable<Configuration> {
         enableMainSearchHighlight_ = enable;
     }
 
+    bool variateMainSearchHighlight() const
+    {
+        return enableMainSearchHighlightVariance_;
+    }
+    void setVariateMainSearchHighlight( bool enable )
+    {
+        enableMainSearchHighlightVariance_ = enable;
+    }
+
     QColor mainSearchBackColor() const
     {
         return mainSearchBackColor_;
@@ -483,6 +492,7 @@ class Configuration final : public Persistable<Configuration> {
     QColor qfBackColor_ = Qt::yellow;
     QColor mainSearchBackColor_ = Qt::lightGray;
     bool enableMainSearchHighlight_ = false;
+    bool enableMainSearchHighlightVariance_ = false;
 
     std::map<std::string, QStringList> shortcuts_;
 };

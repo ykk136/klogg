@@ -538,7 +538,7 @@ void AbstractLogView::registerShortcuts()
 
 void AbstractLogView::doRegisterShortcuts()
 {
-    for (auto& shortcut : shortcuts_) {
+    for ( auto& shortcut : shortcuts_ ) {
         shortcut.second->deleteLater();
     }
 
@@ -576,7 +576,7 @@ void AbstractLogView::doRegisterShortcuts()
     registerShortcut( ShortcutAction::LogViewJumpToEndOfLine, [ this ]() { jumpToEndOfLine(); } );
     registerShortcut( ShortcutAction::LogViewJumpToRightOfScreen,
                       [ this ]() { jumpToRightOfScreen(); } );
-                      
+
     registerShortcut( ShortcutAction::LogViewQfForward, [ this ]() { emit searchNext(); } );
     registerShortcut( ShortcutAction::LogViewQfBackward, [ this ]() { emit searchPrevious(); } );
     registerShortcut( ShortcutAction::LogViewQfSelectedForward,
@@ -1801,6 +1801,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
     const auto mainSearchBackColor = Configuration::get().mainSearchBackColor();
     const auto highlightPatternMatches = Configuration::get().mainSearchHighlight();
+    const auto variateHighlightPatternMatches = Configuration::get().variateMainSearchHighlight();
 
     // Then draw each line
     for ( auto currentLine = 0_lcount; currentLine < nbLines; ++currentLine ) {
@@ -1840,6 +1841,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
              && !searchPattern_.pattern.isEmpty() ) {
             Highlighter patternHighlight;
             patternHighlight.setHighlightOnlyMatch( true );
+            patternHighlight.setVariateColors( variateHighlightPatternMatches );
             patternHighlight.setPattern( searchPattern_.pattern );
             patternHighlight.setIgnoreCase( !searchPattern_.isCaseSensitive );
             patternHighlight.setUseRegex( !searchPattern_.isPlainText );

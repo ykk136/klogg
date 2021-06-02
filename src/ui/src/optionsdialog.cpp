@@ -278,6 +278,7 @@ void OptionsDialog::updateDialogFromConfig()
     regexpEngineComboBox->setCurrentIndex( getRegexpEngineIndex( config.regexpEngine() ) );
 
     highlightMainSearchCheckBox->setChecked( config.mainSearchHighlight() );
+    variateHighlightCheckBox->setChecked( config.variateMainSearchHighlight() );
     incrementalCheckBox->setChecked( config.isQuickfindIncremental() );
 
     // Polling
@@ -393,6 +394,7 @@ void OptionsDialog::updateConfigFromDialog()
     config.setMainRegexpType( getRegexpTypeFromIndex( mainSearchBox->currentIndex() ) );
     config.setMainSearchBackColor( mainSearchColor_ );
     config.setEnableMainSearchHighlight( highlightMainSearchCheckBox->isChecked() );
+    config.setVariateMainSearchHighlight( variateHighlightCheckBox->isChecked() );
     config.setQuickfindRegexpType( getRegexpTypeFromIndex( quickFindSearchBox->currentIndex() ) );
     config.setQfBackColor( qfSearchColor_ );
     config.setQuickfindIncremental( incrementalCheckBox->isChecked() );

@@ -130,6 +130,12 @@ void Configuration::retrieveFromStorage( QSettings& settings )
               .value( "regexpType.mainHighlight", DefaultConfiguration.enableMainSearchHighlight_ )
               .toBool();
 
+    enableMainSearchHighlightVariance_
+        = settings
+              .value( "regexpType.mainHighlightVariate",
+                      DefaultConfiguration.enableMainSearchHighlightVariance_ )
+              .toBool();
+
     mainSearchBackColor_.setNamedColor(
         settings
             .value( "regexpType.mainBackColor", DefaultConfiguration.mainSearchBackColor_.name() )
@@ -285,6 +291,7 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "regexpType.main", static_cast<int>( mainRegexpType_ ) );
     settings.setValue( "regexpType.mainBackColor", mainSearchBackColor_.name() );
     settings.setValue( "regexpType.mainHighlight", enableMainSearchHighlight_ );
+    settings.setValue( "regexpType.mainHighlightVariate", enableMainSearchHighlightVariance_ );
 
     settings.setValue( "regexpType.quickfind", static_cast<int>( quickfindRegexpType_ ) );
     settings.setValue( "regexpType.quickfindBackColor", qfBackColor_.name() );
