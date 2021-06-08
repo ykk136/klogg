@@ -39,6 +39,7 @@
 #include "predefinedfilterscombobox.h"
 
 #include <QStandardItemModel>
+#include <qregularexpression.h>
 
 #include "log.h"
 
@@ -84,7 +85,11 @@ void PredefinedFiltersComboBox::insertFilters(
 
         item->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
         item->setData( Qt::Unchecked, Qt::CheckStateRole );
-        item->setData( filter.pattern, Qt::UserRole );
+
+        const auto pattern
+            = filter.useRegex ? filter.pattern : QRegularExpression::escape( filter.pattern );
+
+        item->setData( pattern, Qt::UserRole );
 
         model_->insertRow( row, item );
 

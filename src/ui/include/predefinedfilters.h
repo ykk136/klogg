@@ -51,6 +51,7 @@ class PredefinedFiltersCollection final : public Persistable<PredefinedFiltersCo
     struct PredefinedFilter {
         QString name;
         QString pattern;
+        bool useRegex;
     };
 
     using Collection = QList<PredefinedFilter>;

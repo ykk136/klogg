@@ -55,7 +55,8 @@ void PredefinedFiltersCollection::retrieveFromStorage( QSettings& settings )
                 settings.setArrayIndex( i );
 
                 filters_.push_back( { settings.value( "name" ).toString(),
-                                      settings.value( "filter" ).toString() } );
+                                      settings.value( "filter" ).toString(),
+                                      settings.value( "regex", true ).toBool() } );
             }
             settings.endArray();
         }
@@ -81,6 +82,7 @@ void PredefinedFiltersCollection::saveToStorage( QSettings& settings ) const
         settings.setArrayIndex( arrayIndex );
         settings.setValue( "name", filter.name );
         settings.setValue( "filter", filter.pattern );
+        settings.setValue( "regex", filter.useRegex );
 
         arrayIndex++;
     }

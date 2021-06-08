@@ -43,6 +43,7 @@
 #include <QTimer>
 #include <QToolButton>
 #include <qabstractitemmodel.h>
+#include <qcheckbox.h>
 
 #include "dispatch_to.h"
 #include "iconloader.h"
@@ -94,15 +95,19 @@ void PredefinedFiltersDialog::populateFiltersTable()
     filtersTableWidget->clear();
 
     filtersTableWidget->setRowCount( static_cast<int>( filters_.size() ) );
-    filtersTableWidget->setColumnCount( 2 );
+    filtersTableWidget->setColumnCount( 3 );
 
     filtersTableWidget->setHorizontalHeaderLabels( QStringList() << "Name"
-                                                                 << "Pattern" );
+                                                                 << "Pattern"
+                                                                 << "Regex" );
 
     int filterIndex = 0;
     for ( const auto& filter : filters_ ) {
         filtersTableWidget->setItem( filterIndex, 0, new QTableWidgetItem( filter.name ) );
         filtersTableWidget->setItem( filterIndex, 1, new QTableWidgetItem( filter.pattern ) );
+        QCheckBox* regexCheckbox = new QCheckBox;
+        regexCheckbox->setChecked( filter.useRegex );
+        filtersTableWidget->setCellWidget( filterIndex, 2, regexCheckbox );
 
         filterIndex++;
     }
@@ -131,9 +136,11 @@ void PredefinedFiltersDialog::readFiltersTable()
 
         const auto name = filtersTableWidget->item( i, 0 )->text();
         const auto value = filtersTableWidget->item( i, 1 )->text();
+        const auto useRegex
+            = qobject_cast<QCheckBox*>( filtersTableWidget->cellWidget( i, 2 ) )->isChecked();
 
         if ( !name.isEmpty() && !value.isEmpty() ) {
-            filters_.push_back( { name, value } );
+            filters_.push_back( { name, value, useRegex } );
         }
     }
 }
