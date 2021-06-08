@@ -54,8 +54,12 @@ class PredefinedFiltersDialog : public QDialog, public Ui::PredefinedFiltersDial
     PredefinedFiltersDialog( const QString& newFilter, QWidget* parent = nullptr );
 
   private slots:
-    void addFilter() const;
-    void removeFilter() const;
+    void addFilter();
+    void removeFilter();
+
+    void moveFilterUp();
+    void moveFilterDown();
+
     void exportFilters();
     void importFilters();
 
@@ -65,8 +69,8 @@ class PredefinedFiltersDialog : public QDialog, public Ui::PredefinedFiltersDial
     void optionsChanged();
 
   private:
-    void addFilterFromSearchLine( const QString& newFilter ) const;
-    void populateFiltersTable() const;
+    void addFilterFromSearchLine( const QString& newFilter );
+    void populateFiltersTable();
     void saveSettings();
     void readFiltersTable();
 

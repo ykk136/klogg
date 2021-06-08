@@ -40,27 +40,20 @@
 #ifndef PREDEFINEDFILTERS_H_
 #define PREDEFINEDFILTERS_H_
 
-#include <map>
-
-#include <QHash>
+#include <QList>
 #include <QString>
 
 #include "persistable.h"
 
-#if QT_VERSION < QT_VERSION_CHECK( 5, 14, 0 )
-namespace std {
-  template<> struct hash<QString> {
-    std::size_t operator()(const QString& s) const noexcept {
-      return (size_t) qHash(s);
-    }
-  };
-}
-#endif
-
 // Represents collection of filters read from settings file.
 class PredefinedFiltersCollection final : public Persistable<PredefinedFiltersCollection> {
   public:
-    using Collection = std::map<QString, QString>;
+    struct PredefinedFilter {
+        QString name;
+        QString pattern;
+    };
+
+    using Collection = QList<PredefinedFilter>;
 
     static const char* persistableName()
     {
@@ -76,7 +69,7 @@ class PredefinedFiltersCollection final : public Persistable<PredefinedFiltersCo
     void saveToStorage( const Collection& filters );
 
   private:
-    static constexpr int PredefinedFiltersCollection_VERSION = 1;
+    static constexpr int PredefinedFiltersCollection_VERSION = 2;
 
     Collection filters_;
 };

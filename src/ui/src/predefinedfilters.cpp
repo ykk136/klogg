@@ -54,8 +54,8 @@ void PredefinedFiltersCollection::retrieveFromStorage( QSettings& settings )
             for ( int i = 0; i < size; ++i ) {
                 settings.setArrayIndex( i );
 
-                filters_.emplace( settings.value( "name" ).toString(),
-                                settings.value( "filter" ).toString() );
+                filters_.push_back( { settings.value( "name" ).toString(),
+                                      settings.value( "filter" ).toString() } );
             }
             settings.endArray();
         }
@@ -77,10 +77,10 @@ void PredefinedFiltersCollection::saveToStorage( QSettings& settings ) const
 
     settings.beginWriteArray( "filters" );
     int arrayIndex = 0;
-    for ( const auto& filter : filters_ ) {
+    for ( const auto& filter : qAsConst( filters_ ) ) {
         settings.setArrayIndex( arrayIndex );
-        settings.setValue( "name", filter.first );
-        settings.setValue( "filter", filter.second );
+        settings.setValue( "name", filter.name );
+        settings.setValue( "filter", filter.pattern );
 
         arrayIndex++;
     }
@@ -88,7 +88,8 @@ void PredefinedFiltersCollection::saveToStorage( QSettings& settings ) const
     settings.endGroup();
 }
 
-void PredefinedFiltersCollection::saveToStorage( const PredefinedFiltersCollection::Collection& filters )
+void PredefinedFiltersCollection::saveToStorage(
+    const PredefinedFiltersCollection::Collection& filters )
 {
     filters_ = filters;
     this->save();

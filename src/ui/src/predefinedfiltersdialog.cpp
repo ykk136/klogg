@@ -42,11 +42,12 @@
 #include <QFileDialog>
 #include <QTimer>
 #include <QToolButton>
+#include <qabstractitemmodel.h>
 
+#include "dispatch_to.h"
 #include "iconloader.h"
 #include "log.h"
 #include "predefinedfilters.h"
-#include "dispatch_to.h"
 
 PredefinedFiltersDialog::PredefinedFiltersDialog( QWidget* parent )
     : QDialog( parent )
@@ -60,6 +61,8 @@ PredefinedFiltersDialog::PredefinedFiltersDialog( QWidget* parent )
     connect( addFilterButton, &QToolButton::clicked, this, &PredefinedFiltersDialog::addFilter );
     connect( removeFilterButton, &QToolButton::clicked, this,
              &PredefinedFiltersDialog::removeFilter );
+    connect( upButton, &QToolButton::clicked, this, &PredefinedFiltersDialog::moveFilterUp );
+    connect( downButton, &QToolButton::clicked, this, &PredefinedFiltersDialog::moveFilterDown );
     connect( importFilterButton, &QToolButton::clicked, this,
              &PredefinedFiltersDialog::importFilters );
     connect( exportFilterButton, &QToolButton::clicked, this,
@@ -73,6 +76,8 @@ PredefinedFiltersDialog::PredefinedFiltersDialog( QWidget* parent )
 
         addFilterButton->setIcon( iconLoader.load( "icons8-plus-16" ) );
         removeFilterButton->setIcon( iconLoader.load( "icons8-minus-16" ) );
+        upButton->setIcon( iconLoader.load( "icons8-up-16" ) );
+        downButton->setIcon( iconLoader.load( "icons8-down-arrow-16" ) );
     } );
 }
 
@@ -84,7 +89,7 @@ PredefinedFiltersDialog::PredefinedFiltersDialog( const QString& newFilter, QWid
     }
 }
 
-void PredefinedFiltersDialog::populateFiltersTable() const
+void PredefinedFiltersDialog::populateFiltersTable()
 {
     filtersTableWidget->clear();
 
@@ -96,8 +101,8 @@ void PredefinedFiltersDialog::populateFiltersTable() const
 
     int filterIndex = 0;
     for ( const auto& filter : filters_ ) {
-        filtersTableWidget->setItem( filterIndex, 0, new QTableWidgetItem( filter.first ) );
-        filtersTableWidget->setItem( filterIndex, 1, new QTableWidgetItem( filter.second ) );
+        filtersTableWidget->setItem( filterIndex, 0, new QTableWidgetItem( filter.name ) );
+        filtersTableWidget->setItem( filterIndex, 1, new QTableWidgetItem( filter.pattern ) );
 
         filterIndex++;
     }
@@ -124,21 +129,21 @@ void PredefinedFiltersDialog::readFiltersTable()
             continue;
         }
 
-        const auto key = filtersTableWidget->item( i, 0 )->text();
+        const auto name = filtersTableWidget->item( i, 0 )->text();
         const auto value = filtersTableWidget->item( i, 1 )->text();
 
-        if ( !key.isEmpty() && !value.isEmpty() ) {
-            filters_.emplace( key, value );
+        if ( !name.isEmpty() && !value.isEmpty() ) {
+            filters_.push_back( { name, value } );
         }
     }
 }
 
-void PredefinedFiltersDialog::addFilter() const
+void PredefinedFiltersDialog::addFilter()
 {
     filtersTableWidget->setRowCount( filtersTableWidget->rowCount() + 1 );
 }
 
-void PredefinedFiltersDialog::addFilterFromSearchLine( const QString& newFilter ) const
+void PredefinedFiltersDialog::addFilterFromSearchLine( const QString& newFilter )
 {
     addFilter();
 
@@ -151,9 +156,37 @@ void PredefinedFiltersDialog::addFilterFromSearchLine( const QString& newFilter 
     filtersTableWidget->editItem( filtersTableWidget->item( row, 0 ) );
 }
 
-void PredefinedFiltersDialog::removeFilter() const
+void PredefinedFiltersDialog::removeFilter()
 {
     filtersTableWidget->removeRow( filtersTableWidget->currentRow() );
+}
+
+void PredefinedFiltersDialog::moveFilterUp()
+{
+    const auto* currentItem = filtersTableWidget->currentItem();
+
+    if ( currentItem->row() > 0 ) {
+        filters_.move( currentItem->row(), currentItem->row() - 1 );
+
+        dispatchToMainThread( [ this, row = currentItem->row(), column = currentItem->column() ] {
+            populateFiltersTable();
+            filtersTableWidget->setCurrentItem( filtersTableWidget->item( row - 1, column ) );
+        } );
+    }
+}
+
+void PredefinedFiltersDialog::moveFilterDown()
+{
+    const auto* currentItem = filtersTableWidget->currentItem();
+
+    if ( currentItem && currentItem->row() < filters_.size() - 1 ) {
+        filters_.move( currentItem->row(), currentItem->row() + 1 );
+
+        dispatchToMainThread( [ this, row = currentItem->row(), column = currentItem->column() ] {
+            populateFiltersTable();
+            filtersTableWidget->setCurrentItem( filtersTableWidget->item( row + 1, column ) );
+        } );
+    }
 }
 
 void PredefinedFiltersDialog::importFilters()
@@ -212,8 +245,7 @@ void PredefinedFiltersDialog::resolveStandardButton( QAbstractButton* button )
         accept();
         break;
     default:
-        LOG_ERROR << "PredefinedFiltersDialog::resolveStandardButton unhandled role: "
-                        << role;
+        LOG_ERROR << "PredefinedFiltersDialog::resolveStandardButton unhandled role: " << role;
         return;
     }
 

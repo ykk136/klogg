@@ -80,11 +80,11 @@ void PredefinedFiltersComboBox::insertFilters(
     auto row = model_->rowCount();
 
     for ( const auto& filter : filters ) {
-        auto* item = new QStandardItem( filter.first );
+        auto* item = new QStandardItem( filter.name );
 
         item->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
         item->setData( Qt::Unchecked, Qt::CheckStateRole );
-        item->setData( filter.second, Qt::UserRole );
+        item->setData( filter.pattern, Qt::UserRole );
 
         model_->insertRow( row, item );
 
