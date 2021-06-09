@@ -117,6 +117,7 @@ class CrawlerWidget : public QSplitter,
     void setEncoding( std::optional<int> mib );
 
     void focusSearchEdit();
+    void goToLine();
 
     // Instructs the widget to reconfigure itself because Config() has changed.
     void applyConfiguration();

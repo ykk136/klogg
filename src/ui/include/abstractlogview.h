@@ -292,6 +292,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
   public slots:
     // Makes the widget select and display the passed line.
     // Scrolling as necessary
+    void trySelectLine( LineNumber newLine );
     void selectAndDisplayLine( LineNumber line );
 
     // Use the current QFP to go and select the next match.

@@ -75,6 +75,7 @@
 
 #include <tbb/flow_graph.h>
 
+#include "data/linetypes.h"
 #include "data/regularexpressionpattern.h"
 #include "log.h"
 
@@ -586,28 +587,9 @@ void AbstractLogView::doRegisterShortcuts()
 
     registerShortcut( ShortcutAction::LogViewMark, [ this ]() { markSelected(); } );
 
-    auto trySelectLine = [ this ]( uint32_t newLine ) {
-        auto lineToSelect = LineNumber( static_cast<LineNumber::UnderlyingType>( newLine ) );
-        if ( lineToSelect >= logData_->getNbLine() ) {
-            lineToSelect = lineToSelect - 1_lcount;
-        }
-
-        selectAndDisplayLine( lineToSelect );
-    };
-
-    registerShortcut( ShortcutAction::LogViewJumpToLine, [ this, trySelectLine ]() {
-        bool isLineSelected = true;
-        const auto newLine = QInputDialog::getInt( this, "Jump to line", "Line", 1, 1,
-                                                   static_cast<int>( logData_->getNbLine().get() ),
-                                                   1, &isLineSelected );
-        if ( isLineSelected ) {
-            trySelectLine( static_cast<uint32_t>( newLine - 1 ) );
-        }
-    } );
-
-    registerShortcut( ShortcutAction::LogViewJumpToLineNumber, [ this, trySelectLine ]() {
+    registerShortcut( ShortcutAction::LogViewJumpToLineNumber, [ this ]() {
         const auto newLine = qMax( 0, digitsBuffer_.content() - 1 );
-        trySelectLine( static_cast<uint32_t>( newLine ) );
+        trySelectLine( LineNumber( static_cast<LineNumber::UnderlyingType>( newLine ) ) );
     } );
 
     registerShortcut( ShortcutAction::LogViewExitView, [ this ]() { emit exitView(); } );
@@ -1322,6 +1304,15 @@ void AbstractLogView::selectAll()
     selection_.selectRange( 0_lnum, LineNumber( logData_->getNbLine().get() ) - 1_lcount );
     textAreaCache_.invalid_ = true;
     update();
+}
+
+void AbstractLogView::trySelectLine( LineNumber lineToSelect )
+{
+    if ( lineToSelect >= logData_->getNbLine() ) {
+        lineToSelect = lineToSelect - 1_lcount;
+    }
+
+    selectAndDisplayLine( lineToSelect );
 }
 
 void AbstractLogView::selectAndDisplayLine( LineNumber line )

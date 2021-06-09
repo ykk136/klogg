@@ -52,6 +52,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QHeaderView>
+#include <QInputDialog>
 #include <QJsonDocument>
 #include <QKeySequence>
 #include <QLineEdit>
@@ -278,6 +279,20 @@ void CrawlerWidget::setEncoding( std::optional<int> mib )
 void CrawlerWidget::focusSearchEdit()
 {
     searchLineEdit_->setFocus( Qt::ShortcutFocusReason );
+}
+
+void CrawlerWidget::goToLine()
+{
+    bool isLineSelected = true;
+    const auto newLine = QInputDialog::getInt( this, "Jump to line", "Line", 1, 1,
+                                               static_cast<int>( logData_->getNbLine().get() ), 1,
+                                               &isLineSelected );
+    if ( isLineSelected ) {
+        const auto selectedLine
+            = LineNumber( static_cast<LineNumber::UnderlyingType>( newLine - 1 ) );
+        filteredView_->trySelectLine( logFilteredData_->getLineIndexNumber( selectedLine ) );
+        logMainView_->trySelectLine( selectedLine );
+    }
 }
 
 //
@@ -1157,20 +1172,20 @@ void CrawlerWidget::registerShortcuts()
     const auto& config = Configuration::get();
     const auto& configuredShortcuts = config.shortcuts();
 
-    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-                                      ShortcutAction::CrawlerChangeVisibility, [ this ]() {
-                                          visibilityBox_->setCurrentIndex(
-                                              ( visibilityBox_->currentIndex() + 1 )
-                                              % visibilityBox_->count() );
-                                      } );
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::CrawlerChangeVisibility, [ this ]() {
+            visibilityBox_->setCurrentIndex( ( visibilityBox_->currentIndex() + 1 )
+                                             % visibilityBox_->count() );
+        } );
 
-    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-                                      ShortcutAction::CrawlerIncreseTopViewSize,
-                                      [ this ]() { changeTopViewSize( 1 ); } );
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::CrawlerIncreseTopViewSize, [ this ]() { changeTopViewSize( 1 ); } );
 
-    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-                                      ShortcutAction::CrawlerDecreaseTopViewSize,
-                                      [ this ]() { changeTopViewSize( -1 ); } );
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::CrawlerDecreaseTopViewSize, [ this ]() { changeTopViewSize( -1 ); } );
 
     logMainView_->registerShortcuts();
     filteredView_->registerShortcuts();

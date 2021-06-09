@@ -46,6 +46,7 @@
 #include <iostream>
 
 #include <cmath>
+#include <qaction.h>
 
 #ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
@@ -315,6 +316,10 @@ void MainWindow::createActions()
     selectAllAction->setStatusTip( tr( "Select all the text" ) );
     connect( selectAllAction, &QAction::triggered, [ this ]( auto ) { this->selectAll(); } );
 
+    goToLineAction = new QAction( tr( "Go to line..." ), this );
+    goToLineAction->setStatusTip( tr( "Scrolls selected main view to specified line" ) );
+    signalMux_.connect( goToLineAction, SIGNAL( triggered() ), SLOT( goToLine() ) );
+
     findAction = new QAction( tr( "&Find..." ), this );
     findAction->setStatusTip( tr( "Find the text" ) );
     connect( findAction, &QAction::triggered, [ this ]( auto ) { this->find(); } );
@@ -507,6 +512,7 @@ void MainWindow::updateShortcuts()
     setShortcuts( stopAction, ShortcutAction::MainWindowStop );
     setShortcuts( showScratchPadAction, ShortcutAction::MainWindowScratchpad );
     setShortcuts( selectOpenFileAction, ShortcutAction::MainWindowSelectOpenFile );
+    setShortcuts( goToLineAction, ShortcutAction::LogViewJumpToLine );
 }
 
 void MainWindow::loadIcons()
@@ -544,6 +550,8 @@ void MainWindow::createMenus()
     editMenu->addAction( selectAllAction );
     editMenu->addSeparator();
     editMenu->addAction( findAction );
+    editMenu->addSeparator();
+    editMenu->addAction( goToLineAction );
     editMenu->addSeparator();
     editMenu->addAction( copyPathToClipboardAction );
     editMenu->addAction( openContainingFolderAction );

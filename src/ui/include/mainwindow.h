@@ -237,6 +237,7 @@ class MainWindow : public QMainWindow {
     QAction* exitAction;
     QAction* copyAction;
     QAction* selectAllAction;
+    QAction* goToLineAction;
     QAction* findAction;
     QAction* clearLogAction;
     QAction* copyPathToClipboardAction;
