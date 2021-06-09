@@ -273,7 +273,19 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         for ( auto keys = mapping.begin(); keys != mapping.end(); ++keys ) {
             shortcuts_.emplace( keys.key().toStdString(), keys.value().toStringList() );
         }
+        settings.remove( "shortcuts.mapping" );
     }
+
+    const auto shortcutsCount = settings.beginReadArray( "shortcuts" );
+    for ( auto shortcutIndex = 0; shortcutIndex < shortcutsCount; ++shortcutIndex ) {
+        settings.setArrayIndex( static_cast<int>( shortcutIndex ) );
+        const auto action = settings.value( "action", "" ).toString();
+        const auto keys = settings.value( "keys", QStringList() ).toStringList();
+        if ( !action.isEmpty() ) {
+            shortcuts_.emplace( action.toStdString(), keys );
+        }
+    }
+    settings.endArray();
 }
 
 void Configuration::saveToStorage( QSettings& settings ) const
@@ -343,9 +355,13 @@ void Configuration::saveToStorage( QSettings& settings ) const
 
     settings.setValue( "DefaultConfigurationView.splitterSizes", splitterSizes );
 
-    QMap<QString, QVariant> shortcutMappings;
+    settings.beginWriteArray( "shortcuts" );
+    auto shortcutIndex = 0;
     for ( const auto& mapping : shortcuts_ ) {
-        shortcutMappings.insert( QString::fromStdString( mapping.first ), mapping.second );
+        settings.setArrayIndex( shortcutIndex );
+        settings.setValue( "action", QString::fromStdString( mapping.first ) );
+        settings.setValue( "keys", mapping.second );
+        shortcutIndex++;
     }
-    settings.setValue( "shortcuts.mapping", shortcutMappings );
+    settings.endArray();
 }

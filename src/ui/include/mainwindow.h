@@ -91,7 +91,6 @@ class MainWindow : public QMainWindow {
     // Drag and drop support
     void dragEnterEvent( QDragEnterEvent* event ) override;
     void dropEvent( QDropEvent* event ) override;
-    void keyPressEvent( QKeyEvent* keyEvent ) override;
 
     bool event( QEvent* event ) override;
 
@@ -204,6 +203,7 @@ class MainWindow : public QMainWindow {
     void removeFromFavorites( const QString& pathToRemove );
     void removeFromRecent( const QString& pathToRemove );
     void tryOpenClipboard( int tryTimes );
+    void updateShortcuts();
 
     WindowSession session_;
     QString loadingFileName;
@@ -269,6 +269,8 @@ class MainWindow : public QMainWindow {
     QActionGroup* favoritesGroup;
     QActionGroup* openedFilesGroup;
     QActionGroup* highlightersActionGroup = nullptr;
+
+    std::map<QString, QShortcut*> shortcuts_;
 
     QSystemTrayIcon* trayIcon_;
 

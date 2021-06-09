@@ -96,6 +96,7 @@
 #include "readablesize.h"
 #include "recentfiles.h"
 #include "sessioninfo.h"
+#include "shortcuts.h"
 #include "styles.h"
 #include "tabbedcrawlerwidget.h"
 
@@ -275,20 +276,18 @@ void MainWindow::loadInitialFile( QString fileName, bool followFile )
 void MainWindow::createActions()
 {
     const auto& config = Configuration::get();
+    const auto shortcuts = config.shortcuts();
 
     newWindowAction = new QAction( tr( "&New window" ), this );
-    newWindowAction->setShortcut( QKeySequence::New );
     newWindowAction->setStatusTip( tr( "Create new klogg window" ) );
     connect( newWindowAction, &QAction::triggered, [ = ] { emit newWindow(); } );
     newWindowAction->setVisible( config.allowMultipleWindows() );
 
     openAction = new QAction( tr( "&Open..." ), this );
-    openAction->setShortcuts( QKeySequence::keyBindings( QKeySequence::Open ) );
     openAction->setStatusTip( tr( "Open a file" ) );
     connect( openAction, &QAction::triggered, [ this ]( auto ) { this->open(); } );
 
     closeAction = new QAction( tr( "&Close" ), this );
-    closeAction->setShortcuts( QKeySequence::keyBindings( QKeySequence::Close ) );
     closeAction->setStatusTip( tr( "Close document" ) );
     connect( closeAction, &QAction::triggered, [ this ]( auto ) { this->closeTab(); } );
 
@@ -305,28 +304,23 @@ void MainWindow::createActions()
     }
 
     exitAction = new QAction( tr( "E&xit" ), this );
-    exitAction->setShortcut( tr( "Ctrl+Q" ) );
     exitAction->setStatusTip( tr( "Exit the application" ) );
     connect( exitAction, &QAction::triggered, this, &MainWindow::exitRequested );
 
     copyAction = new QAction( tr( "&Copy" ), this );
-    copyAction->setShortcuts( QKeySequence::keyBindings( QKeySequence::Copy ) );
     copyAction->setStatusTip( tr( "Copy the selection" ) );
     connect( copyAction, &QAction::triggered, [ this ]( auto ) { this->copy(); } );
 
     selectAllAction = new QAction( tr( "Select &All" ), this );
-    selectAllAction->setShortcut( tr( "Ctrl+A" ) );
     selectAllAction->setStatusTip( tr( "Select all the text" ) );
     connect( selectAllAction, &QAction::triggered, [ this ]( auto ) { this->selectAll(); } );
 
     findAction = new QAction( tr( "&Find..." ), this );
-    findAction->setShortcut( QKeySequence::Find );
     findAction->setStatusTip( tr( "Find the text" ) );
     connect( findAction, &QAction::triggered, [ this ]( auto ) { this->find(); } );
 
     clearLogAction = new QAction( tr( "Clear file..." ), this );
     clearLogAction->setStatusTip( tr( "Clear current file" ) );
-    clearLogAction->setShortcuts( QKeySequence::Cut );
     connect( clearLogAction, &QAction::triggered, [ this ]( auto ) { this->clearLog(); } );
 
     openContainingFolderAction = new QAction( tr( "Open containing folder" ), this );
@@ -345,7 +339,6 @@ void MainWindow::createActions()
 
     openClipboardAction = new QAction( tr( "Open from clipboard" ), this );
     openClipboardAction->setStatusTip( tr( "Open clipboard as log file" ) );
-    openClipboardAction->setShortcuts( QKeySequence::keyBindings( QKeySequence::Paste ) );
     connect( openClipboardAction, &QAction::triggered,
              [ this ]( auto ) { this->openClipboard(); } );
 
@@ -373,16 +366,11 @@ void MainWindow::createActions()
              &MainWindow::toggleFilteredLineNumbersVisibility );
 
     followAction = new QAction( tr( "&Follow File" ), this );
-
-    followAction->setShortcuts( QList<QKeySequence>()
-                                << QKeySequence( Qt::Key_F ) << QKeySequence( Qt::Key_F10 ) );
-
     followAction->setCheckable( true );
     followAction->setEnabled( config.anyFileWatchEnabled() );
     connect( followAction, &QAction::toggled, this, &MainWindow::followSet );
 
     reloadAction = new QAction( tr( "&Reload" ), this );
-    reloadAction->setShortcuts( QKeySequence::keyBindings( QKeySequence::Refresh ) );
     signalMux_.connect( reloadAction, SIGNAL( triggered() ), SLOT( reload() ) );
 
     stopAction = new QAction( tr( "&Stop" ), this );
@@ -464,13 +452,61 @@ void MainWindow::createActions()
     selectOpenFileAction = new QAction( tr( "Switch to opened file..." ), this );
     connect( selectOpenFileAction, &QAction::triggered,
              [ this ]( auto ) { this->selectOpenedFile(); } );
-    selectOpenFileAction->setShortcuts( QList<QKeySequence>()
-                                        << QKeySequence( Qt::SHIFT | Qt::CTRL | Qt::Key_O ) );
 
     predefinedFiltersDialogAction = new QAction( tr( "Predefined filters..." ), this );
     predefinedFiltersDialogAction->setStatusTip( tr( "Show dialog to configure filters" ) );
     connect( predefinedFiltersDialogAction, &QAction::triggered,
              [ this ]( auto ) { this->editPredefinedFilters(); } );
+
+    updateShortcuts();
+}
+
+void MainWindow::updateShortcuts()
+{
+    const auto& config = Configuration::get();
+    const auto shortcuts = config.shortcuts();
+
+    for ( auto& shortcut : shortcuts_ ) {
+        shortcut.second->deleteLater();
+    }
+
+    shortcuts_.clear();
+    ShortcutAction::registerShortcut( shortcuts, shortcuts_, this, Qt::WindowShortcut,
+                                      ShortcutAction::MainWindowOpenQfForward,
+                                      [ this ] { displayQuickFindBar( QuickFindMux::Forward ); } );
+    ShortcutAction::registerShortcut( shortcuts, shortcuts_, this, Qt::WindowShortcut,
+                                      ShortcutAction::MainWindowOpenQfBackward,
+                                      [ this ] { displayQuickFindBar( QuickFindMux::Backward ); } );
+    ShortcutAction::registerShortcut( shortcuts, shortcuts_, this, Qt::WindowShortcut,
+                                      ShortcutAction::MainWindowFocusSearchInput, [ this ] {
+                                          if ( auto crawler = currentCrawlerWidget() ) {
+                                              crawler->focusSearchEdit();
+                                          }
+                                      } );
+
+    auto setShortcuts = [ &shortcuts ]( auto* action, const auto& actionName ) {
+        action->setShortcuts( ShortcutAction::shortcutKeys( actionName, shortcuts ) );
+    };
+
+    setShortcuts( newWindowAction, ShortcutAction::MainWindowNewWindow );
+    setShortcuts( openAction, ShortcutAction::MainWindowOpenFile );
+    setShortcuts( closeAction, ShortcutAction::MainWindowCloseFile );
+    setShortcuts( closeAllAction, ShortcutAction::MainWindowCloseAll );
+    setShortcuts( exitAction, ShortcutAction::MainWindowQuit );
+    setShortcuts( copyAction, ShortcutAction::MainWindowCopy );
+    setShortcuts( selectAllAction, ShortcutAction::MainWindowSelectAll );
+    setShortcuts( findAction, ShortcutAction::MainWindowOpenQf );
+    setShortcuts( clearLogAction, ShortcutAction::MainWindowClearFile );
+    setShortcuts( openContainingFolderAction, ShortcutAction::MainWindowOpenContainingFolder );
+    setShortcuts( openInEditorAction, ShortcutAction::MainWindowOpenInEditor );
+    setShortcuts( copyPathToClipboardAction, ShortcutAction::MainWindowCopyPathToClipboard );
+    setShortcuts( openClipboardAction, ShortcutAction::MainWindowOpenFromClipboard );
+    setShortcuts( openUrlAction, ShortcutAction::MainWindowOpenFromUrl );
+    setShortcuts( followAction, ShortcutAction::MainWindowFollowFile );
+    setShortcuts( reloadAction, ShortcutAction::MainWindowReload );
+    setShortcuts( stopAction, ShortcutAction::MainWindowStop );
+    setShortcuts( showScratchPadAction, ShortcutAction::MainWindowScratchpad );
+    setShortcuts( selectOpenFileAction, ShortcutAction::MainWindowSelectOpenFile );
 }
 
 void MainWindow::loadIcons()
@@ -922,6 +958,8 @@ void MainWindow::options()
 
         newWindowAction->setVisible( config.allowMultipleWindows() );
         followAction->setEnabled( config.anyFileWatchEnabled() );
+
+        updateShortcuts();
     } );
     dialog.exec();
 
@@ -1286,37 +1324,6 @@ void MainWindow::dropEvent( QDropEvent* event )
 
         loadFile( fileName );
     }
-}
-
-void MainWindow::keyPressEvent( QKeyEvent* keyEvent )
-{
-    LOG_DEBUG << "keyPressEvent received";
-
-    switch ( keyEvent->key() ) {
-    case Qt::Key_Apostrophe:
-        displayQuickFindBar( QuickFindMux::Forward );
-        break;
-    case Qt::Key_QuoteDbl:
-        displayQuickFindBar( QuickFindMux::Backward );
-        break;
-    default:
-        keyEvent->ignore();
-    }
-
-    if ( ( keyEvent->modifiers().testFlag( Qt::ControlModifier )
-           && keyEvent->key() == Qt::Key_S )                        // Ctrl+S
-         || ( keyEvent->modifiers().testFlag( Qt::ControlModifier ) // Ctrl+Shift+F
-              && keyEvent->modifiers().testFlag( Qt::ShiftModifier )
-              && keyEvent->key() == Qt::Key_F ) ) {
-
-        if ( auto crawler = currentCrawlerWidget() ) {
-            keyEvent->accept();
-            crawler->focusSearchEdit();
-        }
-    }
-
-    if ( !keyEvent->isAccepted() )
-        QMainWindow::keyPressEvent( keyEvent );
 }
 
 bool MainWindow::event( QEvent* event )

@@ -20,7 +20,10 @@
 #ifndef KLOGG_SHORTCUTS_H
 #define KLOGG_SHORTCUTS_H
 
+#include <algorithm>
 #include <map>
+#include <qkeysequence.h>
+#include <qnamespace.h>
 #include <qobject.h>
 #include <qwidget.h>
 #include <string>
@@ -43,6 +46,7 @@ struct ShortcutAction {
     static constexpr auto MainWindowCloseFile = "mainwindow.close_file";
     static constexpr auto MainWindowCloseAll = "mainwindow.close_all";
     static constexpr auto MainWindowQuit = "mainwindow.quit";
+    static constexpr auto MainWindowCopy = "mainwindow.copy_selection";
     static constexpr auto MainWindowSelectAll = "mainwindow.select_all";
     static constexpr auto MainWindowOpenQf = "mainwindow.open_qf";
     static constexpr auto MainWindowOpenQfForward = "mainwindow.open_qf_forward";
@@ -51,7 +55,14 @@ struct ShortcutAction {
     static constexpr auto MainWindowClearFile = "mainwindow.clear_file";
     static constexpr auto MainWindowFollowFile = "mainwindow.follow_file";
     static constexpr auto MainWindowReload = "mainwindow.reload";
+    static constexpr auto MainWindowStop = "mainwindow.stop";
+    static constexpr auto MainWindowScratchpad = "mainwindow.scratchpad";
     static constexpr auto MainWindowSelectOpenFile = "mainwindow.select_open_file";
+    static constexpr auto MainWindowOpenContainingFolder = "mainwindow.open_containing_folder";
+    static constexpr auto MainWindowOpenInEditor = "mainwindow.open_in_editor";
+    static constexpr auto MainWindowCopyPathToClipboard = "mainwindow.copy_path_to_clipboard";
+    static constexpr auto MainWindowOpenFromClipboard = "mainwindow.open_from_clipboard";
+    static constexpr auto MainWindowOpenFromUrl = "mainwindow.open_from_url";
 
     static constexpr auto LogViewMark = "logview.mark";
     static constexpr auto LogViewNextMark = "logview.next_mark";
@@ -91,6 +102,35 @@ struct ShortcutAction {
 
                 return stringBindings;
             };
+
+            shortcuts.emplace( MainWindowNewWindow, QStringList() );
+            shortcuts.emplace( MainWindowOpenFile, getKeyBindings( QKeySequence::Open ) );
+            shortcuts.emplace( MainWindowCloseFile, getKeyBindings( QKeySequence::Close ) );
+            shortcuts.emplace( MainWindowCloseAll, QStringList() );
+            shortcuts.emplace( MainWindowQuit, QStringList() << "Ctrl+Q" );
+            shortcuts.emplace( MainWindowCopy, getKeyBindings( QKeySequence::Copy ) );
+            shortcuts.emplace( MainWindowSelectAll, QStringList() << "Ctrl+A" );
+            shortcuts.emplace( MainWindowFocusSearchInput, QStringList() << "Ctrl+S"
+                                                                         << "Ctrl+Shift+F" );
+            shortcuts.emplace( MainWindowOpenQf, getKeyBindings( QKeySequence::Find ) );
+            shortcuts.emplace( MainWindowOpenQfForward,
+                               QStringList() << QKeySequence( Qt::Key_Apostrophe ).toString() );
+            shortcuts.emplace( MainWindowOpenQfBackward,
+                               QStringList() << QKeySequence( Qt::Key_QuoteDbl ).toString() );
+
+            shortcuts.emplace( MainWindowClearFile, getKeyBindings( QKeySequence::Cut ) );
+            shortcuts.emplace( MainWindowOpenContainingFolder, QStringList() );
+            shortcuts.emplace( MainWindowOpenInEditor, QStringList() );
+            shortcuts.emplace( MainWindowCopyPathToClipboard, QStringList() );
+            shortcuts.emplace( MainWindowOpenFromClipboard, getKeyBindings( QKeySequence::Paste ) );
+            shortcuts.emplace( MainWindowOpenFromUrl, QStringList() );
+            shortcuts.emplace( MainWindowFollowFile,
+                               QStringList() << QKeySequence( Qt::Key_F ).toString()
+                                             << QKeySequence( Qt::Key_F10 ).toString() );
+            shortcuts.emplace( MainWindowReload, getKeyBindings( QKeySequence::Refresh ) );
+            shortcuts.emplace( MainWindowStop, getKeyBindings( QKeySequence::Cancel ) );
+            shortcuts.emplace( MainWindowScratchpad, QStringList() );
+            shortcuts.emplace( MainWindowSelectOpenFile, QStringList() << "Ctrl+Shift+O" );
 
             shortcuts.emplace( CrawlerChangeVisibility,
                                QStringList() << QKeySequence( Qt::Key_V ).toString() );
@@ -132,7 +172,7 @@ struct ShortcutAction {
             shortcuts.emplace( LogViewJumpToButtom, QStringList() << "Ctrl+End"
                                                                   << "Shift+G" );
             shortcuts.emplace( LogViewJumpToTop, QStringList() << "Ctrl+Home" );
-            shortcuts.emplace( LogViewJumpToLine, QStringList() << "Alt+G" );
+            shortcuts.emplace( LogViewJumpToLine, QStringList() << "Ctrl+L" );
             shortcuts.emplace( LogViewQfForward, getKeyBindings( QKeySequence::FindNext )
                                                      << QKeySequence( Qt::Key_N ).toString()
                                                      << "Ctrl+G" );
@@ -170,6 +210,29 @@ struct ShortcutAction {
     {
         static const std::map<std::string, QString> actionNames = []() {
             std::map<std::string, QString> shortcuts;
+
+            shortcuts.emplace( MainWindowNewWindow, "Open new window" );
+            shortcuts.emplace( MainWindowOpenFile, "Open file" );
+            shortcuts.emplace( MainWindowCloseFile, "Close file" );
+            shortcuts.emplace( MainWindowCloseAll, "Close all files" );
+            shortcuts.emplace( MainWindowSelectAll, "Select all" );
+            shortcuts.emplace( MainWindowCopy, "Copy selection to clipboard" );
+            shortcuts.emplace( MainWindowQuit, "Exit application" );
+            shortcuts.emplace( MainWindowOpenQf, "Open quick find" );
+            shortcuts.emplace( MainWindowOpenQfForward, "Quick find forward" );
+            shortcuts.emplace( MainWindowOpenQfBackward, "Quick find backward" );
+            shortcuts.emplace( MainWindowFocusSearchInput, "Set focus to search input" );
+            shortcuts.emplace( MainWindowClearFile, "Clear file" );
+            shortcuts.emplace( MainWindowOpenContainingFolder, "Open containgin folder" );
+            shortcuts.emplace( MainWindowOpenInEditor, "Open file in editor" );
+            shortcuts.emplace( MainWindowCopyPathToClipboard, "Copy file path to clipboard" );
+            shortcuts.emplace( MainWindowOpenFromClipboard, "Paste text from clipboard" );
+            shortcuts.emplace( MainWindowOpenFromUrl, "Open file from URL" );
+            shortcuts.emplace( MainWindowFollowFile, "Monitor file changes" );
+            shortcuts.emplace( MainWindowReload, "Reload file" );
+            shortcuts.emplace( MainWindowStop, "Stop file loading" );
+            shortcuts.emplace( MainWindowScratchpad, "Open scratchpad" );
+            shortcuts.emplace( MainWindowSelectOpenFile, "Switch to file" );
 
             shortcuts.emplace( CrawlerChangeVisibility, "Change filtered lines visibility" );
             shortcuts.emplace( CrawlerIncreseTopViewSize, "Increase main view" );
@@ -214,15 +277,17 @@ struct ShortcutAction {
         return name != actionNames.end() ? name->second : QString::fromStdString( action );
     }
 
-    static void registerShortcut( const std::map<std::string, QStringList>& configuredShortcuts,
+    using ConfiguredShortcuts = std::map<std::string, QStringList>;
+
+    static void registerShortcut( const ConfiguredShortcuts& configuredShortcuts,
                                   std::map<QString, QShortcut*>& shortcutsStorage,
                                   QWidget* shortcutsParent, Qt::ShortcutContext context,
                                   const std::string& action, std::function<void()> func )
     {
-        auto keysConfiguration = configuredShortcuts.find( action );
-        auto keys = keysConfiguration != configuredShortcuts.end()
-                        ? keysConfiguration->second
-                        : ShortcutAction::defaultShortcuts( action );
+        const auto keysConfiguration = configuredShortcuts.find( action );
+        const auto keys = keysConfiguration != configuredShortcuts.end()
+                              ? keysConfiguration->second
+                              : ShortcutAction::defaultShortcuts( action );
 
         for ( const auto& key : qAsConst( keys ) ) {
             if ( key.isEmpty() ) {
@@ -239,6 +304,21 @@ struct ShortcutAction {
                 shortcutsStorage.emplace( key, newShortcut );
             }
         }
+    }
+
+    static QList<QKeySequence> shortcutKeys( const std::string& action,
+                                             const ConfiguredShortcuts& configuredShortcuts )
+    {
+        const auto keysConfiguration = configuredShortcuts.find( action );
+        const auto keys = keysConfiguration != configuredShortcuts.end()
+                              ? keysConfiguration->second
+                              : ShortcutAction::defaultShortcuts( action );
+
+        QList<QKeySequence> shortcuts;
+        std::transform( keys.begin(), keys.end(), std::back_inserter( shortcuts ),
+                        []( const QString& hotkeys ) { return QKeySequence( hotkeys ); } );
+
+        return shortcuts;
     }
 };
 
