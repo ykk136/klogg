@@ -505,14 +505,20 @@ void KeySequencePresenter::showEditor()
 
     auto label = new QLabel( "Press new key combination" );
     auto editor = new QKeySequenceEdit( QKeySequence( keySequenceLabel_->text() ) );
+    auto clearButton = new QToolButton();
+    clearButton->setText( "Clear" );
     auto dialogButtons = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel );
 
     auto layout = new QVBoxLayout();
     layout->addWidget( label );
-    layout->addWidget( editor );
+    auto editorLayout = new QHBoxLayout();
+    editorLayout->addWidget( editor );
+    editorLayout->addWidget( clearButton );
+    layout->addLayout( editorLayout );
     layout->addWidget( dialogButtons );
     keyEditDialog.setLayout( layout );
 
+    connect( clearButton, &QToolButton::clicked, editor, &QKeySequenceEdit::clear);
     connect( dialogButtons, &QDialogButtonBox::accepted, &keyEditDialog, &QDialog::accept );
     connect( dialogButtons, &QDialogButtonBox::rejected, &keyEditDialog, &QDialog::reject );
 
@@ -558,4 +564,6 @@ void OptionsDialog::buildShortcutsTable()
     shortcutsTable->setHorizontalHeaderItem( 0, new QTableWidgetItem( "Action" ) );
     shortcutsTable->setHorizontalHeaderItem( 1, new QTableWidgetItem( "Primary shortcut" ) );
     shortcutsTable->setHorizontalHeaderItem( 2, new QTableWidgetItem( "Secondary shortcut" ) );
+
+    shortcutsTable->sortItems(0);
 }
