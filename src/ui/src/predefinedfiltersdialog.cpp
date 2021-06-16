@@ -136,8 +136,10 @@ void PredefinedFiltersDialog::readFiltersTable()
 
         const auto name = filtersTableWidget->item( i, 0 )->text();
         const auto value = filtersTableWidget->item( i, 1 )->text();
-        const auto useRegex
-            = qobject_cast<QCheckBox*>( filtersTableWidget->cellWidget( i, 2 ) )->isChecked();
+
+        const auto useRegexCheckbox
+            = qobject_cast<QCheckBox*>( filtersTableWidget->cellWidget( i, 2 ) );
+        const auto useRegex = useRegexCheckbox ? useRegexCheckbox->isChecked() : false;
 
         if ( !name.isEmpty() && !value.isEmpty() ) {
             filters_.push_back( { name, value, useRegex } );
@@ -147,7 +149,9 @@ void PredefinedFiltersDialog::readFiltersTable()
 
 void PredefinedFiltersDialog::addFilter()
 {
-    filtersTableWidget->setRowCount( filtersTableWidget->rowCount() + 1 );
+    const auto newRow = filtersTableWidget->rowCount();
+    filtersTableWidget->setRowCount( newRow + 1 );
+    filtersTableWidget->setCellWidget( newRow, 2, new QCheckBox );
 }
 
 void PredefinedFiltersDialog::addFilterFromSearchLine( const QString& newFilter )
