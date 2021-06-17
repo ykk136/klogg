@@ -48,6 +48,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <limits>
 #include <tuple>
 #include <utility>
@@ -116,9 +117,7 @@ void LogFilteredData::runSearch( const RegularExpressionPattern& regExp, LineNum
 
             marks_and_matches_ = matching_lines_ | marks_;
 
-            emit searchProgressed( LinesCount( static_cast<LinesCount::UnderlyingType>(
-                                       matching_lines_.cardinality() ) ),
-                                   100, startLine );
+            emit searchProgressed( LinesCount( matching_lines_.cardinality() ), 100, startLine );
         }
     }
 
@@ -149,7 +148,7 @@ void LogFilteredData::interruptSearch()
 void LogFilteredData::clearSearch()
 {
     interruptSearch();
-    
+
     currentRegExp_ = {};
     matching_lines_ = {};
     marks_and_matches_ = marks_;
@@ -180,12 +179,12 @@ LinesCount LogFilteredData::getNbTotalLines() const
 
 LinesCount LogFilteredData::getNbMatches() const
 {
-    return LinesCount( static_cast<LinesCount::UnderlyingType>( matching_lines_.cardinality() ) );
+    return LinesCount( matching_lines_.cardinality() );
 }
 
 LinesCount LogFilteredData::getNbMarks() const
 {
-    return LinesCount( static_cast<LinesCount::UnderlyingType>( marks_.cardinality() ) );
+    return LinesCount( marks_.cardinality() );
 }
 
 LogFilteredData::LineType LogFilteredData::lineTypeByIndex( LineNumber index ) const
@@ -211,7 +210,7 @@ void LogFilteredData::iterateOverLines( const std::function<void( LineNumber )>&
     using CallbackFn = std::function<void( LineNumber )>;
     const auto& currentResults = currentResultArray();
     currentResults.iterate(
-        []( uint32_t line, void* context ) -> bool {
+        []( uint64_t line, void* context ) -> bool {
             auto* callbackFn = static_cast<CallbackFn*>( context );
             callbackFn->operator()( LineNumber( line ) );
             return true;
@@ -256,7 +255,7 @@ bool LogFilteredData::isLineMarked( LineNumber line ) const
 OptionalLineNumber LogFilteredData::getMarkAfter( LineNumber line ) const
 {
     OptionalLineNumber marked_line;
-    const auto rank = static_cast<LineNumber::UnderlyingType>( marks_.rank( line.get() ) );
+    const LineNumber::UnderlyingType rank = marks_.rank( line.get() );
     LineNumber::UnderlyingType nextMark;
     if ( marks_.select( rank, &nextMark ) ) {
         marked_line = LineNumber( nextMark );
@@ -269,7 +268,7 @@ OptionalLineNumber LogFilteredData::getMarkBefore( LineNumber line ) const
 {
     OptionalLineNumber marked_line;
 
-    const auto rank = static_cast<LineNumber::UnderlyingType>( marks_.rank( line.get() ) );
+    const LineNumber::UnderlyingType rank = marks_.rank( line.get() );
 
     if ( rank < 2 ) {
         return marked_line;
@@ -304,7 +303,7 @@ void LogFilteredData::updateMaxLengthMarks( OptionalLineNumber added_line,
         LOG_DEBUG << "deleteMark recalculating longest mark";
         maxLengthMarks_ = 0_length;
         marks_.iterate(
-            []( uint32_t line, void* context ) -> bool {
+            []( uint64_t line, void* context ) -> bool {
                 auto* self = static_cast<LogFilteredData*>( context );
                 self->maxLengthMarks_
                     = qMax( self->maxLengthMarks_,
@@ -325,7 +324,7 @@ QList<LineNumber> LogFilteredData::getMarks() const
 {
     QList<LineNumber> markedLines;
     marks_.iterate(
-        []( uint32_t line, void* context ) -> bool {
+        []( uint64_t line, void* context ) -> bool {
             static_cast<QList<LineNumber>*>( context )->append( LineNumber( line ) );
             return true;
         },
@@ -346,7 +345,7 @@ void LogFilteredData::updateSearchResultsCache()
         return;
     }
 
-    const auto maxCacheLines = static_cast<uint64_t>( config.searchResultsCacheLines() );
+    const uint64_t maxCacheLines = config.searchResultsCacheLines();
 
     if ( matching_lines_.cardinality() > maxCacheLines ) {
         LOG_DEBUG << "LogFilteredData: too many matches to place in cache";
@@ -360,8 +359,8 @@ void LogFilteredData::updateSearchResultsCache()
         searchResultsCache_[ currentSearchKey_ ] = { matching_lines_, maxLength_ };
 
         auto cacheSize
-            = std::accumulate( searchResultsCache_.cbegin(), searchResultsCache_.cend(),
-                               std::uint64_t{}, []( auto val, const auto& cachedResults ) {
+            = std::accumulate( searchResultsCache_.cbegin(), searchResultsCache_.cend(), uint64_t{},
+                               []( auto val, const auto& cachedResults ) {
                                    return val + cachedResults.second.matching_lines.cardinality();
                                } );
 
@@ -437,7 +436,7 @@ LineNumber LogFilteredData::findLogDataLine( LineNumber index ) const
 {
     const auto& currentResults = currentResultArray();
 
-    uint32_t line = {};
+    LineNumber::UnderlyingType line = {};
     if ( currentResults.select( index.get(), &line ) ) {
         return LineNumber( line );
     }
@@ -466,8 +465,7 @@ const SearchResultArray& LogFilteredData::currentResultArray() const
 
 LineNumber LogFilteredData::findFilteredLine( LineNumber lineNum ) const
 {
-    auto index
-        = static_cast<LineNumber::UnderlyingType>( currentResultArray().rank( lineNum.get() ) );
+    LineNumber::UnderlyingType index = currentResultArray().rank( lineNum.get() );
 
     if ( index > 0 ) {
         index--;
@@ -525,8 +523,8 @@ LogFilteredData::doGetLines( LineNumber first_line, LinesCount number,
 // Implementation of the virtual function.
 LinesCount LogFilteredData::doGetNbLine() const
 {
-    const auto nbLines = currentResultArray().cardinality();
-    return LinesCount( static_cast<LinesCount::UnderlyingType>( nbLines ) );
+    const LinesCount::UnderlyingType nbLines = currentResultArray().cardinality();
+    return LinesCount( nbLines );
 }
 
 // Implementation of the virtual function.

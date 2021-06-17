@@ -132,7 +132,7 @@ void SearchData::addAll( LineLength length, const SearchResultArray& matches, Li
 
     maxLength_ = qMax( maxLength_, length );
     nbLinesProcessed_ = qMax( nbLinesProcessed_, lines );
-    nbMatches_ += LinesCount( static_cast<LinesCount::UnderlyingType>( matches.cardinality() ) );
+    nbMatches_ += LinesCount( matches.cardinality() );
 
     newMatches_ |= matches;
 }
@@ -274,10 +274,9 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
         if ( !config.useParallelSearch() ) {
             return 1;
         }
-
-        return qMax( 1, config.searchThreadPoolSize() == 0
-                            ? tbb::info::default_concurrency()
-                            : static_cast<int>( config.searchThreadPoolSize() ) );
+        const auto configuredThreadPoolSize = config.searchThreadPoolSize();
+        return qMax( 1, configuredThreadPoolSize == 0 ? tbb::info::default_concurrency()
+                                                      : configuredThreadPoolSize );
     }() );
 
     LOG_INFO << "Using " << matchingThreadsCount << " matching threads";
@@ -349,14 +348,14 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
     using RegexMatcherNode
         = tbb::flow::function_node<BlockDataType, PartialResultType, tbb::flow::rejecting>;
-    using MatcherContext = std::tuple<std::unique_ptr<PatternMatcher>, microseconds, RegexMatcherNode>;
+    using MatcherContext
+        = std::tuple<std::unique_ptr<PatternMatcher>, microseconds, RegexMatcherNode>;
 
     std::vector<MatcherContext> regexMatchers;
     RegularExpression regularExpression{ regexp_ };
     for ( auto index = 0u; index < matchingThreadsCount; ++index ) {
         regexMatchers.emplace_back(
-            regularExpression.createMatcher(),
-            microseconds{ 0 },
+            regularExpression.createMatcher(), microseconds{ 0 },
             RegexMatcherNode(
                 searchGraph, 1, [ &regexMatchers, index ]( const BlockDataType& blockData ) {
                     const auto& matcher = std::get<0>( regexMatchers.at( index ) );
@@ -399,8 +398,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
             if ( matchResults->processedLines.get() ) {
 
                 maxLength = qMax( maxLength, matchResults->maxLength );
-                nbMatches += LinesCount( static_cast<LinesCount::UnderlyingType>(
-                    matchResults->matchingLines.cardinality() ) );
+                nbMatches += LinesCount( matchResults->matchingLines.cardinality() );
 
                 const auto processedLines = LinesCount{ matchResults->chunkStart.get()
                                                         + matchResults->processedLines.get() };
@@ -447,28 +445,27 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
     searchGraph.wait_for_all();
 
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    const auto duration
-        = static_cast<float>( duration_cast<microseconds>( t2 - t1 ).count() ) / 1000.f;
+    const auto durationUs = duration_cast<microseconds>( t2 - t1 );
+    const auto durationMs = duration_cast<milliseconds>( t2 - t1 );
 
-    LOG_INFO << "Searching done, overall duration " << duration << " ms";
-    LOG_INFO << "Line reading took " << static_cast<float>( fileReadingDuration.count() ) / 1000.f
-             << " ms";
-    LOG_INFO << "Results combining took "
-             << static_cast<float>( matchCombiningDuration.count() ) / 1000.f << " ms";
+    LOG_INFO << "Searching done, overall duration " << durationUs;
+    LOG_INFO << "Line reading took " << fileReadingDuration;
+    LOG_INFO << "Results combining took " << matchCombiningDuration;
 
     for ( const auto& regexMatcher : regexMatchers ) {
-        LOG_INFO << "Matching took "
-                 << static_cast<float>( std::get<1>( regexMatcher ).count() ) / 1000.f << " ms";
+        LOG_INFO << "Matching took " << std::get<1>( regexMatcher );
     }
 
     const auto totalFileSize = sourceLogData_.getFileSize();
 
     LOG_INFO << "Searching perf "
-             << static_cast<uint32_t>( std::floor(
-                    1000.f * static_cast<float>( ( endLine - initialLine ).get() ) / duration ) )
+             << static_cast<uint64_t>(
+                    std::floor( 1000.f * static_cast<float>( ( endLine - initialLine ).get() )
+                                / static_cast<float>( durationMs.count() ) ) )
              << " lines/s";
     LOG_INFO << "Searching io perf "
-             << ( 1000.f * static_cast<float>( totalFileSize ) / static_cast<float>( duration ) )
+             << ( 1000.f * static_cast<float>( totalFileSize )
+                  / static_cast<float>( durationMs.count() ) )
                     / ( 1024 * 1024 )
              << " MiB/s";
 

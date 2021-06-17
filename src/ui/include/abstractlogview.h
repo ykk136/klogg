@@ -150,7 +150,7 @@ class DigitsBuffer : public QObject {
     // the timeout timer is reset.
     void add( char character );
     // Get the content of the buffer (0 if empty) and reset it.
-    int content();
+    LineNumber::UnderlyingType content();
 
     bool isEmpty() const;
 
@@ -380,11 +380,16 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     // reasons).
     OverviewWidget* overviewWidget_ = nullptr;
 
+    struct FilePos {
+      LineNumber line;
+      int column;
+    };
+
     bool selectionStarted_ = false;
     // Start of the selection (characters)
-    QPoint selectionStartPos_;
+    FilePos selectionStartPos_;
     // Current end of the selection (characters)
-    QPoint selectionCurrentEndPos_;
+    FilePos selectionCurrentEndPos_;
     QBasicTimer autoScrollTimer_;
 
     // Hovering state
@@ -465,11 +470,13 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     LinesCount getNbVisibleLines() const;
     int getNbVisibleCols() const;
-    QPoint convertCoordToFilePos( const QPoint& pos ) const;
+
+    FilePos convertCoordToFilePos( const QPoint& pos ) const;
     OptionalLineNumber convertCoordToLine( int yPos ) const;
     int convertCoordToColumn( int xPos ) const;
+
     void displayLine( LineNumber line );
-    void moveSelection( int delta );
+    void moveSelection( LinesCount delta, bool isDeltaNegative  );
     void moveSelectionUp();
     void moveSelectionDown();
     void jumpToStartOfLine();
@@ -477,7 +484,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void jumpToRightOfScreen();
     void jumpToTop();
     void jumpToBottom();
-    void selectWordAtPosition( const QPoint& pos );
+    void selectWordAtPosition( const FilePos& pos );
 
     void updateSearchLimits();
 
@@ -490,6 +497,10 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void searchUsingFunction( QuickFindSearchFn searchFunction );
 
     void updateScrollBars();
+        
+    LineNumber verticalScrollToLineNumber( int scrollPosition ) const;
+    int lineNumberToVerticalScroll( LineNumber line ) const;
+    double verticalScrollMultiplicator() const;
 
     void drawTextArea( QPaintDevice* paintDevice );
     QPixmap drawPullToFollowBar( int width, qreal pixelRatio );
