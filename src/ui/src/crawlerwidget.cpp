@@ -62,6 +62,7 @@
 #include <QStandardItemModel>
 #include <QStringListModel>
 #include <qglobal.h>
+#include <qshortcut.h>
 
 #include "data/regularexpression.h"
 
@@ -1192,6 +1193,15 @@ void CrawlerWidget::registerShortcuts()
     ShortcutAction::registerShortcut(
         configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
         ShortcutAction::CrawlerDecreaseTopViewSize, [ this ]() { changeTopViewSize( -1 ); } );
+
+    const auto exitSearchKeySequence = QKeySequence( QKeySequence::Cancel );
+    ShortcutAction::registerShortcut( exitSearchKeySequence.toString(), shortcuts_, this,
+                                      Qt::WidgetWithChildrenShortcut, [ this ]() {
+                                          const auto activeView = this->activeView();
+                                          if ( activeView ) {
+                                              activeView->setFocus();
+                                          }
+                                      } );
 
     logMainView_->registerShortcuts();
     filteredView_->registerShortcuts();

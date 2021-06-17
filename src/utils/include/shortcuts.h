@@ -25,6 +25,7 @@
 #include <qkeysequence.h>
 #include <qnamespace.h>
 #include <qobject.h>
+#include <qshortcut.h>
 #include <qwidget.h>
 #include <string>
 #include <string_view>
@@ -282,7 +283,7 @@ struct ShortcutAction {
     static void registerShortcut( const ConfiguredShortcuts& configuredShortcuts,
                                   std::map<QString, QShortcut*>& shortcutsStorage,
                                   QWidget* shortcutsParent, Qt::ShortcutContext context,
-                                  const std::string& action, std::function<void()> func )
+                                  const std::string& action, const std::function<void()>& func )
     {
         const auto keysConfiguration = configuredShortcuts.find( action );
         const auto keys = keysConfiguration != configuredShortcuts.end()
@@ -293,17 +294,26 @@ struct ShortcutAction {
             if ( key.isEmpty() ) {
                 continue;
             }
-            auto shortcut = shortcutsStorage.find( key );
-            if ( shortcut != shortcutsStorage.end() ) {
-                shortcut->second->setKey( QKeySequence( key ) );
+            
+            auto shortcut = shortcutsStorage.extract( key );
+            if ( shortcut ) {
+                shortcut.mapped()->deleteLater();
             }
-            else {
-                auto newShortcut = new QShortcut( QKeySequence( key ), shortcutsParent );
-                newShortcut->setContext( context );
-                newShortcut->connect( newShortcut, &QShortcut::activated, [ func ]() { func(); } );
-                shortcutsStorage.emplace( key, newShortcut );
-            }
+
+            registerShortcut( key, shortcutsStorage, shortcutsParent, context, func );
         }
+    }
+
+    static void registerShortcut( const QString key,
+                                  std::map<QString, QShortcut*>& shortcutsStorage,
+                                  QWidget* shortcutsParent, Qt::ShortcutContext context,
+                                  const std::function<void()>& func )
+    {
+        auto newShortcut = new QShortcut( QKeySequence( key ), shortcutsParent );
+        newShortcut->setContext( context );
+        newShortcut->connect( newShortcut, &QShortcut::activated, shortcutsParent,
+                              [ func ] { func(); } );
+        shortcutsStorage.emplace( key, newShortcut );
     }
 
     static QList<QKeySequence> shortcutKeys( const std::string& action,
