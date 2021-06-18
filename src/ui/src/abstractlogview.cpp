@@ -93,23 +93,37 @@
 #include "shortcuts.h"
 
 #ifdef Q_OS_WIN
+
 #pragma warning( disable : 4244 )
-#endif
 
-#ifdef _MSC_VER
 #include <intrin.h>
-inline int countLeadingZeroes( uint32_t value )
-{
-    DWORD leading_zero = 0;
 
-    if ( _BitScanReverse( &leading_zero, value ) ) {
-        return 31 - leading_zero;
+#if _WIN64
+inline int countLeadingZeroes( uint64_t value )
+{
+    unsigned long leading_zero = 0;
+
+    if ( _BitScanReverse64( &leading_zero, value ) ) {
+        return 63ul - leading_zero;
     }
     else {
-        // Same remarks as above
-        return 32;
+        return 64;
     }
 }
+#else
+inline int countLeadingZeroes( uint64_t value )
+{
+    unsigned long leading_zero = 0;
+
+    if ( _BitScanReverse( &leading_zero, static_cast<uint32_t>(value) ) ) {
+        return 63ul - leading_zero;
+    }
+    else {
+        return 64;
+    }
+}
+#endif
+
 #else
 inline int countLeadingZeroes( uint64_t value )
 {
