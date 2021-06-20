@@ -95,6 +95,16 @@ https://user-images.githubusercontent.com/1620716/117588567-bea39100-b12c-11eb-9
 
 List of glogg issues that have been fixed/implemented in klogg can be found [here](https://github.com/variar/klogg/discussions/302).
 
+### Prominent features of dev-builds compared to latest stable release:
+* support for files with more than 2147483647 lines
+* much faster regular expressions search (2-4 times)
+* ability to combine regular expressions with boolean operators (AND, OR, NOT)
+* configurable shortcuts
+* list of configurable predefined regular expression patterns
+* better dark mode
+* build scripts allow to use more dependencies from OS packages instead of vendored versions
+
+List of all changes can be found [here](https://github.com/variar/klogg/milestone/8?closed=1).
 
 **[Back to top](#table-of-contents)**
 
