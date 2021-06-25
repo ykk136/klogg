@@ -1045,6 +1045,7 @@ void MainWindow::toggleOverviewVisibility( bool isVisible )
 {
     auto& config = Configuration::get();
     config.setOverviewVisible( isVisible );
+    config.save();
     emit optionsChanged();
 }
 
@@ -1053,6 +1054,7 @@ void MainWindow::toggleMainLineNumbersVisibility( bool isVisible )
     auto& config = Configuration::get();
 
     config.setMainLineNumbersVisible( isVisible );
+    config.save();
     emit optionsChanged();
 }
 
@@ -1061,6 +1063,7 @@ void MainWindow::toggleFilteredLineNumbersVisibility( bool isVisible )
     auto& config = Configuration::get();
 
     config.setFilteredLineNumbersVisible( isVisible );
+    config.save();
     emit optionsChanged();
 }
 
@@ -1156,12 +1159,14 @@ void MainWindow::handleSearchRefreshChanged( bool isRefreshing )
 {
     auto& config = Configuration::get();
     config.setSearchAutoRefreshDefault( isRefreshing );
+    config.save();
 }
 
 void MainWindow::handleMatchCaseChanged( bool matchCase )
 {
     auto& config = Configuration::get();
     config.setSearchIgnoreCaseDefault( !matchCase );
+    config.save();
 }
 
 void MainWindow::closeTab( int index )
