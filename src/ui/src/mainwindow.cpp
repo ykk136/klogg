@@ -79,6 +79,7 @@
 #include "mainwindow.h"
 
 #include "crawlerwidget.h"
+#include "data/readablesize.h"
 #include "decompressor.h"
 #include "dispatch_to.h"
 #include "downloader.h"
@@ -94,7 +95,6 @@
 #include "predefinedfilters.h"
 #include "predefinedfiltersdialog.h"
 #include "progress.h"
-#include "readablesize.h"
 #include "recentfiles.h"
 #include "sessioninfo.h"
 #include "shortcuts.h"

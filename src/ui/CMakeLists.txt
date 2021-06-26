@@ -40,6 +40,8 @@ add_library(ui STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/tabnamemapping.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/iconloader.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/displayfilepath.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/downloader.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/decompressor.h
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/highlighteredit.ui
         ${CMAKE_CURRENT_SOURCE_DIR}/include/highlightersetedit.ui
@@ -83,6 +85,8 @@ add_library(ui STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/tabnamemapping.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/iconloader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/displayfilepath.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/downloader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/decompressor.cpp
 )
 
 set_target_properties(ui PROPERTIES AUTOUIC ON)
@@ -94,7 +98,7 @@ set_property(TARGET ui PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
 target_include_directories(ui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(ui PUBLIC Qt5::Widgets Qt5::Xml logdata versioncheck)
+target_link_libraries(ui PUBLIC Qt5::Widgets Qt5::Xml logdata versioncheck klogg_karchive)
 
 if (WIN32)
     target_link_libraries(ui PUBLIC user32)

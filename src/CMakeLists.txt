@@ -1,4 +1,7 @@
+add_subdirectory(klogg_version)
 add_subdirectory(utils)
+add_subdirectory(settings)
+add_subdirectory(crash_handler)
 add_subdirectory(logdata)
 add_subdirectory(filewatch)
 add_subdirectory(versioncheck)

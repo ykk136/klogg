@@ -21,7 +21,6 @@ set(MAIN_SOURCES
 
 set(KLOGG_UI_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/messagereceiver.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/crashhandler.h
     ${CMAKE_CURRENT_SOURCE_DIR}/kloggapp.h
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${DOCUMENTATION_RESOURCE}
@@ -30,7 +29,7 @@ set(KLOGG_UI_SOURCES
 set(KLOGG_GREP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/klogg_grep.cpp)
 
-set(MAIN_LIBS logdata cli11 singleapp)
+set(MAIN_LIBS logdata cli11 singleapp crash_handler)
 if(KLOGG_OVERRIDE_MALLOC)
     LIST(PREPEND MAIN_LIBS klogg_malloc_proxy)
     if(KLOGG_USE_MIMALLOC AND NOT WIN32)
@@ -100,15 +99,6 @@ install(TARGETS
 )
 
 if(KLOGG_USE_SENTRY)
-    target_compile_definitions(klogg PUBLIC -DKLOGG_USE_SENTRY)
-    target_compile_definitions(klogg_portable PUBLIC -DKLOGG_USE_SENTRY)
-
-    target_sources(klogg PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/crashhandler.cpp)
-    target_sources(klogg_portable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/crashhandler.cpp)
-
-    target_link_libraries(klogg PUBLIC sentry crashpad_client)
-    target_link_libraries(klogg_portable PUBLIC sentry crashpad_client)
-
     if (NOT WIN32)
 
         add_custom_command(TARGET klogg POST_BUILD
