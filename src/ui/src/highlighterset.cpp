@@ -38,14 +38,16 @@
 
 // This file implements classes Highlighter and HighlighterSet
 
-#include <QSettings>
 #include <random>
 #include <utility>
 
+#include <QSettings>
+
 #include "crc32.h"
-#include "highlighterset.h"
 #include "log.h"
 #include "uuid.h"
+
+#include "highlighterset.h"
 
 QRegularExpression::PatternOptions getPatternOptions( bool ignoreCase )
 {
@@ -265,8 +267,8 @@ void Highlighter::saveToStorage( QSettings& settings ) const
     settings.setValue( "variate_colors", variateColors_ );
     settings.setValue( "color_variance", colorVariance_ );
     // save colors as user friendly strings in config
-    settings.setValue( "fore_colour", foreColor_.name() );
-    settings.setValue( "back_colour", backColor_.name() );
+    settings.setValue( "fore_colour", foreColor_.name( QColor::HexArgb ) );
+    settings.setValue( "back_colour", backColor_.name( QColor::HexArgb ) );
 }
 
 void Highlighter::retrieveFromStorage( QSettings& settings )

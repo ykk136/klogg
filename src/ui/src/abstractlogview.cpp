@@ -1012,7 +1012,8 @@ void AbstractLogView::setSearchPattern( const RegularExpressionPattern& pattern 
     update();
 }
 
-void AbstractLogView::setWordsHighlighters( const std::vector<WordsHighlighters>& wordsHighlighters )
+void AbstractLogView::setWordsHighlighters(
+    const std::vector<WordsHighlighters>& wordsHighlighters )
 {
     wordsHighlighters_ = wordsHighlighters;
     textAreaCache_.invalid_ = true;
@@ -1985,6 +1986,9 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                                         palette.color( QPalette::Highlight ) );
         }
 
+        painter.fillRect( xPos - ContentMarginWidth, yPos, viewport()->width(), fontHeight,
+                          backColor );
+
         if ( !allHighlights.empty() ) {
             // We use the LineDrawer and its chunks because the
             // line has to be somehow highlighted
@@ -2031,8 +2035,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         }
         else {
             // Nothing to be highlighted, we print the whole line!
-            painter.fillRect( xPos - ContentMarginWidth, yPos, viewport()->width(), fontHeight,
-                              backColor );
+            // painter.fillRect( xPos - ContentMarginWidth, yPos, viewport()->width(), fontHeight,
+            //                   backColor );
             // (the rectangle is extended on the left to cover the small
             // margin, it looks better (LineDrawer does the same) )
             painter.setPen( foreColor );

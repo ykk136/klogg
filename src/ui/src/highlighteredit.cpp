@@ -24,7 +24,8 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QPushButton>
-#include <qspinbox.h>
+#include <QSpinBox>
+#include <qcolor.h>
 
 HighlighterEdit::HighlighterEdit( Highlighter defaultHighlighter, QWidget* parent )
     : QWidget( parent )
@@ -178,6 +179,7 @@ bool HighlighterEdit::showColorPicker( const QColor& in, QColor& out )
     // set of colors to pick from in a pallette. For example,
     // on some linux desktops, the basic palette is missing
     dialog.setOption( QColorDialog::DontUseNativeDialog, true );
+    dialog.setOption( QColorDialog::ShowAlphaChannel, true );
 
     dialog.setModal( true );
     dialog.setCurrentColor( in );
