@@ -67,6 +67,7 @@
 #include <QMimeData>
 #include <QProgressDialog>
 #include <QScreen>
+#include <QShortcut>
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
 #include <QTemporaryFile>
