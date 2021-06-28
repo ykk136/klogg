@@ -23,8 +23,6 @@
 #include <QStringList>
 #include <QLatin1String>
 
-#include "log.h"
-
 struct StyleManager {
 
     static constexpr QLatin1String DarkStyleKey = QLatin1String( "Dark", 4 );

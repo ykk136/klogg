@@ -50,11 +50,13 @@
 #include <cstdint>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <plog/Log.h>
 #include <qcoreevent.h>
 #include <qevent.h>
 #include <qglobal.h>
+#include <qnamespace.h>
 #include <string_view>
 #include <utility>
 
@@ -115,7 +117,7 @@ inline int countLeadingZeroes( uint64_t value )
 {
     unsigned long leading_zero = 0;
 
-    if ( _BitScanReverse( &leading_zero, static_cast<uint32_t>(value) ) ) {
+    if ( _BitScanReverse( &leading_zero, static_cast<uint32_t>( value ) ) ) {
         return 63ul - leading_zero;
     }
     else {
@@ -1010,6 +1012,13 @@ void AbstractLogView::setSearchPattern( const RegularExpressionPattern& pattern 
     update();
 }
 
+void AbstractLogView::setWordsHighlighters( const std::vector<WordsHighlighters>& wordsHighlighters )
+{
+    wordsHighlighters_ = wordsHighlighters;
+    textAreaCache_.invalid_ = true;
+    update();
+}
+
 void AbstractLogView::followSet( bool checked )
 {
     followMode_ = checked;
@@ -1861,6 +1870,32 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     const auto highlightPatternMatches = Configuration::get().mainSearchHighlight();
     const auto variateHighlightPatternMatches = Configuration::get().variateMainSearchHighlight();
 
+    std::optional<Highlighter> patternHighlight;
+    if ( highlightPatternMatches && !searchPattern_.isBoolean && !searchPattern_.isExclude
+         && !searchPattern_.pattern.isEmpty() ) {
+        patternHighlight = Highlighter{};
+        patternHighlight->setHighlightOnlyMatch( true );
+        patternHighlight->setVariateColors( variateHighlightPatternMatches );
+        patternHighlight->setPattern( searchPattern_.pattern );
+        patternHighlight->setIgnoreCase( !searchPattern_.isCaseSensitive );
+        patternHighlight->setUseRegex( !searchPattern_.isPlainText );
+
+        patternHighlight->setBackColor( mainSearchBackColor );
+        patternHighlight->setForeColor( Qt::black );
+    }
+
+    std::vector<Highlighter> additionalHighlighters;
+    for ( const auto& wordHighlighter : wordsHighlighters_ ) {
+        const auto& [ words, wordForeColor, wordBackColor ] = wordHighlighter;
+
+        std::transform( words.begin(), words.end(), std::back_inserter( additionalHighlighters ),
+                        [ wordForeColor, wordBackColor ]( const QString& word ) {
+                            Highlighter h{ word, false, true, wordForeColor, wordBackColor };
+                            h.setUseRegex( false );
+                            return h;
+                        } );
+    }
+
     // Then draw each line
     for ( auto currentLine = 0_lcount; currentLine < nbLines; ++currentLine ) {
         const auto lineNumber = firstLine_ + currentLine;
@@ -1893,25 +1928,20 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
                 backColor = palette.color( QPalette::Base );
             }
-        }
 
-        if ( highlightPatternMatches && !searchPattern_.isBoolean && !searchPattern_.isExclude
-             && !searchPattern_.pattern.isEmpty() ) {
-            Highlighter patternHighlight;
-            patternHighlight.setHighlightOnlyMatch( true );
-            patternHighlight.setVariateColors( variateHighlightPatternMatches );
-            patternHighlight.setPattern( searchPattern_.pattern );
-            patternHighlight.setIgnoreCase( !searchPattern_.isCaseSensitive );
-            patternHighlight.setUseRegex( !searchPattern_.isPlainText );
+            if ( patternHighlight ) {
+                std::vector<HighlightedMatch> patternMatches;
+                patternHighlight->matchLine( logLine, patternMatches );
+                highlighterMatches.insert( highlighterMatches.end(), patternMatches.begin(),
+                                           patternMatches.end() );
+            }
 
-            patternHighlight.setBackColor( mainSearchBackColor );
-            patternHighlight.setForeColor( Qt::black );
-
-            std::vector<HighlightedMatch> patternMatches;
-            patternHighlight.matchLine( logLine, patternMatches );
-
-            highlighterMatches.insert( highlighterMatches.end(), patternMatches.begin(),
-                                       patternMatches.end() );
+            for ( const auto& highlighter : additionalHighlighters ) {
+                std::vector<HighlightedMatch> patternMatches;
+                highlighter.matchLine( logLine, patternMatches );
+                highlighterMatches.insert( highlighterMatches.end(), patternMatches.begin(),
+                                           patternMatches.end() );
+            }
         }
 
         const auto untabifyHighlight = [ &logLine ]( const auto& match ) {

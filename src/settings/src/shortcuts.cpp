@@ -124,6 +124,11 @@ const std::map<std::string, QStringList>& ShortcutAction::defaultShortcuts()
         shortcuts.emplace( LogViewExitView, QStringList()
                                                 << QKeySequence( Qt::Key_Space ).toString() );
 
+        shortcuts.emplace( LogViewAddColorLabel1, QStringList() << "Ctrl+Shift+1" );
+        shortcuts.emplace( LogViewAddColorLabel2, QStringList() << "Ctrl+Shift+2" );
+        shortcuts.emplace( LogViewAddColorLabel3, QStringList() << "Ctrl+Shift+3" );
+        shortcuts.emplace( LogViewClearColorLabels, QStringList() << "Ctrl+Shift+0" );
+
         return shortcuts;
     }();
 
@@ -200,6 +205,11 @@ QString ShortcutAction::actionName( const std::string& action )
                            "Set selection to QuickFind and find previous" );
 
         shortcuts.emplace( LogViewExitView, "Release focus from view" );
+
+        shortcuts.emplace( LogViewAddColorLabel1, "Highlight selected text with color 1" );
+        shortcuts.emplace( LogViewAddColorLabel2, "Highlight selected text with color 2" );
+        shortcuts.emplace( LogViewAddColorLabel3, "Highlight selected text with color 3" );
+        shortcuts.emplace( LogViewClearColorLabels, "Clear all color labels" );
 
         return shortcuts;
     }();

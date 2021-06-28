@@ -387,6 +387,12 @@ class CrawlerWidget : public QSplitter,
 
     std::vector<LineNumber> savedMarkedLines_;
 
+    std::vector<AbstractLogView::WordsHighlighters> wordsHighlighters_ = {
+        { {}, {}, Qt::red },
+        { {}, {}, Qt::green },
+        { {}, {}, Qt::cyan },
+    };
+
     // Current encoding setting;
     std::optional<int> encodingMib_;
     QString encodingText_;

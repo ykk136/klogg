@@ -40,12 +40,15 @@
 #ifndef ABSTRACTLOGVIEW_H
 #define ABSTRACTLOGVIEW_H
 
+#include <array>
 #include <functional>
+#include <qcolor.h>
 #include <string_view>
 
 #include <QAbstractScrollArea>
 #include <QBasicTimer>
 #include <QEvent>
+#include <vector>
 
 #ifdef GLOGG_PERF_MEASURE_FPS
 #include "perfcounter.h"
@@ -210,6 +213,10 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void allowFollowMode( bool allow );
 
     void setSearchPattern( const RegularExpressionPattern& pattern );
+
+    using WordsHighlighters = std::tuple<QStringList, QColor, QColor>;
+    void setWordsHighlighters( const std::vector<WordsHighlighters>& wordHighlighters );
+
     void registerShortcuts();
 
   protected:
@@ -381,8 +388,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     OverviewWidget* overviewWidget_ = nullptr;
 
     struct FilePos {
-      LineNumber line;
-      int column;
+        LineNumber line;
+        int column;
     };
 
     bool selectionStarted_ = false;
@@ -402,6 +409,9 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     Selection selection_;
     RegularExpressionPattern searchPattern_;
+
+
+    std::vector<WordsHighlighters> wordsHighlighters_;
 
     // Position of the view, those are crucial to control drawing
     // firstLine gives the position of the view,
@@ -476,7 +486,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     int convertCoordToColumn( int xPos ) const;
 
     void displayLine( LineNumber line );
-    void moveSelection( LinesCount delta, bool isDeltaNegative  );
+    void moveSelection( LinesCount delta, bool isDeltaNegative );
     void moveSelectionUp();
     void moveSelectionDown();
     void jumpToStartOfLine();
@@ -497,7 +507,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void searchUsingFunction( QuickFindSearchFn searchFunction );
 
     void updateScrollBars();
-        
+
     LineNumber verticalScrollToLineNumber( int scrollPosition ) const;
     int lineNumberToVerticalScroll( LineNumber line ) const;
     double verticalScrollMultiplicator() const;

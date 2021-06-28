@@ -1203,6 +1203,37 @@ void CrawlerWidget::registerShortcuts()
                                           }
                                       } );
 
+    const auto addColorLabelToSelection = [ this ]( size_t label ) {
+        std::get<0>( wordsHighlighters_[ label ] ).append( getSelectedText() );
+        logMainView_->setWordsHighlighters( wordsHighlighters_ );
+        filteredView_->setWordsHighlighters( wordsHighlighters_ );
+    };
+
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::LogViewAddColorLabel1,
+        [ addColorLabelToSelection ]() { addColorLabelToSelection( 0u ); } );
+
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::LogViewAddColorLabel2,
+        [ addColorLabelToSelection ]() { addColorLabelToSelection( 1u ); } );
+
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::LogViewAddColorLabel3,
+        [ addColorLabelToSelection ]() { addColorLabelToSelection( 2u ); } );
+
+    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this,
+                                      Qt::WidgetWithChildrenShortcut,
+                                      ShortcutAction::LogViewClearColorLabels, [ this ]() {
+                                          for ( auto& wordsHighlighters : wordsHighlighters_ ) {
+                                              std::get<0>( wordsHighlighters ).clear();
+                                          }
+                                          logMainView_->setWordsHighlighters( wordsHighlighters_ );
+                                          filteredView_->setWordsHighlighters( wordsHighlighters_ );
+                                      } );
+
     logMainView_->registerShortcuts();
     filteredView_->registerShortcuts();
 }
