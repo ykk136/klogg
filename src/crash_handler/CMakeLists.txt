@@ -15,6 +15,7 @@ target_link_libraries(crash_handler PUBLIC
     project_options
     project_warnings
     klogg_version
+    utils
     Qt5::Gui
     Qt5::Widgets
 )

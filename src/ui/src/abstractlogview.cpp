@@ -1889,8 +1889,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         const auto& [ words, wordForeColor, wordBackColor ] = wordHighlighter;
 
         std::transform( words.begin(), words.end(), std::back_inserter( additionalHighlighters ),
-                        [ wordForeColor, wordBackColor ]( const QString& word ) {
-                            Highlighter h{ word, false, true, wordForeColor, wordBackColor };
+                        [ fColor = wordForeColor, bColor = wordBackColor ]( const QString& word ) {
+                            Highlighter h{ word, false, true, fColor, bColor };
                             h.setUseRegex( false );
                             return h;
                         } );

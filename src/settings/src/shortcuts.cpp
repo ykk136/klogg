@@ -18,6 +18,7 @@
  */
 
 #include <algorithm>
+#include <functional>
 
 #include <QShortcut>
 #include <QWidget>
