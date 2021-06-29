@@ -155,9 +155,13 @@ void LogDataWorker::waitForDone()
 
 LogDataWorker::~LogDataWorker() noexcept
 {
-    interruptRequest_.set();
-    ScopedLock locker( mutex_ );
-    waitForDone();
+    try {
+        interruptRequest_.set();
+        ScopedLock locker( mutex_ );
+        waitForDone();
+    } catch ( const std::exception& e ) {
+        LOG_ERROR << "Failed to destroy LogDataWorker: " << e.what();
+    }
 }
 
 void LogDataWorker::attachFile( const QString& fileName )

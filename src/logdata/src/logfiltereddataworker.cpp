@@ -177,10 +177,14 @@ LogFilteredDataWorker::LogFilteredDataWorker( const LogData& sourceLogData )
 
 LogFilteredDataWorker::~LogFilteredDataWorker() noexcept
 {
-    interruptRequested_.set();
-    ScopedLock locker( mutex_ );
-    operationsExecuter_.cancel();
-    operationsExecuter_.wait();
+    try {
+        interruptRequested_.set();
+        ScopedLock locker( mutex_ );
+        operationsExecuter_.cancel();
+        operationsExecuter_.wait();
+    } catch ( const std::exception& e ) {
+        LOG_ERROR << "Failed to destroy LogFilteredDataWorker: " << e.what();
+    }
 }
 
 void LogFilteredDataWorker::connectSignalsAndRun( SearchOperation* operationRequested )

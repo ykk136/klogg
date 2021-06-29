@@ -65,9 +65,14 @@ FileHolder::FileHolder( bool keepClosed )
 
 FileHolder::~FileHolder()
 {
-    // Remove the current file from the watch list
-    if ( attached_file_ )
-        FileWatcher::getFileWatcher().removeFile( file_name_ );
+    try {
+        // Remove the current file from the watch list
+        if ( attached_file_ ) {
+            FileWatcher::getFileWatcher().removeFile( file_name_ );
+        }
+    } catch ( const std::exception& e ) {
+        LOG_ERROR << "Failed to destroy FileHolder: " << e.what();
+    }
 }
 
 FileId FileHolder::getFileId()
@@ -174,7 +179,7 @@ FileId FileId::getFileId( const QString& filename )
 
     if ( fileHandle == INVALID_HANDLE_VALUE ) {
         LOG_DEBUG << "Failed to get file info for " << filename.toStdString() << ", gle "
-                        << ::GetLastError();
+                  << ::GetLastError();
         return FileId{};
     }
 
@@ -184,7 +189,7 @@ FileId FileId::getFileId( const QString& filename )
     BY_HANDLE_FILE_INFORMATION info;
     if ( !::GetFileInformationByHandle( fileHandle, &info ) ) {
         LOG_DEBUG << "Failed to get file info for " << filename.toStdString() << ", gle "
-                        << ::GetLastError();
+                  << ::GetLastError();
         return FileId{};
     }
 
