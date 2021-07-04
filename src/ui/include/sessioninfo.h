@@ -110,7 +110,7 @@ class SessionInfo : public Persistable<SessionInfo, session_settings> {
     QStringList windows() const
     {
         QStringList ids;
-        std::transform( windows_.begin(), windows_.end(), std::back_inserter( ids ),
+        std::transform( windows_.cbegin(), windows_.cend(), std::back_inserter( ids ),
                         []( const auto& w ) { return w.id; } );
 
         return ids;

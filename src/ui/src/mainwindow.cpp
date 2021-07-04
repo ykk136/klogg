@@ -46,6 +46,7 @@
 #include <iostream>
 
 #include <cmath>
+#include <iterator>
 #include <qaction.h>
 
 #ifdef Q_OS_WIN
@@ -1761,7 +1762,7 @@ void MainWindow::removeFromFavorites()
     const auto& favoriteFiles = FavoriteFiles::get();
     const auto& favorites = favoriteFiles.favorites();
     QStringList files;
-    std::transform( favorites.begin(), favorites.end(), std::back_inserter( files ),
+    std::transform( favorites.cbegin(), favorites.cend(), std::back_inserter( files ),
                     []( const auto& f ) { return f.nativeFullPath(); } );
 
     auto currentIndex = 0;
@@ -1810,12 +1811,13 @@ void MainWindow::selectOpenedFile()
 {
     auto openedFilesPaths = session_.openedFiles();
     std::vector<DisplayFilePath> openedFiles;
-    std::transform( openedFilesPaths.begin(), openedFilesPaths.end(),
+    openedFiles.reserve( openedFilesPaths.size() );
+    std::transform( openedFilesPaths.cbegin(), openedFilesPaths.cend(),
                     std::back_inserter( openedFiles ),
                     []( const auto& path ) { return DisplayFilePath{ path }; } );
 
     QStringList filesToShow;
-    std::transform( openedFiles.begin(), openedFiles.end(), std::back_inserter( filesToShow ),
+    std::transform( openedFiles.cbegin(), openedFiles.cend(), std::back_inserter( filesToShow ),
                     []( const auto& f ) { return f.nativeFullPath(); } );
 
     auto selectFileDialog = std::make_unique<QDialog>( this );

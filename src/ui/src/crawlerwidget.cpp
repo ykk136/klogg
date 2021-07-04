@@ -97,7 +97,7 @@ class CrawlerWidgetContext : public ViewContextInterface {
         , inverseRegexp_( inverseRegexp )
         , useBooleanCombination_( useBooleanCombination )
     {
-        std::transform( markedLines.begin(), markedLines.end(), std::back_inserter( marks_ ),
+        std::transform( markedLines.cbegin(), markedLines.cend(), std::back_inserter( marks_ ),
                         []( const auto& m ) { return m.get(); } );
     }
 
@@ -346,7 +346,7 @@ void CrawlerWidget::doSetViewContext( const QString& view_context )
     logMainView_->followSet( context.followFile() && config.anyFileWatchEnabled() );
 
     const auto savedMarks = context.marks();
-    std::transform( savedMarks.begin(), savedMarks.end(), std::back_inserter( savedMarkedLines_ ),
+    std::transform( savedMarks.cbegin(), savedMarks.cend(), std::back_inserter( savedMarkedLines_ ),
                     []( const auto& l ) { return LineNumber( l ); } );
 }
 
@@ -525,9 +525,8 @@ void CrawlerWidget::markLinesFromMain( const std::vector<LineNumber>& lines )
 
 void CrawlerWidget::markLinesFromFiltered( const std::vector<LineNumber>& lines )
 {
-    std::vector<LineNumber> linesInMain;
-    linesInMain.reserve( lines.size() );
-    std::transform( lines.begin(), lines.end(), std::back_inserter( linesInMain ),
+    std::vector<LineNumber> linesInMain( lines.size() );
+    std::transform( lines.cbegin(), lines.cend(), linesInMain.begin(),
                     [ this ]( const auto& filteredLine ) {
                         if ( filteredLine < logData_->getNbLine() ) {
                             return logFilteredData_->getMatchingLineNumber( filteredLine );

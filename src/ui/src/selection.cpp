@@ -26,6 +26,7 @@
 #include "selection.h"
 #include "data/abstractlogdata.h"
 #include "log.h"
+#include <numeric>
 
 Selection::Selection()
 {
@@ -166,9 +167,10 @@ QString Selection::getSelectedText( const AbstractLogData* logData ) const
             *selectedRange_.startLine,
             LinesCount( selectedRange_.endLine.get() - selectedRange_.startLine->get() + 1 ) );
 
-        text.reserve( std::accumulate(
-            list.begin(), list.end(), static_cast<int>( list.size() ),
-            []( const auto value, const auto& line ) { return value + line.size(); } ) );
+        const auto selectionSizeEstimate
+            = std::transform_reduce( list.begin(), list.end(), static_cast<int>( list.size() ),
+                                     std::plus{}, []( const auto& line ) { return line.size(); } );
+        text.reserve( selectionSizeEstimate );
 
         for ( const auto& line : list ) {
             if ( !text.isEmpty() ) {

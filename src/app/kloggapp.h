@@ -20,6 +20,10 @@
 #ifndef KLOGG_KLOGGAPP_H
 #define KLOGG_KLOGGAPP_H
 
+#include <cstddef>
+#include <numeric>
+#include <stack>
+
 #include <QApplication>
 
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 12, 0 )
@@ -35,8 +39,6 @@
 #ifdef Q_OS_MAC
 #include <QFileOpenEvent>
 #endif
-
-#include <stack>
 
 #include "configuration.h"
 #include "crashhandler.h"
@@ -93,8 +95,8 @@ class KloggApp : public SingleApplication {
 
             // Version checker notification
             connect( &versionChecker_, &VersionChecker::newVersionFound,
-                     [this]( const QString& new_version, const QString& url,
-                             const QStringList& changes ) {
+                     [ this ]( const QString& new_version, const QString& url,
+                               const QStringList& changes ) {
                          newVersionNotification( new_version, url, changes );
                      } );
         }
@@ -106,7 +108,7 @@ class KloggApp : public SingleApplication {
         ::AllowSetForegroundWindow( static_cast<DWORD>( primaryPid() ) );
 #endif
 
-        QTimer::singleShot( 100, [files = std::move( filenames ), this] {
+        QTimer::singleShot( 100, [ files = std::move( filenames ), this ] {
             QStringList filesToOpen;
 
             for ( const auto& filename : files ) {
@@ -184,10 +186,10 @@ class KloggApp : public SingleApplication {
 
         auto existingSessions = session_->windowSessions();
         existingSessions.erase( std::remove_if( existingSessions.begin(), existingSessions.end(),
-                                                [this]( const auto& session ) {
+                                                [ this ]( const auto& session ) {
                                                     return std::any_of(
                                                         mainWindows_.begin(), mainWindows_.end(),
-                                                        [&session]( const auto& window ) {
+                                                        [ &session ]( const auto& window ) {
                                                             return window.first.windowId()
                                                                    == session.windowId();
                                                         } );
@@ -256,12 +258,12 @@ class KloggApp : public SingleApplication {
         activeWindows_.push( QPointer<MainWindow>( window ) );
 
         LOG_INFO << "Window " << &window << " created";
-        connect( window, &MainWindow::newWindow, [=]() { newWindow()->show(); } );
+        connect( window, &MainWindow::newWindow, [ = ]() { newWindow()->show(); } );
         connect( window, &MainWindow::windowActivated,
-                 [this, window]() { onWindowActivated( *window ); } );
+                 [ this, window ]() { onWindowActivated( *window ); } );
         connect( window, &MainWindow::windowClosed,
-                 [this, window]() { onWindowClosed( *window ); } );
-        connect( window, &MainWindow::exitRequested, [this] { exitApplication(); } );
+                 [ this, window ]() { onWindowClosed( *window ); } );
+        connect( window, &MainWindow::exitRequested, [ this ] { exitApplication(); } );
 
         return window;
     }
@@ -276,7 +278,7 @@ class KloggApp : public SingleApplication {
     {
         LOG_INFO << "Window " << &window << " closed";
         auto w = std::find_if( mainWindows_.begin(), mainWindows_.end(),
-                               [&window]( const auto& p ) { return p.second == &window; } );
+                               [ &window ]( const auto& p ) { return p.second == &window; } );
 
         if ( w != mainWindows_.end() ) {
             mainWindows_.erase( w );
@@ -324,11 +326,10 @@ class KloggApp : public SingleApplication {
             return 0;
         }
         else {
-            return size_t{ 1 }
-                   + std::accumulate( mainWindows_.begin(), mainWindows_.end(), size_t{},
-                                      []( size_t current, const auto& next ) {
-                                          return std::max( current, next.first.windowIndex() );
-                                      } );
+            return std::transform_reduce(
+                mainWindows_.begin(), mainWindows_.end(), size_t{ 1 },
+                []( size_t acc, size_t nextIndex ) { return std::max( acc, nextIndex ); },
+                []( const auto& window ) { return window.first.windowIndex(); } );
         }
     }
 

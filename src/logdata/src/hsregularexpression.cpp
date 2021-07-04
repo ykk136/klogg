@@ -94,7 +94,7 @@ HsRegularExpression::HsRegularExpression( const RegularExpressionPattern& patter
 HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPattern>& patterns )
     : patterns_( patterns )
 {
-    std::transform( patterns.begin(), patterns.end(), std::back_inserter( patternIds_ ),
+    std::transform( patterns.cbegin(), patterns.cend(), std::back_inserter( patternIds_ ),
                     []( const auto& p ) { return p.id(); } );
 
     database_ = HsDatabase{ makeUniqueResource<hs_database_t, hs_free_database>(
@@ -103,9 +103,8 @@ HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPat
             hs_database_t* db = nullptr;
             hs_compile_error_t* error = nullptr;
 
-            std::vector<unsigned> flags;
-            flags.reserve( expressions.size() );
-            std::transform( expressions.begin(), expressions.end(), std::back_inserter( flags ),
+            std::vector<unsigned> flags( expressions.size() );
+            std::transform( expressions.cbegin(), expressions.cend(), flags.begin(),
                             []( const auto& expression ) {
                                 auto expressionFlags
                                     = HS_FLAG_UTF8 | HS_FLAG_UCP | HS_FLAG_SINGLEMATCH;
@@ -115,10 +114,9 @@ HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPat
                                 return expressionFlags;
                             } );
 
-            std::vector<QByteArray> utf8Patterns;
-            utf8Patterns.reserve( expressions.size() );
-            std::transform( expressions.begin(), expressions.end(),
-                            std::back_inserter( utf8Patterns ), []( const auto& expression ) {
+            std::vector<QByteArray> utf8Patterns( expressions.size() );
+            std::transform( expressions.cbegin(), expressions.cend(), utf8Patterns.begin(),
+                            []( const auto& expression ) {
                                 auto p = expression.pattern;
                                 if ( expression.isPlainText ) {
                                     p = QRegularExpression::escape( expression.pattern );
@@ -126,17 +124,12 @@ HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPat
                                 return p.toUtf8();
                             } );
 
-            std::vector<const char*> patternPointers;
-            utf8Patterns.reserve( utf8Patterns.size() );
-            std::transform( utf8Patterns.begin(), utf8Patterns.end(),
-                            std::back_inserter( patternPointers ),
+            std::vector<const char*> patternPointers( utf8Patterns.size() );
+            std::transform( utf8Patterns.cbegin(), utf8Patterns.cend(), patternPointers.begin(),
                             []( const auto& utf8Pattern ) { return utf8Pattern.data(); } );
 
-            std::vector<unsigned> expressionIds;
-            expressionIds.resize( expressions.size() );
-            for ( auto index = 0u; index < expressions.size(); ++index ) {
-                expressionIds[ index ] = index;
-            }
+            std::vector<unsigned> expressionIds( expressions.size() );
+            std::iota( expressionIds.begin(), expressionIds.end(), 0u );
 
             const auto compileResult = hs_compile_multi(
                 patternPointers.data(), flags.data(), expressionIds.data(),

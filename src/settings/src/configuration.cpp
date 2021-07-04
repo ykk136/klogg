@@ -262,7 +262,7 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         splitterSizes_.clear();
 
         const auto sizes = settings.value( "DefaultConfigurationView.splitterSizes" ).toList();
-        std::transform( sizes.begin(), sizes.end(), std::back_inserter( splitterSizes_ ),
+        std::transform( sizes.cbegin(), sizes.cend(), std::back_inserter( splitterSizes_ ),
                         []( auto v ) { return v.toInt(); } );
     }
 
@@ -349,7 +349,7 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "DefaultConfigurationView.searchIgnoreCase", searchIgnoreCase_ );
 
     QList<QVariant> splitterSizes;
-    std::transform( splitterSizes_.begin(), splitterSizes_.end(),
+    std::transform( splitterSizes_.cbegin(), splitterSizes_.cend(),
                     std::back_inserter( splitterSizes ),
                     []( auto s ) { return QVariant::fromValue( s ); } );
 

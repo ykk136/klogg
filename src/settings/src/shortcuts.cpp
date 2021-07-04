@@ -33,7 +33,7 @@ const std::map<std::string, QStringList>& ShortcutAction::defaultShortcuts()
         auto getKeyBindings = []( QKeySequence::StandardKey standardKey ) {
             auto bindings = QKeySequence::keyBindings( standardKey );
             QStringList stringBindings;
-            std::transform( bindings.begin(), bindings.end(), std::back_inserter( stringBindings ),
+            std::transform( bindings.cbegin(), bindings.cend(), std::back_inserter( stringBindings ),
                             []( const auto& keySequence ) { return keySequence.toString(); } );
 
             return stringBindings;
@@ -266,7 +266,7 @@ QList<QKeySequence> ShortcutAction::shortcutKeys( const std::string& action,
                           : ShortcutAction::defaultShortcuts( action );
 
     QList<QKeySequence> shortcuts;
-    std::transform( keys.begin(), keys.end(), std::back_inserter( shortcuts ),
+    std::transform( keys.cbegin(), keys.cend(), std::back_inserter( shortcuts ),
                     []( const QString& hotkeys ) { return QKeySequence( hotkeys ); } );
 
     return shortcuts;

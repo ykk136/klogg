@@ -52,6 +52,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <numeric>
 #include <plog/Log.h>
 #include <qcoreevent.h>
 #include <qevent.h>
@@ -1550,10 +1551,11 @@ void AbstractLogView::jumpToEndOfLine()
     const auto selection = selection_.getLines();
 
     // Search the longest line in the selection
-    const auto maxLength = std::accumulate(
-        selection.cbegin(), selection.cend(), 0_length, [ this ]( auto currentMax, auto line ) {
-            return qMax( currentMax, logData_->getLineLength( LineNumber( line ) ) );
-        } );
+    const auto maxLength = std::transform_reduce(
+        selection.cbegin(), selection.cend(), 0_length,
+        []( auto acc, auto next ) { return std::max( acc, next ); },
+        [ this ]( auto line ) { return logData_->getLineLength( LineNumber( line ) ); } );
+
     horizontalScrollBar()->setValue( maxLength.get() - getNbVisibleCols() );
 }
 
@@ -1562,18 +1564,15 @@ void AbstractLogView::jumpToRightOfScreen()
 {
     const auto nbVisibleLines = getNbVisibleLines();
 
-    std::vector<LineNumber::UnderlyingType> visibleLinesNumbers;
-    visibleLinesNumbers.resize( nbVisibleLines.get() );
+    std::vector<LineNumber::UnderlyingType> visibleLinesNumbers( nbVisibleLines.get() );
     std::iota( visibleLinesNumbers.begin(), visibleLinesNumbers.end(), firstLine_.get() );
 
-    std::vector<LineLength> lineLengths;
-    lineLengths.reserve( visibleLinesNumbers.size() );
-
-    std::transform(
-        visibleLinesNumbers.begin(), visibleLinesNumbers.end(), std::back_inserter( lineLengths ),
+    const auto maxLength = std::transform_reduce(
+        visibleLinesNumbers.cbegin(), visibleLinesNumbers.cend(),
+        0_length,
+        []( auto acc, auto next ) { return std::max( acc, next ); },
         [ this ]( const auto& line ) { return logData_->getLineLength( LineNumber( line ) ); } );
 
-    const auto maxLength = *std::max_element( lineLengths.begin(), lineLengths.end() );
     horizontalScrollBar()->setValue( maxLength.get() - getNbVisibleCols() );
 }
 
@@ -1966,7 +1965,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
         std::vector<HighlightedMatch> allHighlights;
         allHighlights.reserve( highlighterMatches.size() );
-        std::transform( highlighterMatches.begin(), highlighterMatches.end(),
+        std::transform( highlighterMatches.cbegin(), highlighterMatches.cend(),
                         std::back_inserter( allHighlights ), untabifyHighlight );
 
         // string to print, cut to fit the length and position of the view

@@ -49,7 +49,9 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <functional>
 #include <limits>
+#include <numeric>
 #include <tuple>
 #include <utility>
 
@@ -359,10 +361,10 @@ void LogFilteredData::updateSearchResultsCache()
         searchResultsCache_[ currentSearchKey_ ] = { matching_lines_, maxLength_ };
 
         auto cacheSize
-            = std::accumulate( searchResultsCache_.cbegin(), searchResultsCache_.cend(), uint64_t{},
-                               []( auto val, const auto& cachedResults ) {
-                                   return val + cachedResults.second.matching_lines.cardinality();
-                               } );
+            = std::transform_reduce( searchResultsCache_.cbegin(), searchResultsCache_.cend(),
+                                     uint64_t{}, std::plus{}, []( const auto& cachedResults ) {
+                                         return cachedResults.second.matching_lines.cardinality();
+                                     } );
 
         LOG_DEBUG << "LogFilteredData: cache size " << cacheSize;
 
@@ -506,15 +508,12 @@ std::vector<QString>
 LogFilteredData::doGetLines( LineNumber first_line, LinesCount number,
                              const std::function<QString( LineNumber )>& lineGetter ) const
 {
-    std::vector<QString> lines;
-    lines.reserve( number.get() );
-
-    std::vector<LineNumber::UnderlyingType> lineNumbers;
-    lineNumbers.resize( number.get() );
+    std::vector<LineNumber::UnderlyingType> lineNumbers( number.get() );
     std::iota( lineNumbers.begin(), lineNumbers.end(), first_line.get() );
 
+    std::vector<QString> lines( number.get() );
     std::transform(
-        lineNumbers.begin(), lineNumbers.end(), std::back_inserter( lines ),
+        lineNumbers.cbegin(), lineNumbers.cend(), lines.begin(),
         [ &lineGetter ]( const auto& line ) { return lineGetter( LineNumber( line ) ); } );
 
     return lines;

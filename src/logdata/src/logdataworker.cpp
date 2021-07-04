@@ -39,6 +39,7 @@
 #include <chrono>
 #include <cmath>
 #include <exception>
+#include <plog/Log.h>
 #include <string_view>
 #include <thread>
 
@@ -300,7 +301,18 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
           };
 
     while ( pos_within_block != -1 ) {
-        pos_within_block = qMax( static_cast<int>( state.pos - block_beginning ), 0 );
+        if ( state.pos < block_beginning ) {
+            pos_within_block = 0;
+        }
+        else {
+            pos_within_block = static_cast<int>( state.pos - block_beginning );
+        }
+
+        if ( pos_within_block > block.size() ) {
+            LOG_ERROR << "Trying to parse out of block: " << state.pos << " " << pos_within_block
+                      << " " << block.size();
+            break;
+        }
 
         // Looking for the next \n, expanding tabs in the process
 
