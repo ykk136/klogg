@@ -23,10 +23,11 @@
 // There are three types of selection, only one type might be active
 // at any time.
 
-#include "selection.h"
+#include <numeric>
+
 #include "data/abstractlogdata.h"
 #include "log.h"
-#include <numeric>
+#include "selection.h"
 
 Selection::Selection()
 {
@@ -140,9 +141,8 @@ std::vector<LineNumber> Selection::getLines() const
         selection.push_back( *selectedPartial_.line );
     }
     else if ( selectedRange_.startLine.has_value() ) {
-        selection.reserve( selectedRange_.endLine.get() - selectedRange_.startLine->get() + 1 );
-        for ( auto i = *selectedRange_.startLine; i <= selectedRange_.endLine; ++i )
-            selection.push_back( i );
+        selection.resize( selectedRange_.size().get() );
+        std::iota( selection.begin(), selection.end(), *selectedRange_.startLine );
     }
 
     return selection;
@@ -163,9 +163,7 @@ QString Selection::getSelectedText( const AbstractLogData* logData ) const
                          ( selectedPartial_.endColumn - selectedPartial_.startColumn ) + 1 );
     }
     else if ( selectedRange_.startLine.has_value() ) {
-        const auto list = logData->getLines(
-            *selectedRange_.startLine,
-            LinesCount( selectedRange_.endLine.get() - selectedRange_.startLine->get() + 1 ) );
+        const auto list = logData->getLines( *selectedRange_.startLine, selectedRange_.size() );
 
         const auto selectionSizeEstimate
             = std::transform_reduce( list.begin(), list.end(), static_cast<int>( list.size() ),

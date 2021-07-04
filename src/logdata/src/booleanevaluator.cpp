@@ -20,6 +20,7 @@
 #include "booleanevaluator.h"
 
 #include "log.h"
+#include <algorithm>
 
 BooleanExpressionEvaluator::BooleanExpressionEvaluator(
     const std::string& expression, const std::vector<RegularExpressionPattern>& patterns )

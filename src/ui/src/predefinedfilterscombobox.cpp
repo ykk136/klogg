@@ -78,8 +78,6 @@ void PredefinedFiltersComboBox::setTitle( const QString& title )
 void PredefinedFiltersComboBox::insertFilters(
     const PredefinedFiltersCollection::Collection& filters )
 {
-    auto row = model_->rowCount();
-
     for ( const auto& filter : filters ) {
         auto* item = new QStandardItem( filter.name );
 
@@ -91,9 +89,7 @@ void PredefinedFiltersComboBox::insertFilters(
 
         item->setData( pattern, Qt::UserRole );
 
-        model_->insertRow( row, item );
-
-        row++;
+        model_->insertRow( model_->rowCount(), item );
     }
 }
 
@@ -107,15 +103,16 @@ void PredefinedFiltersComboBox::collectFilters()
     for ( auto filterIndex = 0; filterIndex < totalRows; ++filterIndex ) {
         const auto item = model_->item( filterIndex );
 
-        if ( item->checkState() == Qt::Checked ) {
-            const auto filter = item->data( Qt::UserRole ).toString();
-
-            if ( fullFilter != "" ) {
-                fullFilter += "|";
-            }
-
-            fullFilter.append( filter );
+        if ( item->checkState() != Qt::Checked ) {
+            continue;
         }
+
+        const auto filter = item->data( Qt::UserRole ).toString();
+        if ( !fullFilter.isEmpty() ) {
+            fullFilter += "|";
+        }
+
+        fullFilter.append( filter );
     }
 
     emit filterChanged( fullFilter );

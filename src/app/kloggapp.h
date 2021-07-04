@@ -20,7 +20,9 @@
 #ifndef KLOGG_KLOGGAPP_H
 #define KLOGG_KLOGGAPP_H
 
+#include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <numeric>
 #include <stack>
 
@@ -110,10 +112,7 @@ class KloggApp : public SingleApplication {
 
         QTimer::singleShot( 100, [ files = std::move( filenames ), this ] {
             QStringList filesToOpen;
-
-            for ( const auto& filename : files ) {
-                filesToOpen.append( filename );
-            }
+            std::copy( files.cbegin(), files.cend(), std::back_inserter( filesToOpen ) );
 
             QVariantMap data;
             data.insert( "version", kloggVersion() );

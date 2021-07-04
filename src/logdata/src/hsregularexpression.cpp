@@ -19,6 +19,8 @@
 
 #include <algorithm>
 #include <iterator>
+#include <numeric>
+#include <qregularexpression.h>
 #include <string_view>
 #include <vector>
 
@@ -163,14 +165,16 @@ HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPat
     }
 
     if ( !isHsValid() ) {
-        for ( const auto& pattern : patterns_ ) {
-            const auto& regex = static_cast<QRegularExpression>( pattern );
-            if ( !regex.isValid() ) {
-                isValid_ = false;
-                errorMessage_ = regex.errorString();
-                break;
-            }
-        }
+        const auto validationResult = std::transform_reduce(
+            patterns_.cbegin(), patterns_.cend(), std::make_pair( true, QString{} ),
+            []( const auto& acc, const auto& next ) { return acc.first ? next : acc; },
+            []( const auto& pattern ) {
+                const auto regex = static_cast<QRegularExpression>( pattern );
+                return std::make_pair( regex.isValid(), regex.errorString() );
+            } );
+
+        isValid_ = validationResult.first;
+        errorMessage_ = validationResult.second;
     }
 }
 

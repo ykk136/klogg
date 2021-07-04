@@ -20,6 +20,8 @@
 #ifndef KLOGG_HS_REGULAR_EXPRESSION
 #define KLOGG_HS_REGULAR_EXPRESSION
 
+#include <algorithm>
+#include <iterator>
 #include <string_view>
 #include <variant>
 #include <vector>
@@ -43,39 +45,26 @@ class DefaultRegularExpressionMatcher {
     explicit DefaultRegularExpressionMatcher(
         const std::vector<RegularExpressionPattern>& patterns )
     {
-        for ( const auto& pattern : patterns ) {
-            regexp_.push_back( static_cast<QRegularExpression>( pattern ) );
-        }
+        std::transform(
+            patterns.cbegin(), patterns.cend(), std::back_inserter( regexp_ ),
+            []( const auto& pattern ) { return static_cast<QRegularExpression>( pattern ); } );
     }
-
-    // std::vector<std::string> match( const QString& data ) const
-    // {
-    //     std::vector<std::string> matchingPatterns;
-    //     for ( const auto& regexp : regexp_ ) {
-    //         if ( regexp.second.match( data ).hasMatch() ) {
-    //             matchingPatterns.push_back( regexp.first );
-    //         }
-    //     }
-    //     return matchingPatterns;
-    // }
 
     MatchingResult match( const std::string_view& utf8Data ) const
     {
-        MatchedPatterns matchingPatterns;
-        matchingPatterns.resize( regexp_.size() );
-        for ( auto index = 0u; index < regexp_.size(); ++index ) {
-            const auto hasMatch = regexp_[ index ]
-                                      .match( QString::fromUtf8(
-                                          utf8Data.data(), static_cast<int>( utf8Data.size() ) ) )
-                                      .hasMatch();
-            if ( regexp_.size() == 1 ) {
-                return hasMatch;
-            }
+        MatchedPatterns matchedPatterns( regexp_.size() );
+        std::transform( regexp_.cbegin(), regexp_.cend(), matchedPatterns.begin(),
+                        [ utf8Data ]( const auto& regexp ) {
+                            return regexp
+                                .match( QString::fromUtf8( utf8Data.data(),
+                                                           static_cast<int>( utf8Data.size() ) ) )
+                                .hasMatch();
+                            ;
+                        } );
 
-            matchingPatterns[ index ] = hasMatch;
-        }
-
-        return matchingPatterns;
+        return matchedPatterns.size() == 1
+                   ? MatchingResult{ static_cast<bool>( matchedPatterns[ 0 ] ) }
+                   : MatchingResult{ matchedPatterns };
     }
 
   private:

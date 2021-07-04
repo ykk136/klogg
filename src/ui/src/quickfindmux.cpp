@@ -48,13 +48,12 @@ void QuickFindMux::registerSelector( const QuickFindMuxSelectorInterface* select
 
     unregisterAllSearchables();
 
-    if ( selector ) {
-        for ( auto i : selector_->getAllSearchables() )
-            registerSearchable( i );
+    if ( !selector ) {
+        return;
     }
-    else {
-        // null selector, all is well, we don't do anything.
-    }
+
+    for ( auto i : selector_->getAllSearchables() )
+        registerSearchable( i );
 }
 
 void QuickFindMux::setDirection( QFDirection direction )

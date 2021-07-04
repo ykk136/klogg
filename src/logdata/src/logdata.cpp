@@ -45,6 +45,8 @@
 
 #include <QFileInfo>
 #include <QIODevice>
+#include <iterator>
+#include <numeric>
 #include <plog/Log.h>
 #include <string_view>
 #include <utility>
@@ -353,7 +355,7 @@ LogData::RawLines LogData::getLinesRaw( LineNumber firstLine, LinesCount number 
         const auto lastByte = scopedAccessor.getPosForLine( lastLine ).get();
 
         for ( LineNumber line = firstLine; ( line <= lastLine ); ++line ) {
-            rawLines.endOfLines.emplace_back( scopedAccessor.getPosForLine( line ).get()
+            rawLines.endOfLines.push_back( scopedAccessor.getPosForLine( line ).get()
                                               - firstByte );
         }
 

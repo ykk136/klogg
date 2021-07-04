@@ -22,6 +22,7 @@
 
 #include <QList>
 #include <QString>
+#include <cstddef>
 
 #include "data/linetypes.h"
 
@@ -140,7 +141,7 @@ class Selection {
 
     // Returns wether the line passed is selected (entirely).
     bool isLineSelected( LineNumber line ) const;
-    
+
     // Returns wether the line passed is selected in certain range.
     bool isPortionSelected( LineNumber line, int startColumn, int endColumn ) const;
 
@@ -173,6 +174,11 @@ class Selection {
         LineNumber endLine;
         // The line selected first, used for shift+click
         LineNumber firstLine;
+
+        LinesCount size() const
+        {
+            return LinesCount{ endLine.get() - startLine->get() + 1 };
+        }
     };
     struct SelectedPartial selectedPartial_;
     struct SelectedRange selectedRange_;

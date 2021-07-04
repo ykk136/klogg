@@ -352,8 +352,10 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
     using RegexMatcherNode
         = tbb::flow::function_node<BlockDataType, PartialResultType, tbb::flow::rejecting>;
+    
+    using PatternMatcherPtr = std::unique_ptr<PatternMatcher>;
     using MatcherContext
-        = std::tuple<std::unique_ptr<PatternMatcher>, microseconds, RegexMatcherNode>;
+        = std::tuple<PatternMatcherPtr, microseconds, RegexMatcherNode>;
 
     std::vector<MatcherContext> regexMatchers;
     RegularExpression regularExpression{ regexp_ };
@@ -362,7 +364,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
             regularExpression.createMatcher(), microseconds{ 0 },
             RegexMatcherNode(
                 searchGraph, 1, [ &regexMatchers, index ]( const BlockDataType& blockData ) {
-                    const auto& matcher = std::get<0>( regexMatchers.at( index ) );
+                    const auto& matcher = std::get<PatternMatcherPtr>( regexMatchers.at( index ) );
                     const auto matchStartTime = high_resolution_clock::now();
 
                     auto results = std::make_shared<PartialSearchResults>(
@@ -370,7 +372,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
                     const auto matchEndTime = high_resolution_clock::now();
 
-                    microseconds& matchDuration = std::get<1>( regexMatchers.at( index ) );
+                    microseconds& matchDuration = std::get<microseconds>( regexMatchers.at( index ) );
                     matchDuration += duration_cast<microseconds>( matchEndTime - matchStartTime );
                     LOG_DEBUG << "Searcher " << index << " block " << blockData->chunkStart
                               << " sending matches " << results->matchingLines.cardinality();
@@ -438,8 +440,8 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
     tbb::flow::make_edge( blockPrefetcher, lineBlocksQueue );
 
     for ( auto& regexMatcher : regexMatchers ) {
-        tbb::flow::make_edge( lineBlocksQueue, std::get<2>( regexMatcher ) );
-        tbb::flow::make_edge( std::get<2>( regexMatcher ), resultsQueue );
+        tbb::flow::make_edge( lineBlocksQueue, std::get<RegexMatcherNode>( regexMatcher ) );
+        tbb::flow::make_edge( std::get<RegexMatcherNode>( regexMatcher ), resultsQueue );
     }
 
     tbb::flow::make_edge( resultsQueue, matchProcessor );
@@ -457,7 +459,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
     LOG_INFO << "Results combining took " << matchCombiningDuration;
 
     for ( const auto& regexMatcher : regexMatchers ) {
-        LOG_INFO << "Matching took " << std::get<1>( regexMatcher );
+        LOG_INFO << "Matching took " << std::get<microseconds>( regexMatcher );
     }
 
     const auto totalFileSize = sourceLogData_.getFileSize();
