@@ -39,6 +39,7 @@
 #include <QtGlobal>
 #include <QMessageBox>
 
+
 #ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -108,6 +109,10 @@ void setApplicationAttributes( bool enableQtHdpi, int scaleFactorRounding )
 
 int main( int argc, char* argv[] )
 {
+#ifdef KLOGG_USE_MIMALLOC
+    mi_process_init();
+#endif
+
     auto requiredInstructuins = CpuInstructions::SSE2;
     requiredInstructuins |= CpuInstructions::SSSE3;
     requiredInstructuins |= CpuInstructions::POPCNT;
@@ -116,10 +121,6 @@ int main( int argc, char* argv[] )
                                QMessageBox::Close );
         exit( EXIT_FAILURE );
     }
-
-#ifdef KLOGG_USE_MIMALLOC
-    mi_stats_reset();
-#endif
 
     const auto& config = Configuration::getSynced();
     setApplicationAttributes( config.enableQtHighDpi(), config.scaleFactorRounding() );
