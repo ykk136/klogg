@@ -6,12 +6,19 @@ These instructions will get you a copy of the project up and running on your loc
 Local builds can be faster because code can be optimized for current CPU instead of generic x86-64. Support for SSE4/AVX code paths
 will be enabled if available on build machine.
 
+## Getting the Source
+
+This project is [hosted on GitHub](https://github.com/variar/klogg). You can clone this project directly using this command:
+```
+git clone https://github.com/variar/klogg
+```
+
 ## Dependencies
 
 To build Klogg:
 * cmake 3.12 or later to generate build files
-* C++ compiler with C++17 support (at least gcc 7, clang 4, msvc 2017)
-* Qt libraries 5.9 or later (CI builds use Qt 5.9.5/Qt 5.15.2):
+* C++ compiler with decent C++17 support (at least gcc 9.2.1, clang 10, msvc 19.14)
+* Qt libraries 5.9 or later (CI builds use Qt 5.9.5/5.12.5/5.15.2):
     - QtCore
     - QtGui
     - QtWidgets
@@ -23,8 +30,8 @@ To build Klogg:
 To build Hyperscan regular expressions backend (default):
 
 * CPU with support for [SSSE3](https://en.wikipedia.org/wiki/SSSE3) instructions (for Hyperscan backend)
-* Boost (for Hyperscan backend, 1.58 or later, header-only part)
-* Ragel (for Hyperscan backend, 6.8 or later; precompiled binary is provided for Windows; has to be installed from package managers on Linux or Homebrew on Mac)
+* Boost (1.58 or later, header-only part)
+* Ragel (6.8 or later; precompiled binary is provided for Windows; has to be installed from package managers on Linux or Homebrew on Mac)
 
 To build installer for Windows:
 
@@ -39,13 +46,6 @@ All other dependencies are provided in 3rdparty directory.
 
 Klogg will use pkgconfig to find Hyperscan, TBB, uchardet and xxhash installed on build host.
 If a library can't be found, the one bundled in 3rdparty directory will be used.
-
-## Getting the Source
-
-This project is [hosted on GitHub](https://github.com/variar/klogg). You can clone this project directly using this command:
-```
-git clone https://github.com/variar/klogg
-```
 
 ## Building
 
