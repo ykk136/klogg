@@ -249,19 +249,17 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         quickfindRegexpType_ = SearchRegexpType::FixedString;
 
     // DefaultConfiguration crawler settings
-    searchAutoRefresh_ = settings
-                             .value( "DefaultConfigurationView.searchAutoRefresh",
-                                     DefaultConfiguration.searchAutoRefresh_ )
-                             .toBool();
-    searchIgnoreCase_ = settings
-                            .value( "DefaultConfigurationView.searchIgnoreCase",
-                                    DefaultConfiguration.searchIgnoreCase_ )
-                            .toBool();
+    searchAutoRefresh_
+        = settings.value( "defaultView.searchAutoRefresh", DefaultConfiguration.searchAutoRefresh_ )
+              .toBool();
+    searchIgnoreCase_
+        = settings.value( "defaultView.searchIgnoreCase", DefaultConfiguration.searchIgnoreCase_ )
+              .toBool();
 
-    if ( settings.contains( "DefaultConfigurationView.splitterSizes" ) ) {
+    if ( settings.contains( "defaultView.splitterSizes" ) ) {
         splitterSizes_.clear();
 
-        const auto sizes = settings.value( "DefaultConfigurationView.splitterSizes" ).toList();
+        const auto sizes = settings.value( "defaultView.splitterSizes" ).toList();
         std::transform( sizes.cbegin(), sizes.cend(), std::back_inserter( splitterSizes_ ),
                         []( auto v ) { return v.toInt(); } );
     }
@@ -345,15 +343,15 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "view.qtHiDpi", enableQtHighDpi_ );
     settings.setValue( "view.scaleFactorRounding", scaleFactorRounding_ );
 
-    settings.setValue( "DefaultConfigurationView.searchAutoRefresh", searchAutoRefresh_ );
-    settings.setValue( "DefaultConfigurationView.searchIgnoreCase", searchIgnoreCase_ );
+    settings.setValue( "defaultView.searchAutoRefresh", searchAutoRefresh_ );
+    settings.setValue( "defaultView.searchIgnoreCase", searchIgnoreCase_ );
 
     QList<QVariant> splitterSizes;
     std::transform( splitterSizes_.cbegin(), splitterSizes_.cend(),
                     std::back_inserter( splitterSizes ),
                     []( auto s ) { return QVariant::fromValue( s ); } );
 
-    settings.setValue( "DefaultConfigurationView.splitterSizes", splitterSizes );
+    settings.setValue( "defaultView.splitterSizes", splitterSizes );
 
     settings.beginWriteArray( "shortcuts" );
     auto shortcutIndex = 0;

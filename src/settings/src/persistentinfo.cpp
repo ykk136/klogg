@@ -143,12 +143,27 @@ void PersistentInfo::PrepareOsSettings()
 void PersistentInfo::UpdateSettings()
 {
     const auto oldAppSettingsVersion = appSettings_->value( "version", 0 ).toUInt();
+    LOG_INFO << "App settings version" << oldAppSettingsVersion;
+
     if ( oldAppSettingsVersion != AppSettingsVersion ) {
         appSettings_->remove( "geometry" );
         appSettings_->remove( "versionchecker.nextDeadline" );
         appSettings_->remove( "OpenFiles" );
         appSettings_->remove( "RecentFiles" );
         appSettings_->remove( "SavedSearches" );
+    }
+
+    std::pair<QString, QString> keysToMoveAround[] = {
+        { "DefaultConfigurationView.searchAutoRefresh", "defaultView.searchAutoRefresh" },
+        { "DefaultConfigurationView.searchIgnoreCase", "defaultView.searchIgnoreCase" },
+        { "DefaultConfigurationView.splitterSizes", "defaultView.splitterSizes" },
+    };
+
+    for ( const auto& keyToMove : keysToMoveAround ) {
+        if ( appSettings_->contains( keyToMove.first ) ) {
+            appSettings_->setValue( keyToMove.second, appSettings_->value( keyToMove.first ) );
+            appSettings_->remove( keyToMove.first );
+        }
     }
 
     const auto oldSessionSettingsVersion = sessionSettings_->value( "version", 0 ).toUInt();
