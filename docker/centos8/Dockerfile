@@ -5,3 +5,5 @@ RUN dnf install -y epel-release && \
     wget https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.20.2-linux-x86_64.sh && \
     chmod 755 cmake-3.20.2-linux-x86_64.sh && \
     ./cmake-3.20.2-linux-x86_64.sh --prefix=/opt/ --exclude-subdir --skip-license
+
+RUN dnf install -y gcc-toolset-9-gcc gcc-toolset-9-gcc-c++

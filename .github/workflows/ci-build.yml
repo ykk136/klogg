@@ -115,8 +115,8 @@ jobs:
           - os: centos
             os_version: 8
             release_tag: linux
-            cc: gcc-8
-            cxx: g++-8
+            cc: gcc
+            cxx: g++
             arch: x64
             container: variar/klogg_centos8
 
