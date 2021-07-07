@@ -64,7 +64,8 @@ if(KLOGG_OVERRIDE_MALLOC)
     if(KLOGG_USE_MIMALLOC)
         target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_USE_MIMALLOC)
         set(MI_BUILD_TESTS OFF)
-        
+        set(MI_SECURE ON)
+                
         if(WIN32)
             add_subdirectory(mimalloc)
             target_link_libraries(klogg_malloc_proxy INTERFACE mimalloc)

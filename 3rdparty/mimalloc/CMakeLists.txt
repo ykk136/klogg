@@ -218,7 +218,7 @@ else()
 endif()
 
 if(MI_SECURE)
-  set(mi_basename "mimalloc-secure")
+  set(mi_basename "mimalloc")
 else()
   set(mi_basename "mimalloc")
 endif()
