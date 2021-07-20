@@ -111,7 +111,7 @@ class SearchData {
     void clear();
 
   private:
-    mutable Mutex dataMutex_;
+    mutable SharedMutex dataMutex_;
 
     SearchResultArray matches_;
     mutable SearchResultArray newMatches_;

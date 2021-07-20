@@ -166,8 +166,8 @@ class IndexingDataAccessor {
 // This class is a thread-safe set of indexing data.
 class IndexingData {
   public:
-    using ConstAccessor = IndexingDataAccessor<const IndexingData*, ScopedLock>;
-    using MutateAccessor = IndexingDataAccessor<IndexingData*, ScopedLock>;
+    using ConstAccessor = IndexingDataAccessor<const IndexingData*, SharedLock>;
+    using MutateAccessor = IndexingDataAccessor<IndexingData*, UniqueLock>;
 
   private:
     qint64 getIndexedSize() const;
@@ -202,7 +202,7 @@ class IndexingData {
     size_t allocatedSize() const;
 
   private:
-    mutable Mutex dataMutex_;
+    mutable SharedMutex dataMutex_;
 
     LinePositionArray linePosition_;
     LineLength maxLength_;

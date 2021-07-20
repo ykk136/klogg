@@ -122,13 +122,13 @@ PartialSearchResults filterLines( const PatternMatcher& matcher, const LogData::
 
 SearchResults SearchData::takeCurrentResults() const
 {
-    ScopedLock locker( dataMutex_ );
+    UniqueLock lock( dataMutex_ );
     return SearchResults{ std::exchange( newMatches_, {} ), maxLength_, nbLinesProcessed_ };
 }
 
 void SearchData::addAll( LineLength length, const SearchResultArray& matches, LinesCount lines )
 {
-    ScopedLock locker( dataMutex_ );
+    UniqueLock lock( dataMutex_ );
 
     maxLength_ = qMax( maxLength_, length );
     nbLinesProcessed_ = qMax( nbLinesProcessed_, lines );
@@ -139,27 +139,25 @@ void SearchData::addAll( LineLength length, const SearchResultArray& matches, Li
 
 LinesCount SearchData::getNbMatches() const
 {
-    ScopedLock locker( dataMutex_ );
-
+    SharedLock lock( dataMutex_ );
     return nbMatches_;
 }
 
 LineNumber SearchData::getLastProcessedLine() const
 {
-    ScopedLock locker( dataMutex_ );
+    SharedLock lock( dataMutex_ );
     return LineNumber{ nbLinesProcessed_.get() };
 }
 
 void SearchData::deleteMatch( LineNumber line )
 {
-    ScopedLock locker( dataMutex_ );
-
+    UniqueLock lock( dataMutex_ );
     matches_.remove( line.get() );
 }
 
 void SearchData::clear()
 {
-    ScopedLock locker( dataMutex_ );
+    UniqueLock locker( dataMutex_ );
 
     maxLength_ = LineLength( 0 );
     nbLinesProcessed_ = LinesCount( 0 );
@@ -352,10 +350,9 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
     using RegexMatcherNode
         = tbb::flow::function_node<BlockDataType, PartialResultType, tbb::flow::rejecting>;
-    
+
     using PatternMatcherPtr = std::unique_ptr<PatternMatcher>;
-    using MatcherContext
-        = std::tuple<PatternMatcherPtr, microseconds, RegexMatcherNode>;
+    using MatcherContext = std::tuple<PatternMatcherPtr, microseconds, RegexMatcherNode>;
 
     std::vector<MatcherContext> regexMatchers;
     RegularExpression regularExpression{ regexp_ };
@@ -372,7 +369,8 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
                     const auto matchEndTime = high_resolution_clock::now();
 
-                    microseconds& matchDuration = std::get<microseconds>( regexMatchers.at( index ) );
+                    microseconds& matchDuration
+                        = std::get<microseconds>( regexMatchers.at( index ) );
                     matchDuration += duration_cast<microseconds>( matchEndTime - matchStartTime );
                     LOG_DEBUG << "Searcher " << index << " block " << blockData->chunkStart
                               << " sending matches " << results->matchingLines.cardinality();
