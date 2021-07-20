@@ -74,6 +74,8 @@ class PredefinedFiltersDialog : public QDialog, public Ui::PredefinedFiltersDial
     void saveSettings();
     void readFiltersTable();
 
+    void updateButtons();
+
   private:
     PredefinedFiltersCollection::Collection filters_;
 };

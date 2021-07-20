@@ -90,6 +90,17 @@ PredefinedFiltersDialog::PredefinedFiltersDialog( const QString& newFilter, QWid
     }
 }
 
+void PredefinedFiltersDialog::updateButtons()
+{
+    const auto filters = filtersTableWidget->rowCount();
+    const auto hasAnyFilters = filters > 0;
+    const auto hasManyFilters = filters > 1;
+
+    removeFilterButton->setEnabled( hasAnyFilters );
+    upButton->setEnabled( hasManyFilters );
+    downButton->setEnabled( hasManyFilters );
+}
+
 void PredefinedFiltersDialog::populateFiltersTable()
 {
     filtersTableWidget->clear();
@@ -113,6 +124,8 @@ void PredefinedFiltersDialog::populateFiltersTable()
     }
 
     filtersTableWidget->horizontalHeader()->setSectionResizeMode( 1, QHeaderView::Stretch );
+
+    updateButtons();
 }
 
 void PredefinedFiltersDialog::saveSettings()
@@ -152,6 +165,8 @@ void PredefinedFiltersDialog::addFilter()
     const auto newRow = filtersTableWidget->rowCount();
     filtersTableWidget->setRowCount( newRow + 1 );
     filtersTableWidget->setCellWidget( newRow, 2, new QCheckBox );
+
+    updateButtons();
 }
 
 void PredefinedFiltersDialog::addFilterFromSearchLine( const QString& newFilter )
@@ -170,13 +185,15 @@ void PredefinedFiltersDialog::addFilterFromSearchLine( const QString& newFilter 
 void PredefinedFiltersDialog::removeFilter()
 {
     filtersTableWidget->removeRow( filtersTableWidget->currentRow() );
+
+    updateButtons();
 }
 
 void PredefinedFiltersDialog::moveFilterUp()
 {
     const auto* currentItem = filtersTableWidget->currentItem();
 
-    if ( currentItem->row() > 0 ) {
+    if ( currentItem && currentItem->row() > 0 ) {
         filters_.move( currentItem->row(), currentItem->row() - 1 );
 
         dispatchToMainThread( [ this, row = currentItem->row(), column = currentItem->column() ] {
