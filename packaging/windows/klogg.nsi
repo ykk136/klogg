@@ -130,13 +130,9 @@ Section "MSVC Runtime libraries" vcruntime
 
     File release\libcrypto-1_1-x64.dll
     File release\libssl-1_1-x64.dll
-
-    File release\mimalloc-redirect.dll
 !else
     File release\libcrypto-1_1.dll
     File release\libssl-1_1.dll
-
-    File release\mimalloc-redirect32.dll
 !endif
 
 SectionEnd
