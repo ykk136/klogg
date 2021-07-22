@@ -42,6 +42,7 @@ add_library(ui STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/displayfilepath.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/downloader.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/decompressor.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/fontutils.h
 
         ${CMAKE_CURRENT_SOURCE_DIR}/include/highlighteredit.ui
         ${CMAKE_CURRENT_SOURCE_DIR}/include/highlightersetedit.ui

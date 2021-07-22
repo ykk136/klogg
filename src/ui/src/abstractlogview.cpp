@@ -342,6 +342,9 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
     auto line = convertCoordToLine( mouseEvent->y() );
 
     if ( mouseEvent->button() == Qt::LeftButton ) {
+        // Invalidate our cache
+        textAreaCache_.invalid_ = true;
+
         if ( line.has_value() && mouseEvent->modifiers() & Qt::ShiftModifier ) {
             selection_.selectRangeFromPrevious( *line );
             emit updateLineNumber( *line );
@@ -368,9 +371,6 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                 selectionCurrentEndPos_ = selectionStartPos_;
             }
         }
-
-        // Invalidate our cache
-        textAreaCache_.invalid_ = true;
     }
     else if ( mouseEvent->button() == Qt::RightButton ) {
         if ( line.has_value() && line >= logData_->getNbLine() ) {
@@ -696,6 +696,11 @@ void AbstractLogView::wheelEvent( QWheelEvent* wheelEvent )
         return;
     }
 
+    if ( wheelEvent->modifiers().testFlag( Qt::ControlModifier ) ) {
+        emit changeFontSize( yDelta > 0 );
+        return;
+    }
+
     // LOG_DEBUG << "wheelEvent";
 
     // This is to handle the case where follow mode is on, but the user
@@ -1015,23 +1020,22 @@ void AbstractLogView::allowFollowMode( bool allow )
 void AbstractLogView::setSearchPattern( const RegularExpressionPattern& pattern )
 {
     searchPattern_ = pattern;
-    textAreaCache_.invalid_ = true;
-    update();
+    forceRefresh();
 }
 
 void AbstractLogView::setWordsHighlighters(
     const std::vector<WordsHighlighters>& wordsHighlighters )
 {
     wordsHighlighters_ = wordsHighlighters;
-    textAreaCache_.invalid_ = true;
-    update();
+    forceRefresh();
 }
 
 void AbstractLogView::followSet( bool checked )
 {
     followMode_ = checked;
     followElasticHook_.hook( checked );
-    update();
+    forceRefresh();
+
     if ( checked )
         jumpToBottom();
 }
@@ -1057,7 +1061,7 @@ void AbstractLogView::handlePatternUpdated()
     LOG_DEBUG << "AbstractLogView::handlePatternUpdated()";
 
     quickFind_->resetLimits();
-    update();
+    forceRefresh();
 }
 
 // OR the current selection with the current search expression
@@ -1247,8 +1251,7 @@ void AbstractLogView::saveToFile()
 
 void AbstractLogView::updateSearchLimits()
 {
-    textAreaCache_.invalid_ = true;
-    update();
+    forceRefresh();
 
     emit changeSearchLimits( searchStart_, searchEnd_ );
 }
@@ -1282,8 +1285,7 @@ void AbstractLogView::setSelectionEnd()
         selection_.selectRange( *selectionStart_, *selectionEnd );
         selectionStart_ = {};
 
-        textAreaCache_.invalid_ = true;
-        update();
+        forceRefresh();
     }
 }
 
@@ -1324,7 +1326,13 @@ void AbstractLogView::updateData()
     if ( overview_ != nullptr )
         overview_->updateCurrentPosition( firstLine_, lastLine );
 
-    textAreaCache_.invalid_ = true;
+    forceRefresh();
+}
+
+void AbstractLogView::updateFont(const QFont& font)
+{
+    setFont(font);
+    updateDisplaySize();
     update();
 }
 
@@ -1377,8 +1385,7 @@ bool AbstractLogView::isPartialSelection() const
 void AbstractLogView::selectAll()
 {
     selection_.selectRange( 0_lnum, LineNumber( logData_->getNbLine().get() ) - 1_lcount );
-    textAreaCache_.invalid_ = true;
-    update();
+    forceRefresh();
 }
 
 void AbstractLogView::trySelectLine( LineNumber lineToSelect )
@@ -1418,6 +1425,7 @@ void AbstractLogView::forceRefresh()
 {
     // Invalidate our cache
     textAreaCache_.invalid_ = true;
+    update();
 }
 
 void AbstractLogView::setSearchLimits( LineNumber startLine, LineNumber endLine )
@@ -1425,8 +1433,7 @@ void AbstractLogView::setSearchLimits( LineNumber startLine, LineNumber endLine 
     searchStart_ = startLine;
     searchEnd_ = endLine;
 
-    textAreaCache_.invalid_ = true;
-    update();
+    forceRefresh();
 }
 
 //
@@ -1498,10 +1505,7 @@ void AbstractLogView::displayLine( LineNumber line )
     // If the line is already the screen
     if ( ( line >= firstLine_ ) && ( line < ( firstLine_ + getNbVisibleLines() ) ) ) {
         // Invalidate our cache
-        textAreaCache_.invalid_ = true;
-
-        // ... don't scroll and just repaint
-        update();
+        forceRefresh();
     }
     else {
         jumpToLine( line );
@@ -1568,8 +1572,7 @@ void AbstractLogView::jumpToRightOfScreen()
     std::iota( visibleLinesNumbers.begin(), visibleLinesNumbers.end(), firstLine_.get() );
 
     const auto maxLength = std::transform_reduce(
-        visibleLinesNumbers.cbegin(), visibleLinesNumbers.cend(),
-        0_length,
+        visibleLinesNumbers.cbegin(), visibleLinesNumbers.cend(), 0_length,
         []( auto acc, auto next ) { return std::max( acc, next ); },
         [ this ]( const auto& line ) { return logData_->getLineLength( LineNumber( line ) ); } );
 
@@ -1581,7 +1584,7 @@ void AbstractLogView::jumpToTop()
 {
     // This will also trigger a scrollContents event
     verticalScrollBar()->setValue( 0 );
-    update(); // in case the screen hasn't moved
+    forceRefresh(); // in case the screen hasn't moved
 }
 
 // Jump to the last line
@@ -1594,8 +1597,7 @@ void AbstractLogView::jumpToBottom()
     // This will also trigger a scrollContents event
     verticalScrollBar()->setValue( lineNumberToVerticalScroll( LineNumber( newTopLine ) ) );
 
-    textAreaCache_.invalid_ = true;
-    update();
+    forceRefresh();
 }
 
 // Select the word under the given position
@@ -1622,7 +1624,7 @@ void AbstractLogView::selectWordAtPosition( const FilePos& pos )
 
     selection_.selectPortion( pos.line, selectionStart, selectionEnd );
     updateGlobalSelection();
-    update();
+    forceRefresh();
 }
 
 // Update the system global (middle click) selection (X11 only)
@@ -2137,8 +2139,7 @@ void AbstractLogView::disableFollow()
 void AbstractLogView::setHighlighterSet( QAction* action )
 {
     saveCurrentHighlighterFromAction( action );
-    textAreaCache_.invalid_ = true;
-    update();
+    forceRefresh();
 }
 
 namespace {

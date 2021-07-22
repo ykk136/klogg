@@ -191,6 +191,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     AbstractLogView& operator=( const AbstractLogView& ) = delete;
     AbstractLogView& operator=( AbstractLogView&& ) = delete;
 
+    void updateFont(const QFont& font);
+
     // Refresh the widget when the data set has changed.
     void updateData();
     // Instructs the widget to update it's content geometry,
@@ -295,6 +297,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void clearSearchLimits();
 
     void saveDefaultSplitterSizes();
+    void changeFontSize(bool increase);
 
   public slots:
     // Makes the widget select and display the passed line.

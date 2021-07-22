@@ -41,18 +41,8 @@
 #include <QMessageBox>
 #include <QToolButton>
 #include <QtGui>
-#include <qabstractbutton.h>
-#include <qboxlayout.h>
-#include <qdialog.h>
-#include <qdialogbuttonbox.h>
-#include <qkeysequenceedit.h>
-#include <qlabel.h>
-#include <qpushbutton.h>
-#include <qsizepolicy.h>
-#include <qtablewidget.h>
-#include <qtoolbutton.h>
-#include <qwidget.h>
 
+#include "fontutils.h"
 #include "log.h"
 #include "shortcuts.h"
 #include "styles.h"
@@ -122,13 +112,9 @@ void OptionsDialog::setupTabs()
 // Populates the 'family' ComboBox
 void OptionsDialog::setupFontList()
 {
-    QFontDatabase database;
-
-    // We only show the fixed fonts
-    const auto families = database.families();
+    const auto families = FontUtils::availableFonts();
     for ( const QString& str : qAsConst( families ) ) {
-        if ( database.isFixedPitch( str ) )
-            fontFamilyBox->addItem( str );
+        fontFamilyBox->addItem( str );
     }
 }
 
@@ -324,11 +310,7 @@ void OptionsDialog::updateFontSize( const QString& fontFamily )
 {
     QFontDatabase database;
     QString oldFontSize = fontSizeBox->currentText();
-    auto sizes = database.pointSizes( fontFamily, "" );
-
-    if ( sizes.empty() ) {
-        sizes = QFontDatabase::standardSizes();
-    }
+    const auto sizes = FontUtils::availableFontSizes( fontFamily );
 
     fontSizeBox->clear();
     for ( int size : sizes ) {

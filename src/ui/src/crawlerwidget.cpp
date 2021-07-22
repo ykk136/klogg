@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <iterator>
 
 #include <QAction>
 #include <QApplication>
@@ -61,8 +62,6 @@
 #include <QShortcut>
 #include <QStandardItemModel>
 #include <QStringListModel>
-#include <qglobal.h>
-#include <qshortcut.h>
 
 #include "data/regularexpression.h"
 
@@ -71,6 +70,7 @@
 #include "configuration.h"
 #include "dispatch_to.h"
 #include "infoline.h"
+#include "fontutils.h"
 #include "overview.h"
 #include "quickfindpattern.h"
 #include "quickfindwidget.h"
@@ -557,9 +557,6 @@ void CrawlerWidget::applyConfiguration()
         font.setStyleStrategy( QFont::PreferAntialias );
     }
 
-    logMainView_->setFont( font );
-    filteredView_->setFont( font );
-
     logMainView_->setLineNumbersVisible( config.mainLineNumbersVisible() );
     filteredView_->setLineNumbersVisible( config.filteredLineNumbersVisible() );
 
@@ -570,10 +567,8 @@ void CrawlerWidget::applyConfiguration()
     overview_.setVisible( config.isOverviewVisible() );
     logMainView_->refreshOverview();
 
-    logMainView_->updateDisplaySize();
-    logMainView_->update();
-    filteredView_->updateDisplaySize();
-    filteredView_->update();
+    logMainView_->updateFont( font );
+    filteredView_->updateFont( font );
 
     // Update the SearchLine (history)
     updateSearchCombo();
@@ -1129,8 +1124,29 @@ void CrawlerWidget::setup()
         splitterConfig.save();
     };
 
-    connect( logMainView_, &LogMainView::saveDefaultSplitterSizes, saveSplitterSizes );
-    connect( filteredView_, &FilteredView::saveDefaultSplitterSizes, saveSplitterSizes );
+    connect( logMainView_, &LogMainView::saveDefaultSplitterSizes, this, saveSplitterSizes );
+    connect( filteredView_, &FilteredView::saveDefaultSplitterSizes, this, saveSplitterSizes );
+
+    auto changeFontSize = [ this ]( bool increase ) {
+        auto& fontConfig = Configuration::get();
+
+        QFontInfo fontInfo = QFontInfo( fontConfig.mainFont() );
+        const auto availableSizes = FontUtils::availableFontSizes( fontInfo.family() );
+
+        const auto currentSize
+            = std::find( availableSizes.cbegin(), availableSizes.cend(), fontInfo.pointSize() );
+        auto newSize = ( increase ? std::next( currentSize ) : std::prev( currentSize ) );
+        if ( newSize != availableSizes.cend() ) {
+            QFont newFont{ fontInfo.family(), *newSize };
+
+            fontConfig.setMainFont( newFont );
+            logMainView_->updateFont( newFont );
+            filteredView_->updateFont( newFont );
+        }
+    };
+
+    connect( logMainView_, &LogMainView::changeFontSize, this, changeFontSize );
+    connect( filteredView_, &FilteredView::changeFontSize, this, changeFontSize );
 
     connect( logFilteredData_.get(), &LogFilteredData::searchProgressed, this,
              &CrawlerWidget::updateFilteredView, Qt::QueuedConnection );
