@@ -260,98 +260,102 @@ void LogDataWorker::onCheckFileFinished( const MonitoredFileStatus result )
 // Operations implementation
 //
 
-FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType block_beginning,
+FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType blockBeginning,
                                                       const QByteArray& block,
                                                       IndexingState& state ) const
 {
     state.max_length = 0;
-    FastLinePositionArray line_positions;
+    FastLinePositionArray linePositions;
 
-    int pos_within_block = 0;
+    int posWithinBlock = 0;
 
     const auto charOffsetWithinBlock
-        = [ &state, block_start = block.data() ]( const char* pointer ) {
-              return static_cast<int>( std::distance( block_start, pointer ) )
+        = [ &state, blockStart = block.data() ]( const char* pointer ) {
+              return static_cast<int>( std::distance( blockStart, pointer ) )
                      - state.encodingParams.getBeforeCrOffset();
           };
 
-    const auto expandTabs
-        = [ &state, &charOffsetWithinBlock, pos_within_block ]( std::string_view blockToExpand ) {
-              while ( !blockToExpand.empty() ) {
-                  const auto next_tab = blockToExpand.find( '\t' );
-                  if ( next_tab == std::string_view::npos ) {
-                      break;
-                  }
+    const auto expandTabs = [ &state, &charOffsetWithinBlock,
+                              posWithinBlock ]( std::string_view blockToExpand ) {
+        while ( !blockToExpand.empty() ) {
+            const auto nextTab = blockToExpand.find( '\t' );
+            if ( nextTab == std::string_view::npos ) {
+                break;
+            }
 
-                  const auto tab_pos_within_block
-                      = charOffsetWithinBlock( blockToExpand.data() + next_tab );
+            const auto tabPosWithinBlock = charOffsetWithinBlock( blockToExpand.data() + nextTab );
 
-                  LOG_DEBUG << "Tab at " << tab_pos_within_block;
+            LOG_DEBUG << "Tab at " << tabPosWithinBlock;
 
-                  const auto current_expanded_size
-                      = tab_pos_within_block - pos_within_block + state.additional_spaces;
+            const auto currentExpandedSize
+                = tabPosWithinBlock - posWithinBlock + state.additional_spaces;
 
-                  state.additional_spaces += TabStop - ( current_expanded_size % TabStop ) - 1;
-                  if ( next_tab >= blockToExpand.size() ) {
-                      break;
-                  }
+            state.additional_spaces += TabStop - ( currentExpandedSize % TabStop ) - 1;
+            if ( nextTab >= blockToExpand.size() ) {
+                break;
+            }
 
-                  blockToExpand.remove_prefix( next_tab + 1 );
-              }
-          };
+            blockToExpand.remove_prefix( nextTab + 1 );
+        }
+    };
 
-    while ( pos_within_block != -1 ) {
-        if ( state.pos < block_beginning ) {
-            pos_within_block = 0;
+    bool hasMoreData = true;
+    while ( hasMoreData ) {
+        if ( state.pos < blockBeginning ) {
+            posWithinBlock = 0;
         }
         else {
-            pos_within_block = static_cast<int>( state.pos - block_beginning );
+            posWithinBlock = static_cast<int>( state.pos - blockBeginning );
         }
 
-        if ( pos_within_block > block.size() ) {
-            LOG_ERROR << "Trying to parse out of block: " << state.pos << " " << pos_within_block
+        if ( posWithinBlock > block.size() ) {
+            LOG_ERROR << "Trying to parse out of block: " << state.pos << " " << posWithinBlock
                       << " " << block.size();
             break;
         }
 
         // Looking for the next \n, expanding tabs in the process
 
-        const auto search_start = block.data() + pos_within_block;
-        const auto search_line_size = static_cast<size_t>( block.size() - pos_within_block );
+        const auto searchStart = block.data() + posWithinBlock;
+        const auto searchLineSize = static_cast<size_t>( block.size() - posWithinBlock );
 
-        if ( search_line_size > 0 ) {
-            const auto block_view = std::string_view( search_start, search_line_size );
-            const auto next_line_feed = block_view.find( '\n' );
+        if ( searchLineSize > 0 ) {
+            const auto blockView = std::string_view( searchStart, searchLineSize );
+            const auto nextLineFeed = blockView.find( '\n' );
 
-            if ( next_line_feed != std::string_view::npos ) {
-                expandTabs( block_view.substr( 0, next_line_feed ) );
-                pos_within_block = charOffsetWithinBlock( search_start + next_line_feed );
-                LOG_DEBUG << "LF at " << pos_within_block;
+            if ( nextLineFeed != std::string_view::npos ) {
+                expandTabs( blockView.substr( 0, nextLineFeed ) );
+                posWithinBlock = charOffsetWithinBlock( searchStart + nextLineFeed );
+                LOG_DEBUG << "LF at " << posWithinBlock;
             }
             else {
-                expandTabs( block_view );
-                pos_within_block = -1;
+                expandTabs( blockView );
+                posWithinBlock = charOffsetWithinBlock( searchStart + searchLineSize );
+                hasMoreData = false;
             }
         }
         else {
-            pos_within_block = -1;
+            hasMoreData = false;
+        }
+
+        const auto currentDataEnd = posWithinBlock + blockBeginning;
+        const auto length = ( currentDataEnd - state.pos ) / state.encodingParams.lineFeedWidth
+                            + state.additional_spaces;
+
+        if ( length > state.max_length ) {
+            state.max_length = length;
         }
 
         // When a end of line has been found...
-        if ( pos_within_block != -1 ) {
-            state.end = pos_within_block + block_beginning;
-            const auto length = ( state.end - state.pos ) / state.encodingParams.lineFeedWidth
-                                + state.additional_spaces;
-            if ( length > state.max_length )
-                state.max_length = length;
-
+        if ( hasMoreData ) {
+            state.end = currentDataEnd;
             state.pos = state.end + state.encodingParams.lineFeedWidth;
             state.additional_spaces = 0;
-            line_positions.append( LineOffset( state.pos ) );
+            linePositions.append( LineOffset( state.pos ) );
         }
     }
 
-    return line_positions;
+    return linePositions;
 }
 
 void IndexOperation::guessEncoding( const QByteArray& block,
