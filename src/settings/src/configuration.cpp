@@ -145,6 +145,11 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         settings.value( "regexpType.quickfindBackColor", DefaultConfiguration.qfBackColor_.name() )
             .toString() );
 
+    autoRunSearchOnPatternChange_ = settings
+                                        .value( "regexpType.autoRunSearch",
+                                                DefaultConfiguration.autoRunSearchOnPatternChange_ )
+                                        .toBool();
+
     // "Advanced" settings
     nativeFileWatchEnabled_
         = settings.value( "nativeFileWatch.enabled", DefaultConfiguration.nativeFileWatchEnabled_ )
@@ -167,6 +172,11 @@ void Configuration::retrieveFromStorage( QSettings& settings )
                                      .value( "filewatch.fastModificationDetection",
                                              DefaultConfiguration.fastModificationDetection_ )
                                      .toBool();
+
+    allowFollowOnScroll_
+        = settings
+              .value( "filewatch.allowFollowOnScroll", DefaultConfiguration.allowFollowOnScroll_ )
+              .toBool();
 
     loadLastSession_
         = settings.value( "session.loadLast", DefaultConfiguration.loadLastSession_ ).toBool();
@@ -302,15 +312,18 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "regexpType.mainBackColor", mainSearchBackColor_.name() );
     settings.setValue( "regexpType.mainHighlight", enableMainSearchHighlight_ );
     settings.setValue( "regexpType.mainHighlightVariate", enableMainSearchHighlightVariance_ );
+    settings.setValue( "regexpType.autoRunSearch", autoRunSearchOnPatternChange_ );
 
     settings.setValue( "regexpType.quickfind", static_cast<int>( quickfindRegexpType_ ) );
     settings.setValue( "regexpType.quickfindBackColor", qfBackColor_.name() );
+
     settings.setValue( "quickfind.incremental", quickfindIncremental_ );
 
     settings.setValue( "filewatch.useNative", nativeFileWatchEnabled_ );
     settings.setValue( "filewatch.usePolling", pollingEnabled_ );
     settings.setValue( "filewatch.pollingIntervalMs", pollIntervalMs_ );
     settings.setValue( "filewatch.fastModificationDetection", fastModificationDetection_ );
+    settings.setValue( "filewatch.allowFollowOnScroll", allowFollowOnScroll_ );
 
     settings.setValue( "session.loadLast", loadLastSession_ );
     settings.setValue( "session.multipleWindows", allowMultipleWindows_ );

@@ -814,6 +814,12 @@ void CrawlerWidget::setSearchPattern( const QString& searchPattern )
     searchLineEdit_->setEditText( searchPattern );
     // Set the focus to lineEdit so that the user can press 'Return' immediately
     searchLineEdit_->lineEdit()->setFocus();
+
+    if ( Configuration::get().autoRunSearchOnPatternChange() ) {
+        dispatchToMainThread( [ this ] {
+            startNewSearch();
+        } );
+    }
 }
 
 void CrawlerWidget::mouseHoveredOverMatch( LineNumber line )
@@ -1222,15 +1228,8 @@ void CrawlerWidget::registerShortcuts()
         auto& wordsHighlighters = std::get<0>( wordsHighlighters_[ label ] );
         auto selectedPattern = getSelectedText();
 
-        const auto existingPattern = std::find_if(
-            wordsHighlighters.begin(), wordsHighlighters.end(),
-            [ &selectedPattern ]( const auto& pattern ) { return selectedPattern == pattern; } );
-
-        if ( existingPattern == wordsHighlighters.end() ) {
+        if ( wordsHighlighters.removeAll( selectedPattern ) == 0 ) {
             wordsHighlighters.append( std::move( selectedPattern ) );
-        }
-        else {
-            wordsHighlighters.erase( existingPattern );
         }
 
         logMainView_->setWordsHighlighters( wordsHighlighters_ );

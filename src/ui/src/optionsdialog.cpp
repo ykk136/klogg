@@ -44,9 +44,9 @@
 
 #include "fontutils.h"
 #include "log.h"
+#include "savedsearches.h"
 #include "shortcuts.h"
 #include "styles.h"
-#include "savedsearches.h"
 
 #include "optionsdialog.h"
 
@@ -263,6 +263,7 @@ void OptionsDialog::updateDialogFromConfig()
     qfSearchColor_ = config.qfBackColor();
     updateIcon( quickFindColorButton, qfSearchColor_ );
     regexpEngineComboBox->setCurrentIndex( getRegexpEngineIndex( config.regexpEngine() ) );
+    autoRunSearchOnAddCheckBox->setChecked( config.autoRunSearchOnPatternChange() );
 
     highlightMainSearchCheckBox->setChecked( config.mainSearchHighlight() );
     variateHighlightCheckBox->setChecked( config.variateMainSearchHighlight() );
@@ -273,6 +274,7 @@ void OptionsDialog::updateDialogFromConfig()
     fastModificationDetectionCheckBox->setChecked( config.fastModificationDetection() );
     pollingCheckBox->setChecked( config.pollingEnabled() );
     pollIntervalLineEdit->setText( QString::number( config.pollIntervalMs() ) );
+    allowFollowOnScrollCheckBox->setChecked( config.allowFollowOnScroll() );
 
     // Last session
     loadLastSessionCheckBox->setChecked( config.loadLastSession() );
@@ -385,6 +387,7 @@ void OptionsDialog::updateConfigFromDialog()
     config.setQfBackColor( qfSearchColor_ );
     config.setQuickfindIncremental( incrementalCheckBox->isChecked() );
     config.setRegexpEnging( getRegexpEngineFromIndex( regexpEngineComboBox->currentIndex() ) );
+    config.setAutoRunSearchOnPatternChange( autoRunSearchOnAddCheckBox->isChecked() );
 
     config.setNativeFileWatchEnabled( nativeFileWatchCheckBox->isChecked() );
     config.setPollingEnabled( pollingCheckBox->isChecked() );
@@ -396,6 +399,7 @@ void OptionsDialog::updateConfigFromDialog()
 
     config.setPollIntervalMs( pollInterval );
     config.setFastModificationDetection( fastModificationDetectionCheckBox->isChecked() );
+    config.setAllowFollowOnScroll( allowFollowOnScrollCheckBox->isChecked() );
 
     config.setLoadLastSession( loadLastSessionCheckBox->isChecked() );
     config.setFollowFileOnLoad( followFileOnLoadCheckBox->isChecked() );

@@ -47,20 +47,10 @@
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <layout class="QGridLayout" name="gridLayout">
-            <item row="5" column="1">
-             <widget class="QCheckBox" name="incrementalCheckBox">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
+            <item row="4" column="2">
+             <widget class="QPushButton" name="quickFindColorButton">
               <property name="text">
-               <string>Incremental</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>Main search type: </string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -74,34 +64,17 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="2">
-             <widget class="QPushButton" name="quickFindColorButton">
+            <item row="8" column="0">
+             <widget class="QLabel" name="label_11">
               <property name="text">
-               <string/>
+               <string>Search history size:</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
+            <item row="4" column="0">
              <widget class="QLabel" name="label_4">
               <property name="text">
                <string>QuickFind search type: </string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QPushButton" name="mainSearchColorButton">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QComboBox" name="quickFindSearchBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
               </property>
              </widget>
             </item>
@@ -112,10 +85,58 @@
               </property>
              </widget>
             </item>
+            <item row="7" column="1">
+             <widget class="QCheckBox" name="incrementalCheckBox">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>Incremental</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QSpinBox" name="searchHistorySpinBox">
+              <property name="maximum">
+               <number>999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="mainSearchColorButton">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
             <item row="1" column="2">
              <widget class="QCheckBox" name="variateHighlightCheckBox">
               <property name="text">
                <string>Variate highlight</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Main search type: </string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QComboBox" name="quickFindSearchBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0" colspan="2">
+             <widget class="QCheckBox" name="autoRunSearchOnAddCheckBox">
+              <property name="text">
+               <string>Run search on add or replace pattern</string>
               </property>
              </widget>
             </item>
@@ -129,29 +150,29 @@
          <property name="title">
           <string>Session options</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
-          <item>
-           <widget class="QCheckBox" name="loadLastSessionCheckBox">
-            <property name="text">
-             <string>Load last session</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="followFileOnLoadCheckBox">
-            <property name="text">
-             <string>Follow file on load</string>
-            </property>
-           </widget>
-          </item>
-          <item>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="2" column="0">
            <widget class="QCheckBox" name="minimizeToTrayCheckBox">
             <property name="text">
              <string>Minimize to tray</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="loadLastSessionCheckBox">
+            <property name="text">
+             <string>Load last session</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="followFileOnLoadCheckBox">
+            <property name="text">
+             <string>Follow file on load</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
            <widget class="QCheckBox" name="multipleWindowsCheckBox">
             <property name="text">
              <string>Enable multiple windows</string>
@@ -412,6 +433,13 @@
            <widget class="QCheckBox" name="fastModificationDetectionCheckBox">
             <property name="text">
              <string>Use fast modification detection</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="allowFollowOnScrollCheckBox">
+            <property name="text">
+             <string>Turn on follow on scroll past the end</string>
             </property>
            </widget>
           </item>

@@ -425,6 +425,24 @@ class Configuration final : public Persistable<Configuration> {
         shortcuts_ = shortcuts;
     }
 
+    bool allowFollowOnScroll() const
+    {
+        return allowFollowOnScroll_;
+    }
+    void setAllowFollowOnScroll( bool enable )
+    {
+        allowFollowOnScroll_ = enable;
+    }
+
+    bool autoRunSearchOnPatternChange() const
+    {
+        return autoRunSearchOnPatternChange_;
+    }
+    void setAutoRunSearchOnPatternChange( bool enable )
+    {
+        autoRunSearchOnPatternChange_ = enable;
+    }
+
     // Reads/writes the current config in the QSettings object passed
     void saveToStorage( QSettings& settings ) const;
     void retrieveFromStorage( QSettings& settings );
@@ -493,6 +511,10 @@ class Configuration final : public Persistable<Configuration> {
     QColor mainSearchBackColor_ = Qt::lightGray;
     bool enableMainSearchHighlight_ = false;
     bool enableMainSearchHighlightVariance_ = false;
+
+    bool allowFollowOnScroll_ = true;
+    bool autoRunSearchOnPatternChange_ = false;
+
 
     std::map<std::string, QStringList> shortcuts_;
 };

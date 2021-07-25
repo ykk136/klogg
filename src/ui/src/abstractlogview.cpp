@@ -705,19 +705,24 @@ void AbstractLogView::wheelEvent( QWheelEvent* wheelEvent )
     if ( followMode_ )
         jumpToBottom();
 
+    const auto allowFollowOnScroll = Configuration::get().allowFollowOnScroll();
     if ( verticalScrollBar()->value() == verticalScrollBar()->maximum() ) {
-        // First see if we need to block the elastic (on Mac)
-        if ( wheelEvent->phase() == Qt::ScrollBegin )
-            followElasticHook_.hold();
-        else if ( wheelEvent->phase() == Qt::ScrollEnd )
-            followElasticHook_.release();
+        if ( allowFollowOnScroll || yDelta > 0 ) {
+            // First see if we need to block the elastic (on Mac)
+            if ( wheelEvent->phase() == Qt::ScrollBegin )
+                followElasticHook_.hold();
+            else if ( wheelEvent->phase() == Qt::ScrollEnd )
+                followElasticHook_.release();
+
+            followElasticHook_.move( -yDelta );
+        }
 
         // LOG_DEBUG << "Elastic " << y_delta;
-        followElasticHook_.move( -yDelta );
     }
 
     // LOG_DEBUG << "Length = " << followElasticHook_.length();
-    if ( followElasticHook_.length() == 0 && !followElasticHook_.isHooked() ) {
+    if ( !allowFollowOnScroll
+         || ( followElasticHook_.length() == 0 && !followElasticHook_.isHooked() ) ) {
         QAbstractScrollArea::wheelEvent( wheelEvent );
     }
 }
@@ -1955,7 +1960,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             auto startDelta = expandedPrefixLength - prefix.length();
 
             const auto matchPart = logLine.midRef( match.startColumn(), match.length() );
-            const auto expandedMatchLength = untabify( matchPart.toString(), expandedPrefixLength ).length();
+            const auto expandedMatchLength
+                = untabify( matchPart.toString(), expandedPrefixLength ).length();
             auto lengthDelta = expandedMatchLength - matchPart.length();
 
             return HighlightedMatch{ match.startColumn() + startDelta, match.length() + lengthDelta,
