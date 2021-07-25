@@ -1951,11 +1951,11 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
         const auto untabifyHighlight = [ &logLine ]( const auto& match ) {
             const auto prefix = logLine.leftRef( match.startColumn() );
-            const auto expandedPrefixLength = untabify( prefix ).length();
+            const auto expandedPrefixLength = untabify( prefix.toString() ).length();
             auto startDelta = expandedPrefixLength - prefix.length();
 
             const auto matchPart = logLine.midRef( match.startColumn(), match.length() );
-            const auto expandedMatchLength = untabify( matchPart, expandedPrefixLength ).length();
+            const auto expandedMatchLength = untabify( matchPart.toString(), expandedPrefixLength ).length();
             auto lengthDelta = expandedMatchLength - matchPart.length();
 
             return HighlightedMatch{ match.startColumn() + startDelta, match.length() + lengthDelta,

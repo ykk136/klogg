@@ -30,6 +30,7 @@
 #include <QString>
 
 #include <plog/Record.h>
+#include <qchar.h>
 #include <string_view>
 
 using LineOffset
@@ -172,30 +173,21 @@ Q_DECLARE_METATYPE( LinesCount )
 // Length of a tab stop
 constexpr int TabStop = 8;
 
-template <typename LineType>
-QString untabify( const LineType& line, int initialPosition = 0 )
+inline QString untabify( QString&& line, int initialPosition = 0 )
 {
-    QString untabified_line;
-    int total_spaces = 0;
-    untabified_line.reserve( line.size() );
+    int totalSpaces = 0;
+    line.replace( QChar::Null, QChar::Space );
 
-    for ( int position = 0; position < line.length(); ++position ) {
-        if ( line[ position ] == QChar::Tabulation ) {
-            int spaces = TabStop - ( ( initialPosition + position + total_spaces ) % TabStop );
-            // LOG_DEBUG << "Replacing tab at char " << j << " (" << spaces << " spaces)";
-            QString blanks( spaces, QChar::Space );
-            untabified_line.append( blanks );
-            total_spaces += spaces - 1;
-        }
-        else if ( line[ position ] == QChar::Null ) {
-            untabified_line.append( QChar::Space );
-        }
-        else {
-            untabified_line.append( line[ position ] );
-        }
+    int position = 0;
+    position = line.indexOf( QChar::Tabulation, position );
+    while ( position > 0 ) {
+        const int spaces = TabStop - ( ( initialPosition + position + totalSpaces ) % TabStop );
+        line.replace( position, 1, QString( spaces, QChar::Space ) );
+        totalSpaces += spaces - 1;
+        position = line.indexOf( QChar::Tabulation, position );
     }
 
-    return untabified_line;
+    return std::move(line);
 }
 
 template <typename LineType>
@@ -208,7 +200,7 @@ LineLength getUntabifiedLength( const LineType& utf8Line )
         const auto spaces = TabStop - ( ( tabPosition + totalSpaces ) % TabStop ) - 1;
         totalSpaces += spaces;
 
-        tabPosition = utf8Line.find( '\t', tabPosition + 1);
+        tabPosition = utf8Line.find( '\t', tabPosition + 1 );
     }
 
     return LineLength( static_cast<int>( utf8Line.size() + totalSpaces ) );

@@ -325,8 +325,9 @@ std::vector<QString> LogData::doGetLines( LineNumber first_line, LinesCount numb
 
 std::vector<QString> LogData::doGetExpandedLines( LineNumber first_line, LinesCount number ) const
 {
-    return getLinesFromFile( first_line, number,
-                             []( QString&& lineData ) { return untabify( lineData ); } );
+    return getLinesFromFile( first_line, number, []( QString&& lineData ) {
+        return untabify( std::move( lineData ) );
+    } );
 }
 
 LogData::RawLines LogData::getLinesRaw( LineNumber firstLine, LinesCount number ) const
@@ -355,8 +356,7 @@ LogData::RawLines LogData::getLinesRaw( LineNumber firstLine, LinesCount number 
         const auto lastByte = scopedAccessor.getPosForLine( lastLine ).get();
 
         for ( LineNumber line = firstLine; ( line <= lastLine ); ++line ) {
-            rawLines.endOfLines.push_back( scopedAccessor.getPosForLine( line ).get()
-                                              - firstByte );
+            rawLines.endOfLines.push_back( scopedAccessor.getPosForLine( line ).get() - firstByte );
         }
 
         const auto bytesToRead = lastByte - firstByte;
