@@ -372,11 +372,12 @@ void IndexOperation::guessEncoding( const QByteArray& block,
         if ( !state.fileTextCodec ) {
             state.fileTextCodec = state.encodingGuess;
         }
-
-        state.encodingParams = EncodingParameters( state.fileTextCodec );
-        LOG_INFO << "Encoding " << state.fileTextCodec->name().toStdString() << ", Char width "
-                 << state.encodingParams.lineFeedWidth;
     }
+
+    state.encodingParams = EncodingParameters( state.fileTextCodec );
+
+    LOG_INFO << "Encoding " << state.fileTextCodec->name().toStdString() << ", Char width "
+             << state.encodingParams.lineFeedWidth;
 }
 
 void IndexOperation::doIndex( LineOffset initialPosition )
