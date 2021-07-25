@@ -340,7 +340,8 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
         // When a end of line has been found...
         if ( pos_within_block != -1 ) {
             state.end = pos_within_block + block_beginning;
-            const auto length = state.end - state.pos + state.additional_spaces;
+            const auto length = ( state.end - state.pos ) / state.encodingParams.lineFeedWidth
+                                + state.additional_spaces;
             if ( length > state.max_length )
                 state.max_length = length;
 
