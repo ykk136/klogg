@@ -69,8 +69,8 @@
 
 #include "configuration.h"
 #include "dispatch_to.h"
-#include "infoline.h"
 #include "fontutils.h"
+#include "infoline.h"
 #include "overview.h"
 #include "quickfindpattern.h"
 #include "quickfindwidget.h"
@@ -1219,7 +1219,20 @@ void CrawlerWidget::registerShortcuts()
                                       } );
 
     const auto addColorLabelToSelection = [ this ]( size_t label ) {
-        std::get<0>( wordsHighlighters_[ label ] ).append( getSelectedText() );
+        auto& wordsHighlighters = std::get<0>( wordsHighlighters_[ label ] );
+        auto selectedPattern = getSelectedText();
+
+        const auto existingPattern = std::find_if(
+            wordsHighlighters.begin(), wordsHighlighters.end(),
+            [ &selectedPattern ]( const auto& pattern ) { return selectedPattern == pattern; } );
+
+        if ( existingPattern == wordsHighlighters.end() ) {
+            wordsHighlighters.append( std::move( selectedPattern ) );
+        }
+        else {
+            wordsHighlighters.erase( existingPattern );
+        }
+
         logMainView_->setWordsHighlighters( wordsHighlighters_ );
         filteredView_->setWordsHighlighters( wordsHighlighters_ );
     };
