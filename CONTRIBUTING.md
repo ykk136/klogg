@@ -81,4 +81,20 @@ For something that is bigger than a ten line fix:
     * Be sure you have followed the code style for the project (.clang-format file is provided)
     * Note the [Code of Conduct](CODE_OF_CONDUCT.md).
     * Create a pull request
+
+## Commit message format
+If possible commit message should be like `prefix: message`, where prefix is one of
+```
+  feat = 'Features',
+  fix = 'Bug Fixes',
+  docs = 'Documentation',
+  style = 'Styles',
+  refactor = 'Code Refactoring',
+  perf = 'Performance Improvements',
+  test = 'Tests',
+  build = 'Builds',
+  ci = 'Continuous Integration',
+  chore = 'Chores',
+  revert = 'Reverts',
+```
     
