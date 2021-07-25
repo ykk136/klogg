@@ -54,10 +54,6 @@
 #include <limits>
 #include <numeric>
 #include <plog/Log.h>
-#include <qcoreevent.h>
-#include <qevent.h>
-#include <qglobal.h>
-#include <qnamespace.h>
 #include <string_view>
 #include <utility>
 
@@ -445,6 +441,7 @@ void AbstractLogView::mouseMoveEvent( QMouseEvent* mouseEvent )
         textAreaCache_.invalid_ = true;
 
         const auto thisEndPos = convertCoordToFilePos( mouseEvent->pos() );
+
         if ( thisEndPos.line != selectionCurrentEndPos_.line
              || thisEndPos.column != selectionCurrentEndPos_.column ) {
             const auto lineNumber = thisEndPos.line;
@@ -1329,9 +1326,9 @@ void AbstractLogView::updateData()
     forceRefresh();
 }
 
-void AbstractLogView::updateFont(const QFont& font)
+void AbstractLogView::updateFont( const QFont& font )
 {
-    setFont(font);
+    setFont( font );
     updateDisplaySize();
     update();
 }
@@ -1478,10 +1475,10 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
 
     QFontMetrics fm = fontMetrics();
     const auto lineText = logData_->getExpandedLineString( line );
-
+    const auto visibleText = lineText.midRef( firstCol_ );
     auto column = 0;
-    for ( ; column < lineText.length(); ++column ) {
-        if ( textWidth( fm, lineText.mid( firstCol_, column ) ) + leftMarginPx_ >= pos.x() ) {
+    for ( ; column < visibleText.length(); ++column ) {
+        if ( textWidth( fm, visibleText.left( column ).toString() ) + leftMarginPx_ >= pos.x() ) {
             break;
         }
     }
