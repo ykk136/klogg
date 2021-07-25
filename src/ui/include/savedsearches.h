@@ -41,6 +41,9 @@ class SavedSearches final : public Persistable<SavedSearches, session_settings> 
     // Returns a list of recent searches (newer first)
     QStringList recentSearches() const;
 
+    int historySize() const;
+    void setHistorySize(int historySize);
+
     void clear();
 
     // Reads/writes the current config in the QSettings object passed
@@ -48,9 +51,14 @@ class SavedSearches final : public Persistable<SavedSearches, session_settings> 
     void retrieveFromStorage( QSettings& settings );
 
   private:
-    static constexpr int SAVEDSEARCHES_VERSION = 1;
-    static constexpr int maxNumberOfRecentSearches = 50;
+    void trim();
 
+  private:
+    static constexpr int SAVEDSEARCHES_VERSION = 1;
+
+    static constexpr int MaxNumberOfRecentSearches = 50;
+
+    int historySize_ = MaxNumberOfRecentSearches;
     QStringList savedSearches_;
 };
 

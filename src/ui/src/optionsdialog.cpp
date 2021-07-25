@@ -46,6 +46,7 @@
 #include "log.h"
 #include "shortcuts.h"
 #include "styles.h"
+#include "savedsearches.h"
 
 #include "optionsdialog.h"
 
@@ -300,6 +301,9 @@ void OptionsDialog::updateDialogFromConfig()
     verifySslCheckBox->setChecked( config.verifySslPeers() );
 
     buildShortcutsTable();
+
+    const auto& savedSearches = SavedSearches::get();
+    searchHistorySpinBox->setValue( savedSearches.historySize() );
 }
 
 //
@@ -441,6 +445,10 @@ void OptionsDialog::updateConfigFromDialog()
     config.setShortcuts( shortcuts );
 
     config.save();
+
+    auto& savedSearches = SavedSearches::get();
+    savedSearches.setHistorySize( searchHistorySpinBox->value() );
+    savedSearches.save();
 
     emit optionsChanged();
 }

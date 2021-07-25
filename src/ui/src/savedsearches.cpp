@@ -31,15 +31,10 @@ void SavedSearches::addRecent( const QString& text )
     if ( text.isEmpty() )
         return;
 
-    // Remove any copy of the about to be added text
     savedSearches_.removeAll( text );
-
-    // Add at the front
     savedSearches_.push_front( text );
 
-    // Trim the list if it's too long
-    while ( savedSearches_.size() > maxNumberOfRecentSearches )
-        savedSearches_.pop_back();
+    trim();
 }
 
 QStringList SavedSearches::recentSearches() const
@@ -47,9 +42,26 @@ QStringList SavedSearches::recentSearches() const
     return savedSearches_;
 }
 
+int SavedSearches::historySize() const
+{
+    return historySize_;
+}
+
+void SavedSearches::setHistorySize( int historySize )
+{
+    historySize_ = historySize;
+    trim();
+}
+
 void SavedSearches::clear()
 {
     savedSearches_.clear();
+}
+
+void SavedSearches::trim()
+{
+    while ( savedSearches_.size() > historySize_ )
+        savedSearches_.pop_back();
 }
 
 //
@@ -69,6 +81,7 @@ void SavedSearches::saveToStorage( QSettings& settings ) const
         settings.setValue( "string", savedSearches_.at( i ) );
     }
     settings.endArray();
+    settings.setValue( "historySize", historySize_ );
     settings.endGroup();
 }
 
@@ -88,6 +101,7 @@ void SavedSearches::retrieveFromStorage( QSettings& settings )
                 savedSearches_.append( search );
             }
             settings.endArray();
+            historySize_ = settings.value( "historySize", MaxNumberOfRecentSearches ).toInt();
         }
         else {
             LOG_ERROR << "Unknown version of saved searches, ignoring it...";
