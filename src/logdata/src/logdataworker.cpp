@@ -381,7 +381,7 @@ void IndexOperation::guessEncoding( const QByteArray& block,
 
     state.encodingParams = EncodingParameters( state.fileTextCodec );
 
-    LOG_INFO << "Encoding " << state.fileTextCodec->name().toStdString() << ", Char width "
+    LOG_DEBUG << "Encoding " << state.fileTextCodec->name().toStdString() << ", Char width "
              << state.encodingParams.lineFeedWidth;
 }
 
