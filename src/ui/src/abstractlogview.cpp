@@ -1769,6 +1769,7 @@ void AbstractLogView::updateScrollBars()
         = qMax( 0, static_cast<int>( logData_->getMaxLength().get() ) - getNbVisibleCols() + 1 );
 
     horizontalScrollBar()->setRange( 0, hScrollMaxValue );
+    horizontalScrollBar()->setPageStep( getNbVisibleCols() * 7 / 8 );
 }
 
 void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
