@@ -206,7 +206,17 @@ class KloggApp : public SingleApplication {
             session_ = std::make_shared<Session>();
         }
 
-        return newWindow( { session_, generateIdFromUuid(), nextWindowIndex() } );
+        const auto previousSessions = session_->windowSessions();
+
+        QByteArray geometry;
+        if (!previousSessions.empty()) {
+            previousSessions.back().restoreGeometry( &geometry );
+        }
+        
+        auto window = newWindow( { session_, generateIdFromUuid(), nextWindowIndex() } );
+        window->restoreGeometry(geometry);
+
+        return window;
     }
 
     void loadFileNonInteractive( const QString& file )
