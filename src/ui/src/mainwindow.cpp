@@ -183,7 +183,7 @@ MainWindow::MainWindow( WindowSession session )
     scratchPad_.setWindowTitle( "klogg - scratchpad" );
 
     connect( &mainTabWidget_, &TabbedCrawlerWidget::tabCloseRequested, this,
-             QOverload<int>::of( &MainWindow::closeTab ) );
+             [ this ]( int index ) { this->closeTab( index, ActionInitiator::User ); } );
     connect( &mainTabWidget_, &TabbedCrawlerWidget::currentChanged, this,
              &MainWindow::currentTabChanged );
 
@@ -292,11 +292,13 @@ void MainWindow::createActions()
 
     closeAction = new QAction( tr( "&Close" ), this );
     closeAction->setStatusTip( tr( "Close document" ) );
-    connect( closeAction, &QAction::triggered, [ this ]( auto ) { this->closeTab(); } );
+    connect( closeAction, &QAction::triggered, this,
+             [ this ]( auto ) { this->closeTab( ActionInitiator::User ); } );
 
     closeAllAction = new QAction( tr( "Close &All" ), this );
     closeAllAction->setStatusTip( tr( "Close all documents" ) );
-    connect( closeAllAction, &QAction::triggered, [ this ]( auto ) { this->closeAll(); } );
+    connect( closeAllAction, &QAction::triggered, this,
+             [ this ]( auto ) { this->closeAll( ActionInitiator::User ); } );
 
     recentFilesGroup = new QActionGroup( this );
     connect( recentFilesGroup, &QActionGroup::triggered, this, &MainWindow::openFileFromRecent );
@@ -312,11 +314,11 @@ void MainWindow::createActions()
 
     copyAction = new QAction( tr( "&Copy" ), this );
     copyAction->setStatusTip( tr( "Copy the selection" ) );
-    connect( copyAction, &QAction::triggered, [ this ]( auto ) { this->copy(); } );
+    connect( copyAction, &QAction::triggered, this, [ this ]( auto ) { this->copy(); } );
 
     selectAllAction = new QAction( tr( "Select &All" ), this );
     selectAllAction->setStatusTip( tr( "Select all the text" ) );
-    connect( selectAllAction, &QAction::triggered, [ this ]( auto ) { this->selectAll(); } );
+    connect( selectAllAction, &QAction::triggered, this, [ this ]( auto ) { this->selectAll(); } );
 
     goToLineAction = new QAction( tr( "Go to line..." ), this );
     goToLineAction->setStatusTip( tr( "Scrolls selected main view to specified line" ) );
@@ -324,34 +326,35 @@ void MainWindow::createActions()
 
     findAction = new QAction( tr( "&Find..." ), this );
     findAction->setStatusTip( tr( "Find the text" ) );
-    connect( findAction, &QAction::triggered, [ this ]( auto ) { this->find(); } );
+    connect( findAction, &QAction::triggered, this, [ this ]( auto ) { this->find(); } );
 
     clearLogAction = new QAction( tr( "Clear file..." ), this );
     clearLogAction->setStatusTip( tr( "Clear current file" ) );
-    connect( clearLogAction, &QAction::triggered, [ this ]( auto ) { this->clearLog(); } );
+    connect( clearLogAction, &QAction::triggered, this, [ this ]( auto ) { this->clearLog(); } );
 
     openContainingFolderAction = new QAction( tr( "Open containing folder" ), this );
     openContainingFolderAction->setStatusTip( tr( "Open folder containing current file" ) );
-    connect( openContainingFolderAction, &QAction::triggered,
+    connect( openContainingFolderAction, &QAction::triggered, this,
              [ this ]( auto ) { this->openContainingFolder(); } );
 
     openInEditorAction = new QAction( tr( "Open in editor" ), this );
     openInEditorAction->setStatusTip( tr( "Open current file in default editor" ) );
-    connect( openInEditorAction, &QAction::triggered, [ this ]( auto ) { this->openInEditor(); } );
+    connect( openInEditorAction, &QAction::triggered, this,
+             [ this ]( auto ) { this->openInEditor(); } );
 
     copyPathToClipboardAction = new QAction( tr( "Copy full path" ), this );
     copyPathToClipboardAction->setStatusTip( tr( "Copy full path for file to clipboard" ) );
-    connect( copyPathToClipboardAction, &QAction::triggered,
+    connect( copyPathToClipboardAction, &QAction::triggered, this,
              [ this ]( auto ) { this->copyFullPath(); } );
 
     openClipboardAction = new QAction( tr( "Open from clipboard" ), this );
     openClipboardAction->setStatusTip( tr( "Open clipboard as log file" ) );
-    connect( openClipboardAction, &QAction::triggered,
+    connect( openClipboardAction, &QAction::triggered, this,
              [ this ]( auto ) { this->openClipboard(); } );
 
     openUrlAction = new QAction( tr( "Open from URL..." ), this );
     openUrlAction->setStatusTip( tr( "Open URL as log file" ) );
-    connect( openUrlAction, &QAction::triggered, [ this ]( auto ) { this->openUrl(); } );
+    connect( openUrlAction, &QAction::triggered, this, [ this ]( auto ) { this->openUrl(); } );
 
     overviewVisibleAction = new QAction( tr( "Matches &overview" ), this );
     overviewVisibleAction->setCheckable( true );
@@ -386,52 +389,53 @@ void MainWindow::createActions()
 
     editHighlightersAction = new QAction( tr( "Configure &highlighters..." ), this );
     editHighlightersAction->setStatusTip( tr( "Show highlighters configuration" ) );
-    connect( editHighlightersAction, &QAction::triggered,
+    connect( editHighlightersAction, &QAction::triggered, this,
              [ this ]( auto ) { this->editHighlighters(); } );
 
     optionsAction = new QAction( tr( "&Options..." ), this );
     optionsAction->setStatusTip( tr( "Show the Options box" ) );
-    connect( optionsAction, &QAction::triggered, [ this ]( auto ) { this->options(); } );
+    connect( optionsAction, &QAction::triggered, this, [ this ]( auto ) { this->options(); } );
 
     showDocumentationAction = new QAction( tr( "&Documentation..." ), this );
     showDocumentationAction->setStatusTip( tr( "Show documentation" ) );
-    connect( showDocumentationAction, &QAction::triggered,
+    connect( showDocumentationAction, &QAction::triggered, this,
              [ this ]( auto ) { this->documentation(); } );
 
     aboutAction = new QAction( tr( "&About" ), this );
     aboutAction->setStatusTip( tr( "Show the About box" ) );
-    connect( aboutAction, &QAction::triggered, [ this ]( auto ) { this->about(); } );
+    connect( aboutAction, &QAction::triggered, this, [ this ]( auto ) { this->about(); } );
 
     aboutQtAction = new QAction( tr( "About &Qt" ), this );
     aboutQtAction->setStatusTip( tr( "Show the Qt library's About box" ) );
-    connect( aboutQtAction, &QAction::triggered, [ this ]( auto ) { this->aboutQt(); } );
+    connect( aboutQtAction, &QAction::triggered, this, [ this ]( auto ) { this->aboutQt(); } );
 
     reportIssueAction = new QAction( tr( "Report issue..." ), this );
     reportIssueAction->setStatusTip( tr( "Report an issue on GitHub" ) );
-    connect( reportIssueAction, &QAction::triggered,
+    connect( reportIssueAction, &QAction::triggered, this,
              []( auto ) { IssueReporter::reportIssue( IssueTemplate::Bug ); } );
 
     joinDiscordAction = new QAction( tr( "Join Discord community..." ), this );
     joinDiscordAction->setStatusTip( tr( "Join Klogg development community at Discord" ) );
-    connect( joinDiscordAction, &QAction::triggered, []( auto ) {
+    connect( joinDiscordAction, &QAction::triggered, this, []( auto ) {
         QUrl url( "https://discord.gg/DruNyQftzB" );
         QDesktopServices::openUrl( url );
     } );
 
     joinTelegramAction = new QAction( tr( "Join Telegram community..." ), this );
     joinTelegramAction->setStatusTip( tr( "Join Klogg development community at Telegram" ) );
-    connect( joinTelegramAction, &QAction::triggered, []( auto ) {
+    connect( joinTelegramAction, &QAction::triggered, this, []( auto ) {
         QUrl url( "https://t.me/joinchat/JeIBxstIfp4xZTk6" );
         QDesktopServices::openUrl( url );
     } );
 
     generateDumpAction = new QAction( tr( "Generate crash dump" ), this );
     generateDumpAction->setStatusTip( tr( "Generate diagnostic crash dump" ) );
-    connect( generateDumpAction, &QAction::triggered, [ this ]( auto ) { this->generateDump(); } );
+    connect( generateDumpAction, &QAction::triggered, this,
+             [ this ]( auto ) { this->generateDump(); } );
 
     showScratchPadAction = new QAction( tr( "Scratchpad" ), this );
     showScratchPadAction->setStatusTip( tr( "Show the scratchpad" ) );
-    connect( showScratchPadAction, &QAction::triggered,
+    connect( showScratchPadAction, &QAction::triggered, this,
              [ this ]( auto ) { this->showScratchPad(); } );
 
     encodingGroup = new QActionGroup( this );
@@ -445,24 +449,24 @@ void MainWindow::createActions()
 
     addToFavoritesAction = new QAction( tr( "Add to favorites" ), this );
     addToFavoritesAction->setData( true );
-    connect( addToFavoritesAction, &QAction::triggered,
+    connect( addToFavoritesAction, &QAction::triggered, this,
              [ this ]( auto ) { this->addToFavorites(); } );
 
     addToFavoritesMenuAction = new QAction( tr( "Add to favorites" ), this );
-    connect( addToFavoritesMenuAction, &QAction::triggered,
+    connect( addToFavoritesMenuAction, &QAction::triggered, this,
              [ this ]( auto ) { this->addToFavorites(); } );
 
     removeFromFavoritesAction = new QAction( tr( "Remove from favorites..." ), this );
-    connect( removeFromFavoritesAction, &QAction::triggered,
+    connect( removeFromFavoritesAction, &QAction::triggered, this,
              [ this ]( auto ) { this->removeFromFavorites(); } );
 
     selectOpenFileAction = new QAction( tr( "Switch to opened file..." ), this );
-    connect( selectOpenFileAction, &QAction::triggered,
+    connect( selectOpenFileAction, &QAction::triggered, this,
              [ this ]( auto ) { this->selectOpenedFile(); } );
 
     predefinedFiltersDialogAction = new QAction( tr( "Predefined filters..." ), this );
     predefinedFiltersDialogAction->setStatusTip( tr( "Show dialog to configure filters" ) );
-    connect( predefinedFiltersDialogAction, &QAction::triggered,
+    connect( predefinedFiltersDialogAction, &QAction::triggered, this,
              [ this ]( auto ) { this->editPredefinedFilters(); } );
 
     updateShortcuts();
@@ -814,12 +818,12 @@ void MainWindow::openFileFromFavorites( QAction* action )
 }
 
 // Close current tab
-void MainWindow::closeTab()
+void MainWindow::closeTab( ActionInitiator initiator )
 {
     int currentIndex = mainTabWidget_.currentIndex();
 
     if ( currentIndex >= 0 ) {
-        closeTab( currentIndex );
+        closeTab( currentIndex, initiator );
     }
     else {
         this->close();
@@ -827,10 +831,10 @@ void MainWindow::closeTab()
 }
 
 // Close all tabs
-void MainWindow::closeAll()
+void MainWindow::closeAll( ActionInitiator initiator )
 {
     while ( mainTabWidget_.count() ) {
-        closeTab( 0 );
+        closeTab( 0, initiator );
     }
 }
 
@@ -1151,7 +1155,7 @@ memory to hold the index for this file. The file will now be closed." );
             alertBox.exec();
         }
 
-        closeTab( mainTabWidget_.currentIndex() );
+        closeTab( mainTabWidget_.currentIndex(), ActionInitiator::App );
     }
 
     // mainTabWidget_.setEnabled( true );
@@ -1171,7 +1175,7 @@ void MainWindow::handleMatchCaseChanged( bool matchCase )
     config.save();
 }
 
-void MainWindow::closeTab( int index )
+void MainWindow::closeTab( int index, ActionInitiator initiator )
 {
     auto widget = qobject_cast<CrawlerWidget*>( mainTabWidget_.widget( index ) );
 
@@ -1179,6 +1183,11 @@ void MainWindow::closeTab( int index )
 
     widget->stopLoading();
     mainTabWidget_.removeCrawler( index );
+
+    if ( initiator == ActionInitiator::User ) {
+        addRecentFile( session_.getFilename( widget ) );
+    }
+
     session_.close( widget );
 
     updateOpenedFilesMenu();
@@ -1285,7 +1294,7 @@ void MainWindow::closeEvent( QCloseEvent* event )
             writeSettings();
         }
 
-        closeAll();
+        closeAll( ActionInitiator::App );
         trayIcon_->hide();
         emit windowClosed();
 
@@ -1512,13 +1521,7 @@ bool MainWindow::loadFile( const QString& fileName, bool followFile )
             // of the loading, with no way to switch to another tab
             mainTabWidget_.setCurrentIndex( index );
 
-            // Update the recent files list
-            // (reload the list first in case another glogg changed it)
-            auto& recentFiles = RecentFiles::getSynced();
-            recentFiles.addRecent( fileName );
-            recentFiles.save();
-            updateRecentFileActions();
-
+            addRecentFile( fileName );
             updateOpenedFilesMenu();
 
             const auto& config = Configuration::get();
@@ -1568,6 +1571,14 @@ void MainWindow::updateTitleBar( const QString& file_name )
 
     setWindowTitle( tr( "%1 - %2%3" ).arg( shownName, tr( "klogg" ), indexPart ) + " (build "
                     + kloggVersion() + ")" );
+}
+
+void MainWindow::addRecentFile( const QString& fileName )
+{
+    auto& recentFiles = RecentFiles::getSynced();
+    recentFiles.addRecent( fileName );
+    recentFiles.save();
+    updateRecentFileActions();
 }
 
 // Updates the actions for the recent files.

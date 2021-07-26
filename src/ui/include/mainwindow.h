@@ -94,14 +94,21 @@ class MainWindow : public QMainWindow {
 
     bool event( QEvent* event ) override;
 
+  private:
+    enum class ActionInitiator
+    {
+      User,
+      App
+    };
+
   private slots:
     void open();
     void openFileFromRecent( QAction* action );
     void openFileFromFavorites( QAction* action );
     void switchToOpenedFile( QAction* action );
     void setCurrentHighlighter( QAction* action );
-    void closeTab();
-    void closeAll();
+    void closeTab(ActionInitiator initiator);
+    void closeAll(ActionInitiator initiator);
     void selectAll();
     void copy();
     void find();
@@ -153,7 +160,7 @@ class MainWindow : public QMainWindow {
     void handleMatchCaseChanged( bool matchCase );
 
     // Close the tab with the passed index
-    void closeTab( int index );
+    void closeTab( int index, ActionInitiator initiator );
     // Setup the tab with current index for view
     void currentTabChanged( int index );
 
@@ -188,7 +195,8 @@ class MainWindow : public QMainWindow {
     bool loadFile( const QString& fileName, bool followFile = false );
     bool extractAndLoadFile( const QString& fileName );
     void openRemoteFile( const QUrl& url );
-    void updateTitleBar( const QString& file_name );
+    void updateTitleBar( const QString& fileName );
+    void addRecentFile( const QString& fileName );
     void updateRecentFileActions();
     void updateFavoritesMenu();
     void updateOpenedFilesMenu();
