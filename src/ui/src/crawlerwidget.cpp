@@ -1139,11 +1139,16 @@ void CrawlerWidget::setup()
         QFontInfo fontInfo = QFontInfo( fontConfig.mainFont() );
         const auto availableSizes = FontUtils::availableFontSizes( fontInfo.family() );
 
-        const auto currentSize
+        auto currentSize
             = std::find( availableSizes.cbegin(), availableSizes.cend(), fontInfo.pointSize() );
-        auto newSize = ( increase ? std::next( currentSize ) : std::prev( currentSize ) );
-        if ( newSize != availableSizes.cend() ) {
-            QFont newFont{ fontInfo.family(), *newSize };
+        if (increase && currentSize != std::prev(availableSizes.cend())) {
+            currentSize = std::next(currentSize);
+        } else if (!increase && currentSize != availableSizes.begin()) {
+            currentSize = std::prev(currentSize);
+        }
+
+        if ( currentSize != availableSizes.cend() ) {
+            QFont newFont{ fontInfo.family(), *currentSize };
 
             fontConfig.setMainFont( newFont );
             logMainView_->updateFont( newFont );
