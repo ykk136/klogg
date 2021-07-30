@@ -44,6 +44,9 @@
 #include <QToolButton>
 #include <qabstractitemmodel.h>
 #include <qcheckbox.h>
+#include <qglobal.h>
+#include <tuple>
+#include <vector>
 
 #include "dispatch_to.h"
 #include "iconloader.h"
@@ -55,9 +58,7 @@ PredefinedFiltersDialog::PredefinedFiltersDialog( QWidget* parent )
 {
     setupUi( this );
 
-    filters_ = PredefinedFiltersCollection::getSynced().getFilters();
-
-    populateFiltersTable();
+    populateFiltersTable( PredefinedFiltersCollection::getSynced().getFilters() );
 
     connect( addFilterButton, &QToolButton::clicked, this, &PredefinedFiltersDialog::addFilter );
     connect( removeFilterButton, &QToolButton::clicked, this,
@@ -72,6 +73,9 @@ PredefinedFiltersDialog::PredefinedFiltersDialog( QWidget* parent )
     connect( buttonBox, &QDialogButtonBox::clicked, this,
              &PredefinedFiltersDialog::resolveStandardButton );
 
+    connect( filtersTableWidget, &QTableWidget::currentCellChanged, this,
+             &PredefinedFiltersDialog::onCurrentCellChanged );
+
     dispatchToMainThread( [ this ] {
         IconLoader iconLoader( this );
 
@@ -85,27 +89,41 @@ PredefinedFiltersDialog::PredefinedFiltersDialog( QWidget* parent )
 PredefinedFiltersDialog::PredefinedFiltersDialog( const QString& newFilter, QWidget* parent )
     : PredefinedFiltersDialog( parent )
 {
-    if ( newFilter != "" ) {
-        addFilterFromSearchLine( newFilter );
+    if ( !newFilter.isEmpty() ) {
+        addFilterRow( newFilter );
     }
 }
 
 void PredefinedFiltersDialog::updateButtons()
 {
-    const auto filters = filtersTableWidget->rowCount();
-    const auto hasAnyFilters = filters > 0;
-    const auto hasManyFilters = filters > 1;
+    const auto filtersCount = filtersTableWidget->rowCount();
+    removeFilterButton->setEnabled( filtersCount > 0 );
 
-    removeFilterButton->setEnabled( hasAnyFilters );
-    upButton->setEnabled( hasManyFilters );
-    downButton->setEnabled( hasManyFilters );
+    updateUpDownButtons( filtersTableWidget->currentRow() );
 }
 
-void PredefinedFiltersDialog::populateFiltersTable()
+void PredefinedFiltersDialog::onCurrentCellChanged( int currentRow, int currentColumn,
+                                                    int previousRow, int previousColumn )
+{
+    Q_UNUSED( currentColumn )
+    Q_UNUSED( previousRow )
+    Q_UNUSED( previousColumn )
+
+    updateUpDownButtons( currentRow );
+}
+
+void PredefinedFiltersDialog::updateUpDownButtons( int currentRow )
+{
+    upButton->setEnabled( currentRow > 0 );
+    downButton->setEnabled( currentRow < filtersTableWidget->rowCount() - 1 );
+}
+
+void PredefinedFiltersDialog::populateFiltersTable(
+    const PredefinedFiltersCollection::Collection& filters )
 {
     filtersTableWidget->clear();
 
-    filtersTableWidget->setRowCount( static_cast<int>( filters_.size() ) );
+    filtersTableWidget->setRowCount( static_cast<int>( filters.size() ) );
     filtersTableWidget->setColumnCount( 3 );
 
     filtersTableWidget->setHorizontalHeaderLabels( QStringList() << "Name"
@@ -113,7 +131,7 @@ void PredefinedFiltersDialog::populateFiltersTable()
                                                                  << "Regex" );
 
     int filterIndex = 0;
-    for ( const auto& filter : filters_ ) {
+    for ( const auto& filter : filters ) {
         filtersTableWidget->setItem( filterIndex, 0, new QTableWidgetItem( filter.name ) );
         filtersTableWidget->setItem( filterIndex, 1, new QTableWidgetItem( filter.pattern ) );
         QCheckBox* regexCheckbox = new QCheckBox;
@@ -128,18 +146,16 @@ void PredefinedFiltersDialog::populateFiltersTable()
     updateButtons();
 }
 
-void PredefinedFiltersDialog::saveSettings()
+void PredefinedFiltersDialog::saveSettings() const
 {
-    readFiltersTable();
-
-    PredefinedFiltersCollection::getSynced().saveToStorage( filters_ );
+    PredefinedFiltersCollection::getSynced().saveToStorage( readFiltersTable() );
 }
 
-void PredefinedFiltersDialog::readFiltersTable()
+PredefinedFiltersCollection::Collection PredefinedFiltersDialog::readFiltersTable() const
 {
     const auto rows = filtersTableWidget->rowCount();
 
-    filters_.clear();
+    PredefinedFiltersCollection::Collection currentFilters;
 
     for ( auto i = 0; i < rows; ++i ) {
         if ( nullptr == filtersTableWidget->item( i, 0 )
@@ -155,31 +171,29 @@ void PredefinedFiltersDialog::readFiltersTable()
         const auto useRegex = useRegexCheckbox ? useRegexCheckbox->isChecked() : false;
 
         if ( !name.isEmpty() && !value.isEmpty() ) {
-            filters_.push_back( { name, value, useRegex } );
+            currentFilters.push_back( { name, value, useRegex } );
         }
     }
+
+    return currentFilters;
 }
 
 void PredefinedFiltersDialog::addFilter()
 {
-    const auto newRow = filtersTableWidget->rowCount();
-    filtersTableWidget->setRowCount( newRow + 1 );
-    filtersTableWidget->setCellWidget( newRow, 2, new QCheckBox );
-
-    updateButtons();
+    addFilterRow( {} );
 }
 
-void PredefinedFiltersDialog::addFilterFromSearchLine( const QString& newFilter )
+void PredefinedFiltersDialog::addFilterRow( const QString& newFilter )
 {
-    addFilter();
+    const auto newRow = filtersTableWidget->rowCount();
+    filtersTableWidget->setRowCount( newRow + 1 );
+    filtersTableWidget->setItem( newRow, 1, new QTableWidgetItem( newFilter ) );
+    filtersTableWidget->setItem( newRow, 0, new QTableWidgetItem( "" ) );
+    filtersTableWidget->setCellWidget( newRow, 2, new QCheckBox );
 
-    const auto row = filtersTableWidget->rowCount() - 1;
-
-    filtersTableWidget->setItem( row, 1, new QTableWidgetItem( newFilter ) );
-    filtersTableWidget->setItem( row, 0, new QTableWidgetItem( "" ) );
-
-    filtersTableWidget->scrollToItem( filtersTableWidget->item( row, 0 ) );
-    filtersTableWidget->editItem( filtersTableWidget->item( row, 0 ) );
+    filtersTableWidget->scrollToItem( filtersTableWidget->item( newRow, 0 ) );
+    filtersTableWidget->setCurrentCell( newRow, 0 );
+    filtersTableWidget->editItem( filtersTableWidget->item( newRow, 0 ) );
 }
 
 void PredefinedFiltersDialog::removeFilter()
@@ -191,30 +205,49 @@ void PredefinedFiltersDialog::removeFilter()
 
 void PredefinedFiltersDialog::moveFilterUp()
 {
-    const auto* currentItem = filtersTableWidget->currentItem();
+    const auto currentRow = filtersTableWidget->currentRow();
+    const auto selectedColumn = filtersTableWidget->currentColumn();
 
-    if ( currentItem && currentItem->row() > 0 ) {
-        filters_.move( currentItem->row(), currentItem->row() - 1 );
-
-        dispatchToMainThread( [ this, row = currentItem->row(), column = currentItem->column() ] {
-            populateFiltersTable();
-            filtersTableWidget->setCurrentItem( filtersTableWidget->item( row - 1, column ) );
-        } );
+    if ( currentRow >= 0 ) {
+        swapFilters( currentRow, currentRow - 1, selectedColumn );
     }
 }
 
 void PredefinedFiltersDialog::moveFilterDown()
 {
-    const auto* currentItem = filtersTableWidget->currentItem();
+    const auto currentRow = filtersTableWidget->currentRow();
+    const auto selectedColumn = filtersTableWidget->currentColumn();
 
-    if ( currentItem && currentItem->row() < filters_.size() - 1 ) {
-        filters_.move( currentItem->row(), currentItem->row() + 1 );
-
-        dispatchToMainThread( [ this, row = currentItem->row(), column = currentItem->column() ] {
-            populateFiltersTable();
-            filtersTableWidget->setCurrentItem( filtersTableWidget->item( row + 1, column ) );
-        } );
+    if ( currentRow >= 0 ) {
+        swapFilters( currentRow, currentRow + 1, selectedColumn );
     }
+}
+
+void PredefinedFiltersDialog::swapFilters( int currentRow, int newRow, int selectedColumn )
+{
+    dispatchToMainThread( [ this, currentRow, newRow, selectedColumn ] {
+        for ( int column = 0; column < filtersTableWidget->columnCount(); ++column ) {
+            auto currentUseRegex
+                = qobject_cast<QCheckBox*>( filtersTableWidget->cellWidget( currentRow, column ) );
+            auto newUseRegex
+                = qobject_cast<QCheckBox*>( filtersTableWidget->cellWidget( newRow, column ) );
+
+            if ( currentUseRegex && newUseRegex ) {
+                const auto currentCheckState = currentUseRegex->checkState();
+                const auto newCheckState = newUseRegex->checkState();
+                currentUseRegex->setCheckState( newCheckState );
+                newUseRegex->setCheckState( currentCheckState );
+            }
+            else {
+                auto currentItem = filtersTableWidget->takeItem( currentRow, column );
+                auto newItem = filtersTableWidget->takeItem( newRow, column );
+
+                filtersTableWidget->setItem( newRow, column, currentItem );
+                filtersTableWidget->setItem( currentRow, column, newItem );
+            }
+        }
+        filtersTableWidget->setCurrentCell( newRow, selectedColumn );
+    } );
 }
 
 void PredefinedFiltersDialog::importFilters()
@@ -231,9 +264,7 @@ void PredefinedFiltersDialog::importFilters()
 
     PredefinedFiltersCollection collection;
     collection.retrieveFromStorage( settings );
-
-    filters_ = collection.getFilters();
-    populateFiltersTable();
+    populateFiltersTable( collection.getFilters() );
 }
 
 void PredefinedFiltersDialog::exportFilters()
@@ -246,10 +277,9 @@ void PredefinedFiltersDialog::exportFilters()
     }
 
     QSettings settings{ file, QSettings::IniFormat };
-    readFiltersTable();
 
     PredefinedFiltersCollection collection;
-    collection.setFilters( filters_ );
+    collection.setFilters( readFiltersTable() );
     collection.saveToStorage( settings );
 }
 

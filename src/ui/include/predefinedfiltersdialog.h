@@ -65,19 +65,23 @@ class PredefinedFiltersDialog : public QDialog, public Ui::PredefinedFiltersDial
 
     void resolveStandardButton( QAbstractButton* button );
 
+    void onCurrentCellChanged( int currentRow, int currentColumn, int previousRow,
+                               int previousColumn );
+
   signals:
     void optionsChanged();
 
   private:
-    void addFilterFromSearchLine( const QString& newFilter );
-    void populateFiltersTable();
-    void saveSettings();
-    void readFiltersTable();
+    void addFilterRow( const QString& newFilter );
+    void populateFiltersTable( const PredefinedFiltersCollection::Collection& filters );
+
+    void swapFilters( int currentRow, int newRow, int column );
+
+    void saveSettings() const;
+    PredefinedFiltersCollection::Collection readFiltersTable() const;
 
     void updateButtons();
-
-  private:
-    PredefinedFiltersCollection::Collection filters_;
+    void updateUpDownButtons( int currentRow );
 };
 
 #endif

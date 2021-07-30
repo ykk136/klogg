@@ -108,7 +108,7 @@ PredefinedFiltersCollection::Collection PredefinedFiltersCollection::getSyncedFi
     return filters_;
 }
 
-void PredefinedFiltersCollection::setFilters( Collection& filters )
+void PredefinedFiltersCollection::setFilters( const Collection& filters )
 {
     filters_ = filters;
 }
