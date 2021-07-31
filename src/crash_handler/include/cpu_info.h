@@ -50,7 +50,7 @@ inline CpuInstructions operator~( const CpuInstructions& x )
 
 inline bool hasRequiredInstructions( CpuInstructions current, CpuInstructions required )
 {
-    if ( ( ~current & required ) == CpuInstructions::NONE ) {
+    if ( ( current & required ) == required ) {
         return true;
     }
     return false;

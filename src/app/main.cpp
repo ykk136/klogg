@@ -38,6 +38,7 @@
 
 #include <QtGlobal>
 #include <QMessageBox>
+#include <qapplication.h>
 
 
 #ifdef Q_OS_WIN
@@ -115,9 +116,10 @@ int main( int argc, char* argv[] )
 
     auto requiredInstructuins = CpuInstructions::SSE2;
     requiredInstructuins |= CpuInstructions::SSSE3;
-    requiredInstructuins |= CpuInstructions::POPCNT;
+
     if ( !hasRequiredInstructions( supportedCpuInstructions(), requiredInstructuins ) ) {
-        QMessageBox::critical( nullptr, "Klogg", "Current CPU is not supported",
+        QApplication app(argc, argv);
+        QMessageBox::critical( nullptr, "Klogg", "Current CPU is not supported. SSE2 and SSSE3 are required.",
                                QMessageBox::Close );
         exit( EXIT_FAILURE );
     }
