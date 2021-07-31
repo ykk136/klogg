@@ -227,8 +227,8 @@ class CrawlerWidget : public QSplitter,
     // works only in boolean combination mode
     void excludeFromSearch( const QString& string );
 
-    // Clear the search items
-    void clearSearchItems();
+    void clearSearchHistory();
+    void editSearchHistory();
 
     // Save current search as predefined filter
     void saveAsPredefinedFilter();

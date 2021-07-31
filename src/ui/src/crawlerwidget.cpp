@@ -385,7 +385,7 @@ void CrawlerWidget::stopSearch()
     printSearchInfoMessage();
 }
 
-void CrawlerWidget::clearSearchItems()
+void CrawlerWidget::clearSearchHistory()
 {
     // Clear line
     searchLineEdit_->clear();
@@ -395,8 +395,30 @@ void CrawlerWidget::clearSearchItems()
     savedSearches_->clear();
     searches.save();
 
-    QStringList empty_history{};
-    searchLineCompleter_->setModel( new QStringListModel( empty_history, searchLineCompleter_ ) );
+    searchLineCompleter_->setModel( new QStringListModel( {}, searchLineCompleter_ ) );
+}
+
+void CrawlerWidget::editSearchHistory()
+{
+    // Sync and clear saved searches
+    auto& searches = SavedSearches::getSynced();
+
+    auto history = savedSearches_->recentSearches().join( QChar::LineFeed );
+    bool ok;
+    QString newHistory = QInputDialog::getMultiLineText(
+        this, tr( "klogg" ), tr( "Search history:" ), history, &ok );
+
+    if ( ok ) {
+        savedSearches_->clear();
+        auto items = newHistory.split( QChar::LineFeed, Qt::SkipEmptyParts );
+        std::for_each( items.rbegin(), items.rend(), [ this ]( const auto& item ) {
+            savedSearches_->addRecent( item );
+            LOG_INFO << item;
+        } );
+    }
+    searches.save();
+
+    updateSearchCombo();
 }
 
 void CrawlerWidget::saveAsPredefinedFilter()
@@ -816,9 +838,7 @@ void CrawlerWidget::setSearchPattern( const QString& searchPattern )
     searchLineEdit_->lineEdit()->setFocus();
 
     if ( Configuration::get().autoRunSearchOnPatternChange() ) {
-        dispatchToMainThread( [ this ] {
-            startNewSearch();
-        } );
+        dispatchToMainThread( [ this ] { startNewSearch(); } );
     }
 }
 
@@ -981,13 +1001,16 @@ void CrawlerWidget::setup()
     searchLineEdit_->lineEdit()->setMaxLength( std::numeric_limits<int>::max() / 1024 );
     searchLineEdit_->setContentsMargins( 2, 2, 2, 2 );
 
-    QAction* clearSearchItemsAction = new QAction( "Clear All Items", this );
+    QAction* clearSearchHistoryAction = new QAction( "Clear search history", this );
+    QAction* editSearchHistoryAction = new QAction( "Edit search history", this );
     QAction* saveAsPredefinedFilterAction = new QAction( "Save as Filter", this );
+
     searchLineContextMenu_ = searchLineEdit_->lineEdit()->createStandardContextMenu();
     searchLineContextMenu_->addSeparator();
     searchLineContextMenu_->addAction( saveAsPredefinedFilterAction );
     searchLineContextMenu_->addSeparator();
-    searchLineContextMenu_->addAction( clearSearchItemsAction );
+    searchLineContextMenu_->addAction( editSearchHistoryAction );
+    searchLineContextMenu_->addAction( clearSearchHistoryAction );
     searchLineEdit_->setContextMenuPolicy( Qt::CustomContextMenu );
 
     setFocusProxy( searchLineEdit_ );
@@ -1061,7 +1084,8 @@ void CrawlerWidget::setup()
              &CrawlerWidget::showSearchContextMenu );
     connect( saveAsPredefinedFilterAction, &QAction::triggered, this,
              &CrawlerWidget::saveAsPredefinedFilter );
-    connect( clearSearchItemsAction, &QAction::triggered, this, &CrawlerWidget::clearSearchItems );
+    connect( clearSearchHistoryAction, &QAction::triggered, this, &CrawlerWidget::clearSearchHistory );
+    connect( editSearchHistoryAction, &QAction::triggered, this, &CrawlerWidget::editSearchHistory );
     connect( searchButton_, &QToolButton::clicked, this, &CrawlerWidget::startNewSearch );
     connect( stopButton_, &QToolButton::clicked, this, &CrawlerWidget::stopSearch );
 
@@ -1141,10 +1165,11 @@ void CrawlerWidget::setup()
 
         auto currentSize
             = std::find( availableSizes.cbegin(), availableSizes.cend(), fontInfo.pointSize() );
-        if (increase && currentSize != std::prev(availableSizes.cend())) {
-            currentSize = std::next(currentSize);
-        } else if (!increase && currentSize != availableSizes.begin()) {
-            currentSize = std::prev(currentSize);
+        if ( increase && currentSize != std::prev( availableSizes.cend() ) ) {
+            currentSize = std::next( currentSize );
+        }
+        else if ( !increase && currentSize != availableSizes.begin() ) {
+            currentSize = std::prev( currentSize );
         }
 
         if ( currentSize != availableSizes.cend() ) {
