@@ -54,7 +54,8 @@ target_link_libraries(logdata PUBLIC
         uchardet_wrapper
         kdtoolbox
         robin_hood
-        exprtk)
+        exprtk
+        simdutf)
 
 target_link_libraries(logdata PRIVATE xxhash_wrapper)
 

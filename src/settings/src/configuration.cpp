@@ -227,6 +227,11 @@ void Configuration::retrieveFromStorage( QSettings& settings )
     keepFileClosed_
         = settings.value( "perf.keepFileClosed", DefaultConfiguration.keepFileClosed_ ).toBool();
 
+    optimizeForNotLatinEncodings_ = settings
+                                        .value( "perf.optimizeForNotLatinEncodings",
+                                                DefaultConfiguration.optimizeForNotLatinEncodings_ )
+                                        .toBool();
+
     verifySslPeers_
         = settings.value( "net.verifySslPeers", DefaultConfiguration.verifySslPeers_ ).toBool();
 
@@ -340,6 +345,7 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "perf.searchReadBufferSizeLines", searchReadBufferSizeLines_ );
     settings.setValue( "perf.searchThreadPoolSize", searchThreadPoolSize_ );
     settings.setValue( "perf.keepFileClosed", keepFileClosed_ );
+    settings.setValue( "perf.optimizeForNotLatinEncodings", optimizeForNotLatinEncodings_ );
 
     settings.setValue( "net.verifySslPeers", verifySslPeers_ );
 

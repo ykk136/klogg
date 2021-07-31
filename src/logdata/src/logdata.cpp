@@ -51,6 +51,8 @@
 #include <QFileInfo>
 #include <QIODevice>
 
+#include <simdutf/simdutf.h>
+
 #include "configuration.h"
 #include "log.h"
 #include "logfiltereddata.h"
@@ -488,6 +490,9 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
     }
 
     try {
+        const auto optimizeForNotLatinEncodings
+            = Configuration::get().optimizeForNotLatinEncodings();
+
         lines.reserve( numberOfLines.get() );
 
         std::string_view wholeString;
@@ -507,8 +512,18 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
                                                             static_cast<int>( buffer.size() ) );
             }
 
-            utf8Data_ = utf16Data.toUtf8();
-            const auto resultSize = static_cast<size_t>( utf8Data_.size() );
+            size_t resultSize = 0;
+            if ( !optimizeForNotLatinEncodings ) {
+                utf8Data_ = utf16Data.toUtf8();
+                resultSize = static_cast<size_t>( utf8Data_.size() );
+            }
+            else {
+                utf8Data_.resize( static_cast<int>( buffer.size() * 2 ) );
+                resultSize = simdutf::convert_valid_utf16_to_utf8(
+                    reinterpret_cast<const char16_t*>( utf16Data.utf16() ),
+                    static_cast<size_t>( utf16Data.length() ), utf8Data_.data() );
+            }
+
             wholeString = { utf8Data_.data(), resultSize };
         }
 
@@ -517,6 +532,7 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
             lines.push_back( wholeString.substr( 0, nextLineFeed ) );
             wholeString.remove_prefix( nextLineFeed + 1 );
             nextLineFeed = wholeString.find( '\n' );
+            ;
         }
 
         if ( !wholeString.empty() ) {

@@ -420,7 +420,7 @@ class Configuration final : public Persistable<Configuration> {
     {
         return shortcuts_;
     }
-    void setShortcuts(const std::map<std::string, QStringList>& shortcuts)
+    void setShortcuts( const std::map<std::string, QStringList>& shortcuts )
     {
         shortcuts_ = shortcuts;
     }
@@ -441,6 +441,15 @@ class Configuration final : public Persistable<Configuration> {
     void setAutoRunSearchOnPatternChange( bool enable )
     {
         autoRunSearchOnPatternChange_ = enable;
+    }
+
+    bool optimizeForNotLatinEncodings() const
+    {
+        return optimizeForNotLatinEncodings_;
+    }
+    void setOptimizeForNotLatinEncodings( bool enable )
+    {
+        optimizeForNotLatinEncodings_ = enable;
     }
 
     // Reads/writes the current config in the QSettings object passed
@@ -515,6 +524,7 @@ class Configuration final : public Persistable<Configuration> {
     bool allowFollowOnScroll_ = true;
     bool autoRunSearchOnPatternChange_ = false;
 
+    bool optimizeForNotLatinEncodings_ = false;
 
     std::map<std::string, QStringList> shortcuts_;
 };

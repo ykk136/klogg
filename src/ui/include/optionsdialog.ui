@@ -620,6 +620,13 @@
             </property>
            </widget>
           </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="optimizeForNotLatinEncodingsCheckBox">
+            <property name="text">
+             <string>Optimize search for non-latin encodings</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

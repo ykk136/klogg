@@ -9,6 +9,7 @@ add_subdirectory(kdab)
 add_subdirectory(robin_hood) #3.11.2
 add_subdirectory(exprtk)
 add_subdirectory(roaring) #0.3.3
+add_subdirectory(simdutf) #1.0.0
 
 if(KLOGG_USE_SENTRY)
     set(SENTRY_BACKEND "crashpad" CACHE INTERNAL "" FORCE)

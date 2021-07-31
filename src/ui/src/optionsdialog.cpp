@@ -295,6 +295,7 @@ void OptionsDialog::updateDialogFromConfig()
     indexReadBufferSpinBox->setValue( config.indexReadBufferSizeMb() );
     searchReadBufferSpinBox->setValue( config.searchReadBufferSizeLines() );
     keepFileClosedCheckBox->setChecked( config.keepFileClosed() );
+    optimizeForNotLatinEncodingsCheckBox->setChecked( config.optimizeForNotLatinEncodings() );
 
     // version checking
     checkForNewVersionCheckBox->setChecked( config.versionCheckingEnabled() );
@@ -417,6 +418,7 @@ void OptionsDialog::updateConfigFromDialog()
     config.setIndexReadBufferSizeMb( indexReadBufferSpinBox->value() );
     config.setSearchReadBufferSizeLines( searchReadBufferSpinBox->value() );
     config.setKeepFileClosed( keepFileClosedCheckBox->isChecked() );
+    config.setOptimizeForNotLatinEncodings( optimizeForNotLatinEncodingsCheckBox->isChecked() );
 
     // version checking
     config.setVersionCheckingEnabled( checkForNewVersionCheckBox->isChecked() );
