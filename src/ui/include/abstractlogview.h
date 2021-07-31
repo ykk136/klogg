@@ -42,13 +42,15 @@
 
 #include <array>
 #include <functional>
-#include <qcolor.h>
+#include <vector>
 #include <string_view>
 
 #include <QAbstractScrollArea>
 #include <QBasicTimer>
 #include <QEvent>
-#include <vector>
+#include <QColor>
+#include <QFontMetrics>
+
 
 #ifdef GLOGG_PERF_MEASURE_FPS
 #include "perfcounter.h"
@@ -133,7 +135,7 @@ class LineDrawer {
     // leftExtraBackgroundPx is the an extra margin to start drawing
     // the coloured // background, going all the way to the element
     // left of the line looks better.
-    void draw( QPainter& painter, int xPos, int yPos, int lineWidth, const QString& line,
+    void draw( QPainter* painter, int xPos, int yPos, int lineWidth, const QString& line,
                int leftExtraBackgroundPx );
 
   private:
@@ -480,6 +482,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     };
     TextAreaCache textAreaCache_ = { {}, true, 0_lnum, 0_lnum, 0 };
     PullToFollowCache pullToFollowCache_ = { {}, 0 };
+    QFontMetrics pixmapFontMetrics_;
 
     LinesCount getNbVisibleLines() const;
     int getNbVisibleCols() const;
