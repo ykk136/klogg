@@ -39,6 +39,7 @@
 #include <chrono>
 #include <cmath>
 #include <exception>
+#include <functional>
 #include <plog/Log.h>
 #include <string_view>
 #include <thread>
@@ -260,6 +261,45 @@ void LogDataWorker::onCheckFileFinished( const MonitoredFileStatus result )
 // Operations implementation
 //
 
+std::string_view::size_type findNextMultiByteDelimeter( EncodingParameters encodingParams,
+                                                        std::string_view data, char delimeter )
+{
+    auto nextDelimeter = data.find( delimeter );
+
+    if ( nextDelimeter == std::string_view::npos ) {
+        return nextDelimeter;
+    }
+
+    const auto isNotDelimeter = [ &encodingParams, data ]( std::string_view::size_type checkPos ) {
+        const auto lineFeedWidth
+            = static_cast<std::string_view::size_type>( encodingParams.lineFeedWidth );
+
+        const auto isCheckForward = encodingParams.lineFeedIndex == 0;
+
+        if ( isCheckForward && checkPos + lineFeedWidth > data.size() ) {
+            return true;
+        }
+        else if ( !isCheckForward && checkPos < lineFeedWidth - 1 ) {
+            return true;
+        }
+
+        for ( auto i = 1u; i < lineFeedWidth; ++i ) {
+            const auto nextByte = isCheckForward ? data[ checkPos + i ] : data[ checkPos - i ];
+            if ( nextByte != '\0' ) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    while ( nextDelimeter != std::string_view::npos && isNotDelimeter( nextDelimeter ) ) {
+        nextDelimeter = data.find( delimeter, nextDelimeter + 1 );
+    }
+
+    return nextDelimeter;
+}
+
 FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType blockBeginning,
                                                       const QByteArray& block,
                                                       IndexingState& state ) const
@@ -275,10 +315,20 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
                      - state.encodingParams.getBeforeCrOffset();
           };
 
-    const auto expandTabs = [ &state, &charOffsetWithinBlock,
+    std::function<std::string_view::size_type( std::string_view, char )> findNext;
+    if ( state.encodingParams.lineFeedWidth == 1 ) {
+        findNext = []( std::string_view data, char delimeter ) { return data.find( delimeter ); };
+    }
+    else {
+        findNext = [ &state ]( std::string_view data, char delimeter ) {
+            return findNextMultiByteDelimeter( state.encodingParams, data, delimeter );
+        };
+    }
+
+    const auto expandTabs = [ &state, &charOffsetWithinBlock, &findNext,
                               posWithinBlock ]( std::string_view blockToExpand ) {
         while ( !blockToExpand.empty() ) {
-            const auto nextTab = blockToExpand.find( '\t' );
+            const auto nextTab = findNext( blockToExpand, '\t' );
             if ( nextTab == std::string_view::npos ) {
                 break;
             }
@@ -321,7 +371,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
 
         if ( searchLineSize > 0 ) {
             const auto blockView = std::string_view( searchStart, searchLineSize );
-            const auto nextLineFeed = blockView.find( '\n' );
+            const auto nextLineFeed = findNext( blockView, '\n' );
 
             if ( nextLineFeed != std::string_view::npos ) {
                 expandTabs( blockView.substr( 0, nextLineFeed ) );
@@ -382,7 +432,7 @@ void IndexOperation::guessEncoding( const QByteArray& block,
     state.encodingParams = EncodingParameters( state.fileTextCodec );
 
     LOG_DEBUG << "Encoding " << state.fileTextCodec->name().toStdString() << ", Char width "
-             << state.encodingParams.lineFeedWidth;
+              << state.encodingParams.lineFeedWidth;
 }
 
 void IndexOperation::doIndex( LineOffset initialPosition )
