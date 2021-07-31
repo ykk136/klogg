@@ -254,10 +254,6 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         style_ = styles.front();
     }
 
-    // Some sanity check (mainly for people upgrading)
-    if ( quickfindIncremental_ )
-        quickfindRegexpType_ = SearchRegexpType::FixedString;
-
     // DefaultConfiguration crawler settings
     searchAutoRefresh_
         = settings.value( "defaultView.searchAutoRefresh", DefaultConfiguration.searchAutoRefresh_ )
