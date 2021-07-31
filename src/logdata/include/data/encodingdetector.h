@@ -22,9 +22,8 @@
 
 #include "synchronization.h"
 
-#include <memory>
 #include <QByteArray>
-
+#include <memory>
 
 class QTextCodec;
 class QTextDecoder;
@@ -32,6 +31,8 @@ class QTextDecoder;
 struct EncodingParameters {
     EncodingParameters() = default;
     explicit EncodingParameters( const QTextCodec* codec );
+
+    bool isUtf8Compatible{ false };
 
     int lineFeedWidth{ 1 };
     int lineFeedIndex{ 0 };
@@ -79,10 +80,9 @@ class EncodingDetector {
     mutable SharedMutex mutex_;
 };
 
-struct TextDecoder
-{
-  std::unique_ptr<QTextDecoder> decoder;
-  EncodingParameters encodingParams;
+struct TextDecoder {
+    std::unique_ptr<QTextDecoder> decoder;
+    EncodingParameters encodingParams;
 };
 
 class TextCodecHolder {

@@ -491,11 +491,19 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
 
     try {
         lines.reserve( numberOfLines.get() );
-        const auto utf16Data
-            = textDecoder.decoder->toUnicode( buffer.data(), static_cast<int>( buffer.size() ) );
 
-        utf8Data_ = utf16Data.toUtf8();
-        std::string_view wholeString{ utf8Data_.data(), static_cast<size_t>( utf8Data_.length() ) };
+        std::string_view wholeString;
+
+        if ( textDecoder.encodingParams.isUtf8Compatible ) {
+            wholeString = std::string_view(buffer.data(), buffer.size());
+        }
+        else {
+            const auto utf16Data = textDecoder.decoder->toUnicode(
+                buffer.data(), static_cast<int>( buffer.size() ) );
+
+            utf8Data_ = utf16Data.toUtf8();
+            wholeString = { utf8Data_.data(), static_cast<size_t>( utf8Data_.length() ) };
+        }
 
         auto nextLineFeed = wholeString.find( '\n' );
         while ( nextLineFeed != std::string_view::npos ) {
@@ -507,7 +515,6 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
         if ( !wholeString.empty() ) {
             lines.push_back( wholeString );
         }
-
     } catch ( const std::exception& e ) {
         LOG_ERROR << "failed to transform lines to utf8 " << e.what();
         const auto lastLineOffset = utf8Data_.size();

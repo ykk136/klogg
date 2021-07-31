@@ -66,9 +66,14 @@ class UchardetHolder {
 
 EncodingParameters::EncodingParameters( const QTextCodec* codec )
 {
-    static constexpr QChar lineFeed( QChar::LineFeed );
+    static constexpr QChar LineFeed( QChar::LineFeed );
+    static constexpr int Utf8Mib = 106;
+    static constexpr int UsAsciiMib = 3;
+
+    isUtf8Compatible = codec->mibEnum() == Utf8Mib || codec->mibEnum() == UsAsciiMib;
+    
     QTextCodec::ConverterState convertState( QTextCodec::IgnoreHeader );
-    QByteArray encodedLineFeed = codec->fromUnicode( &lineFeed, 1, &convertState );
+    QByteArray encodedLineFeed = codec->fromUnicode( &LineFeed, 1, &convertState );
 
     lineFeedWidth = encodedLineFeed.length();
     lineFeedIndex = encodedLineFeed[ 0 ] == '\n' ? 0 : ( encodedLineFeed.length() - 1 );
