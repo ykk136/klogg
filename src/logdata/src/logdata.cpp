@@ -38,13 +38,9 @@
 
 // This file implements LogData, the content of a log file.
 
+#include <cassert>
 #include <cstddef>
 #include <iostream>
-
-#include <cassert>
-
-#include <QFileInfo>
-#include <QIODevice>
 #include <iterator>
 #include <numeric>
 #include <plog/Log.h>
@@ -52,12 +48,14 @@
 #include <utility>
 #include <vector>
 
-#include "log.h"
-
-#include "logdata.h"
-#include "logfiltereddata.h"
+#include <QFileInfo>
+#include <QIODevice>
 
 #include "configuration.h"
+#include "log.h"
+#include "logfiltereddata.h"
+
+#include "logdata.h"
 
 LogData::LogData()
     : AbstractLogData()
@@ -495,14 +493,23 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
         std::string_view wholeString;
 
         if ( textDecoder.encodingParams.isUtf8Compatible ) {
-            wholeString = std::string_view(buffer.data(), buffer.size());
+            wholeString = std::string_view( buffer.data(), buffer.size() );
         }
         else {
-            const auto utf16Data = textDecoder.decoder->toUnicode(
-                buffer.data(), static_cast<int>( buffer.size() ) );
+
+            QString utf16Data;
+            if ( textDecoder.encodingParams.isUtf16LE ) {
+                utf16Data = QString::fromRawData( reinterpret_cast<const QChar*>( buffer.data() ),
+                                                  static_cast<int>( buffer.size() / 2 ) );
+            }
+            else {
+                utf16Data = textDecoder.decoder->toUnicode( buffer.data(),
+                                                            static_cast<int>( buffer.size() ) );
+            }
 
             utf8Data_ = utf16Data.toUtf8();
-            wholeString = { utf8Data_.data(), static_cast<size_t>( utf8Data_.length() ) };
+            const auto resultSize = static_cast<size_t>( utf8Data_.size() );
+            wholeString = { utf8Data_.data(), resultSize };
         }
 
         auto nextLineFeed = wholeString.find( '\n' );

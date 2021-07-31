@@ -33,6 +33,7 @@ struct EncodingParameters {
     explicit EncodingParameters( const QTextCodec* codec );
 
     bool isUtf8Compatible{ false };
+    bool isUtf16LE{ false };
 
     int lineFeedWidth{ 1 };
     int lineFeedIndex{ 0 };
