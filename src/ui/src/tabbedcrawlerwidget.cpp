@@ -47,42 +47,7 @@ TabbedCrawlerWidget::TabbedCrawlerWidget()
     : QTabWidget()
     , newdata_icon_( ":/images/newdata_icon.png" )
     , newfiltered_icon_( ":/images/newfiltered_icon.png" )
-    , myTabBar_()
 {
-
-    QString tabStyle = "QTabBar::tab { height: 24px; }";
-    QString tabCloseButtonStyle = " QTabBar::close-button {\
-              height: 6px; width: 6px;\
-              subcontrol-origin: padding;\
-              subcontrol-position: left;\
-              %1}";
-
-#ifndef Q_OS_WIN
-    tabCloseButtonStyle = tabCloseButtonStyle.arg( "" );
-#else
-    QString tabCloseButtonHoverStyle = " QTabBar::close-button:hover { %1 }";
-
-    const auto& config = Configuration::get();
-    if ( config.style() == StyleManager::DarkStyleKey ) {
-        tabCloseButtonStyle
-            = tabCloseButtonStyle.arg( "image: url(:/images/icons8-close-window-16_inverse.png);" );
-        tabCloseButtonStyle.append( tabCloseButtonHoverStyle.arg(
-            "image: url(:/images/icons8-close-window-hover-16_inverse.png);" ) );
-    }
-    else if ( config.style() == StyleManager::FusionKey ) {
-        tabCloseButtonStyle
-            = tabCloseButtonStyle.arg( "image: url(:/images/icons8-close-window-16.png);" );
-        tabCloseButtonStyle.append( tabCloseButtonHoverStyle.arg(
-            "image: url(:/images/icons8-close-window-hover-16.png);" ) );
-    }
-    else {
-        tabCloseButtonStyle = tabCloseButtonStyle.arg( "" );
-    }
-
-#endif
-
-    myTabBar_.setStyleSheet( tabStyle.append( tabCloseButtonStyle ) );
-
     setTabBar( &myTabBar_ );
     myTabBar_.hide();
 
@@ -111,28 +76,20 @@ void TabbedCrawlerWidget::changeEvent( QEvent* event )
     QWidget::changeEvent( event );
 }
 
-void TabbedCrawlerWidget::addTabBarItem( int index, const QString& file_name )
+void TabbedCrawlerWidget::addTabBarItem( int index, const QString& fileName )
 {
-    const auto tab_label = QFileInfo( file_name ).fileName();
-    const auto tabName = TabNameMapping::getSynced().tabName( file_name );
+    const auto tabLabel = QFileInfo( fileName ).fileName();
+    const auto tabName = TabNameMapping::getSynced().tabName( fileName );
 
-    myTabBar_.setTabText( index, tabName.isEmpty() ? tab_label : tabName );
-    myTabBar_.setTabToolTip( index, QDir::toNativeSeparators( file_name ) );
+    myTabBar_.setTabIcon(index, olddata_icon_);
+    myTabBar_.setTabText( index, tabName.isEmpty() ? tabLabel : tabName );
+    myTabBar_.setTabToolTip( index, QDir::toNativeSeparators( fileName ) );
 
     QVariantMap tabData;
-    tabData[ PathKey ] = file_name;
+    tabData[ PathKey ] = fileName;
     tabData[ StatusKey ] = static_cast<int>( DataStatus::OLD_DATA );
 
     myTabBar_.setTabData( index, tabData );
-
-    // Display the icon
-    auto icon_label = std::make_unique<QLabel>();
-    icon_label->setPixmap( olddata_icon_.pixmap( 11, 12 ) );
-    icon_label->setAlignment( Qt::AlignCenter );
-    myTabBar_.setTabButton( index, QTabBar::RightSide, icon_label.release() );
-
-    LOG_DEBUG << "addTab, count = " << count();
-    LOG_DEBUG << "width = " << olddata_icon_.pixmap( 11, 12 ).devicePixelRatio();
 
     if ( count() > 1 )
         myTabBar_.show();
@@ -277,9 +234,9 @@ void TabbedCrawlerWidget::keyPressEvent( QKeyEvent* event )
     }
     // Ctrl + numbers
     else if ( mod == Qt::ControlModifier && ( key >= Qt::Key_1 && key <= Qt::Key_8 ) ) {
-        int new_index = key - Qt::Key_0;
-        if ( new_index <= count() )
-            setCurrentIndex( new_index - 1 );
+        int newIndex = key - Qt::Key_0;
+        if ( newIndex <= count() )
+            setCurrentIndex( newIndex - 1 );
     }
     // Ctrl + 9
     else if ( mod == Qt::ControlModifier && key == Qt::Key_9 ) {
@@ -296,26 +253,23 @@ void TabbedCrawlerWidget::keyPressEvent( QKeyEvent* event )
 void TabbedCrawlerWidget::updateIcon( int index )
 {
     auto tabData = myTabBar_.tabData( index ).toMap();
-    auto* icon_label = qobject_cast<QLabel*>( myTabBar_.tabButton( index, QTabBar::RightSide ) );
 
-    if ( icon_label ) {
-        const QIcon* icon;
-        switch ( static_cast<DataStatus>( tabData[ StatusKey ].toInt() ) ) {
-        case DataStatus::OLD_DATA:
-            icon = &olddata_icon_;
-            break;
-        case DataStatus::NEW_DATA:
-            icon = &newdata_icon_;
-            break;
-        case DataStatus::NEW_FILTERED_DATA:
-            icon = &newfiltered_icon_;
-            break;
-        default:
-            return;
-        }
-
-        icon_label->setPixmap( icon->pixmap( 12, 12 ) );
+    const QIcon* icon;
+    switch ( static_cast<DataStatus>( tabData[ StatusKey ].toInt() ) ) {
+    case DataStatus::OLD_DATA:
+        icon = &olddata_icon_;
+        break;
+    case DataStatus::NEW_DATA:
+        icon = &newdata_icon_;
+        break;
+    case DataStatus::NEW_FILTERED_DATA:
+        icon = &newfiltered_icon_;
+        break;
+    default:
+        return;
     }
+
+    myTabBar_.setTabIcon(index, *icon);
 }
 
 void TabbedCrawlerWidget::setTabDataStatus( int index, DataStatus status )

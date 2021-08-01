@@ -35,22 +35,26 @@ class TabbedCrawlerWidget : public QTabWidget {
     TabbedCrawlerWidget();
 
     template <typename T>
-    int addCrawler( T* crawler, const QString& file_name )
+    int addCrawler( T* crawler, const QString& fileName )
     {
         const auto index = QTabWidget::addTab( crawler, QString{} );
 
-        connect( crawler, &T::dataStatusChanged,
-                 [this, index]( DataStatus status ) { setTabDataStatus( index, status ); } );
+        connect( crawler, &T::dataStatusChanged, this, [ this, fileName ]( DataStatus status ) {
+            const auto tabsCount = count();
+            for ( int i = 0; i < tabsCount; ++i ) {
+                if ( tabPathAt( i ) == fileName ) {
+                    setTabDataStatus( i, status );
+                    return;
+                }
+            }
+        } );
 
-        addTabBarItem( index, file_name );
+        addTabBarItem( index, fileName );
 
         return index;
     }
 
     void removeCrawler( int index );
-
-    // Set the data status (icon) for the tab number 'index'
-    void setTabDataStatus( int index, DataStatus status );
 
   protected:
     void keyPressEvent( QKeyEvent* event ) override;
@@ -58,8 +62,11 @@ class TabbedCrawlerWidget : public QTabWidget {
     void changeEvent( QEvent* event ) override;
 
   private:
-    void addTabBarItem( int index, const QString& file_name );
+    void addTabBarItem( int index, const QString& fileName );
     QString tabPathAt( int index ) const;
+
+    // Set the data status (icon) for the tab number 'index'
+    void setTabDataStatus( int index, DataStatus status );
 
     void loadIcons();
     void updateIcon( int index );
