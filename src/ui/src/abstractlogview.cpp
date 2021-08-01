@@ -54,9 +54,9 @@
 #include <limits>
 #include <memory>
 #include <numeric>
-#include <qpixmap.h>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include <QAction>
 #include <QActionGroup>
@@ -77,7 +77,6 @@
 #include <QShortcut>
 #include <QtCore>
 
-#include <plog/Log.h>
 #include <tbb/flow_graph.h>
 
 #include "data/linetypes.h"
@@ -193,9 +192,9 @@ std::unique_ptr<QPainter> pixmapPainter( QPaintDevice* paintDevice, const QFont&
     return painter;
 }
 
-QFontMetrics pixmapFontMetrics(const QFont& font )
+QFontMetrics pixmapFontMetrics( const QFont& font )
 {
-    QPixmap pm{1,1};
+    QPixmap pm{ 1, 1 };
     auto devicePainter = pixmapPainter( &pm, font );
     return devicePainter->fontMetrics();
 }
@@ -1501,22 +1500,25 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         line = LineNumber( logData_->getNbLine().get() ) - 1_lcount;
 
     const auto lineText = logData_->getExpandedLineString( line );
-    const auto visibleText = lineText.midRef( firstCol_ );
-    auto column = 0;
-    for ( ; column < visibleText.length(); ++column ) {
-        if ( textWidth( pixmapFontMetrics_, visibleText.left( column ).toString() ) + leftMarginPx_
-             >= pos.x() ) {
-            break;
-        }
-    }
-    column += ( firstCol_ - 1 );
+    const auto visibleText = lineText.midRef( firstCol_, getNbVisibleCols() + 1 );
+
+    std::vector<int> possibleColumns( static_cast<size_t>( visibleText.length() ) );
+    std::iota( possibleColumns.begin(), possibleColumns.end(), 0 );
+
+    const auto columnIt = std::lower_bound(
+        possibleColumns.cbegin(), possibleColumns.cend(), pos,
+        [ this, &visibleText ]( int c, const QPoint& p ) {
+            const auto width
+                = textWidth( pixmapFontMetrics_, visibleText.left( c ).toString() ) + leftMarginPx_;
+
+            return width < p.x();
+        } );
 
     const auto length = lineText.length();
 
-    if ( column >= length )
-        column = length - 1;
-    if ( column < 0 )
-        column = 0;
+    auto column = columnIt != possibleColumns.end() ? *columnIt : length;
+    column += ( firstCol_ - 1 );
+    column = std::clamp( column, 0, length - 1 );
 
     LOG_DEBUG << "AbstractLogView::convertCoordToFilePos col=" << column << " line=" << line;
     return FilePos{ line, column };
