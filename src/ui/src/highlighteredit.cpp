@@ -166,9 +166,9 @@ void HighlighterEdit::changeBackColor()
 
 void HighlighterEdit::updateIcon( QPushButton* button, const QColor& color )
 {
-    QPixmap CustomPixmap( 20, 10 );
-    CustomPixmap.fill( color );
-    button->setIcon( QIcon( CustomPixmap ) );
+    QPixmap pixmap( 20, 10 );
+    pixmap.fill( color );
+    button->setIcon( QIcon( pixmap ) );
 }
 
 bool HighlighterEdit::showColorPicker( const QColor& in, QColor& out )

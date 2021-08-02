@@ -39,6 +39,10 @@
 #include <QFileDialog>
 #include <QTimer>
 
+#include <qcolor.h>
+#include <qlabel.h>
+#include <qnamespace.h>
+#include <qpushbutton.h>
 #include <utility>
 
 #include "dispatch_to.h"
@@ -100,6 +104,41 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
 
     if ( !highlighterSetCollection_.highlighters_.empty() ) {
         setCurrentRow( 0 );
+    }
+
+    const auto quickHighlighters = highlighterSetCollection_.quickHighlighters();
+    for ( int i = 0; i < quickHighlighters.size(); ++i ) {
+        const auto row = i + 1;
+        auto quickHighlightLabel = new QLabel( QString( "Highlighter %1" ).arg( row ) );
+        auto foreButton = new QPushButton;
+        auto backButton = new QPushButton;
+
+        HighlighterEdit::updateIcon( foreButton, quickHighlighters[ i ].foreColor );
+        HighlighterEdit::updateIcon( backButton, quickHighlighters[ i ].backColor );
+
+        connect( foreButton, &QPushButton::clicked, foreButton, [ foreButton, this, index = i ]() {
+            auto highlighters = highlighterSetCollection_.quickHighlighters();
+            QColor newColor;
+            if ( HighlighterEdit::showColorPicker( highlighters[ index ].foreColor, newColor ) ) {
+                highlighters[ index ].foreColor = newColor;
+                highlighterSetCollection_.setQuickHighlighters( highlighters );
+                HighlighterEdit::updateIcon( foreButton, newColor );
+            }
+        } );
+
+        connect( backButton, &QPushButton::clicked, backButton, [ backButton, this, index = i ]() {
+            auto highlighters = highlighterSetCollection_.quickHighlighters();
+            QColor newColor;
+            if ( HighlighterEdit::showColorPicker( highlighters[ index ].backColor, newColor ) ) {
+                highlighters[ index ].backColor = newColor;
+                highlighterSetCollection_.setQuickHighlighters( highlighters );
+                HighlighterEdit::updateIcon( backButton, newColor );
+            }
+        } );
+
+        quickHighlightLayout->addWidget( quickHighlightLabel, row, 0 );
+        quickHighlightLayout->addWidget( foreButton, row, 1 );
+        quickHighlightLayout->addWidget( backButton, row, 2 );
     }
 
     dispatchToMainThread( [ this ] {

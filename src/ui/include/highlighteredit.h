@@ -35,6 +35,9 @@ class HighlighterEdit : public QWidget, public Ui::HighlighterEdit {
     void setHighlighter( Highlighter highlighter );
     void reset();
 
+    static bool showColorPicker( const QColor& in, QColor& out );
+    static void updateIcon( QPushButton* button, const QColor& color );
+
   signals:
     void changed();
 
@@ -47,10 +50,6 @@ class HighlighterEdit : public QWidget, public Ui::HighlighterEdit {
     void setVariateColors( bool variateColors );
     void setColorVariance( int colorVariance );
     void setPatternType( int index );
-
-  private:
-    void updateIcon( QPushButton* button, const QColor& color );
-    static bool showColorPicker( const QColor& in, QColor& out );
 
   private:
     const Highlighter defaultHighlighter_;

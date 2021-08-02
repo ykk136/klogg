@@ -38,12 +38,16 @@
 
 // This file implements classes Highlighter and HighlighterSet
 
+#include <plog/Log.h>
+#include <qcolor.h>
+#include <qnamespace.h>
 #include <random>
 #include <utility>
 
 #include <QSettings>
 
 #include "crc32.h"
+#include "highlightersetedit.h"
 #include "log.h"
 #include "uuid.h"
 
@@ -63,10 +67,10 @@ Highlighter::Highlighter( const QString& pattern, bool ignoreCase, bool onlyMatc
                           const QColor& foreColor, const QColor& backColor )
     : regexp_( pattern, getPatternOptions( ignoreCase ) )
     , highlightOnlyMatch_( onlyMatch )
-    , foreColor_( foreColor )
-    , backColor_( backColor )
+    , color_{ foreColor, backColor }
 {
-    LOG_DEBUG << "New Highlighter, fore: " << foreColor_.name() << " back: " << backColor_.name();
+    LOG_DEBUG << "New Highlighter, fore: " << color_.foreColor.name()
+              << " back: " << color_.backColor.name();
 }
 
 QString Highlighter::pattern() const
@@ -130,28 +134,28 @@ void Highlighter::setColorVariance( int colorVariance )
 
 const QColor& Highlighter::foreColor() const
 {
-    return foreColor_;
+    return color_.foreColor;
 }
 
 void Highlighter::setForeColor( const QColor& foreColor )
 {
-    foreColor_ = foreColor;
+    color_.foreColor = foreColor;
 }
 
 const QColor& Highlighter::backColor() const
 {
-    return backColor_;
+    return color_.backColor;
 }
 
 void Highlighter::setBackColor( const QColor& backColor )
 {
-    backColor_ = backColor;
+    color_.backColor = backColor;
 }
 
 std::pair<QColor, QColor> Highlighter::vairateColors( const QString& match ) const
 {
     if ( !( variateColors_ && highlightOnlyMatch_ ) ) {
-        return std::make_pair( foreColor_, backColor_ );
+        return std::make_pair( color_.foreColor, color_.backColor );
     }
 
     std::uniform_int_distribution<int> colorDistribution( 100 - colorVariance_,
@@ -160,7 +164,7 @@ std::pair<QColor, QColor> Highlighter::vairateColors( const QString& match ) con
     std::minstd_rand0 generator( Crc32::calculate( match.toUtf8() ) );
     const auto factor = colorDistribution( generator );
 
-    return std::make_pair( foreColor_.darker( factor ), backColor_.darker( factor ) );
+    return std::make_pair( color_.foreColor.darker( factor ), color_.backColor.darker( factor ) );
 }
 
 bool Highlighter::matchLine( const QString& line, std::vector<HighlightedMatch>& matches ) const
@@ -267,8 +271,8 @@ void Highlighter::saveToStorage( QSettings& settings ) const
     settings.setValue( "variate_colors", variateColors_ );
     settings.setValue( "color_variance", colorVariance_ );
     // save colors as user friendly strings in config
-    settings.setValue( "fore_colour", foreColor_.name( QColor::HexArgb ) );
-    settings.setValue( "back_colour", backColor_.name( QColor::HexArgb ) );
+    settings.setValue( "fore_colour", color_.foreColor.name( QColor::HexArgb ) );
+    settings.setValue( "back_colour", color_.backColor.name( QColor::HexArgb ) );
 }
 
 void Highlighter::retrieveFromStorage( QSettings& settings )
@@ -282,8 +286,8 @@ void Highlighter::retrieveFromStorage( QSettings& settings )
     useRegex_ = settings.value( "use_regex", true ).toBool();
     variateColors_ = settings.value( "variate_colors", false ).toBool();
     colorVariance_ = settings.value( "color_variance", 15 ).toInt();
-    foreColor_ = QColor( settings.value( "fore_colour" ).toString() );
-    backColor_ = QColor( settings.value( "back_colour" ).toString() );
+    color_.foreColor = QColor( settings.value( "fore_colour" ).toString() );
+    color_.backColor = QColor( settings.value( "back_colour" ).toString() );
 }
 
 void HighlighterSet::saveToStorage( QSettings& settings ) const
@@ -394,9 +398,20 @@ bool HighlighterSetCollection::hasSet( const QString& setId ) const
                         [ setId ]( const auto& s ) { return s.id() == setId; } );
 }
 
+QList<HighlightColor> HighlighterSetCollection::quickHighlighters() const
+{
+    return quickHighlighters_;
+}
+
+void HighlighterSetCollection::setQuickHighlighters(
+    const QList<HighlightColor>& quickHighlighters )
+{
+    quickHighlighters_ = quickHighlighters;
+}
+
 void HighlighterSetCollection::saveToStorage( QSettings& settings ) const
 {
-    LOG_DEBUG << "HighlighterSetCollection::saveToStorage";
+    LOG_INFO << "HighlighterSetCollection::saveToStorage";
 
     settings.beginGroup( "HighlighterSetCollection" );
     settings.setValue( "version", HighlighterSetCollection_VERSION );
@@ -408,6 +423,15 @@ void HighlighterSetCollection::saveToStorage( QSettings& settings ) const
         highlighters_[ i ].saveToStorage( settings );
     }
     settings.endArray();
+    settings.beginWriteArray( "quick" );
+    for ( int i = 0; i < quickHighlighters_.size(); ++i ) {
+        settings.setArrayIndex( i );
+        settings.setValue( "fore_colour",
+                           quickHighlighters_[ i ].foreColor.name( QColor::HexArgb ) );
+        settings.setValue( "back_colour",
+                           quickHighlighters_[ i ].backColor.name( QColor::HexArgb ) );
+    }
+    settings.endArray();
     settings.endGroup();
 }
 
@@ -416,6 +440,7 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
     LOG_DEBUG << "HighlighterSetCollection::retrieveFromStorage";
 
     highlighters_.clear();
+    quickHighlighters_.clear();
 
     if ( settings.contains( "HighlighterSetCollection/version" ) ) {
         settings.beginGroup( "HighlighterSetCollection" );
@@ -430,6 +455,23 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
             settings.endArray();
             auto currentSet = settings.value( "current" ).toString();
             setCurrentSet( currentSet );
+
+            size = settings.beginReadArray( "quick" );
+            for ( int i = 0; i < size; ++i ) {
+                settings.setArrayIndex( i );
+                HighlightColor quickHighlighter;
+                quickHighlighter.foreColor = QColor( settings.value( "fore_colour" ).toString() );
+                quickHighlighter.backColor = QColor( settings.value( "back_colour" ).toString() );
+                quickHighlighters_.append( std::move( quickHighlighter ) );
+            }
+            settings.endArray();
+            if ( quickHighlighters_.size() != 3 ) {
+                LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
+                quickHighlighters_.clear();
+                quickHighlighters_.append( { QColor{}, Qt::red } );
+                quickHighlighters_.append( { QColor{}, Qt::green } );
+                quickHighlighters_.append( { QColor{}, Qt::cyan } );
+            }
         }
         else {
             LOG_ERROR << "Unknown version of HighlighterSetCollection, ignoring it...";

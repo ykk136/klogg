@@ -54,6 +54,7 @@
 #include <limits>
 #include <memory>
 #include <numeric>
+#include <plog/Log.h>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -1813,6 +1814,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     const int paintDeviceWidth = paintDevice->width() / viewport()->devicePixelRatio();
     const QPalette& palette = viewport()->palette();
     const auto& highlighterSet = HighlighterSetCollection::get().currentSet();
+    const auto& quickHighlighters = HighlighterSetCollection::get().quickHighlighters();
     QColor foreColor, backColor;
 
     static const QBrush normalBulletBrush = QBrush( Qt::white );
@@ -1917,12 +1919,20 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     }
 
     std::vector<Highlighter> additionalHighlighters;
-    for ( const auto& wordHighlighter : wordsHighlighters_ ) {
-        const auto& [ words, wordForeColor, wordBackColor ] = wordHighlighter;
+    for ( auto i = 0u; i < wordsHighlighters_.size(); ++i ) {
+        const auto quickHighlighterIndex = static_cast<int>( i );
+        if ( quickHighlighterIndex >= quickHighlighters.size() ) {
+            LOG_WARNING << "Not enough quickHighlighters configured";
+            break;
+        }
 
-        std::transform( words.begin(), words.end(), std::back_inserter( additionalHighlighters ),
-                        [ fColor = wordForeColor, bColor = wordBackColor ]( const QString& word ) {
-                            Highlighter h{ word, false, true, fColor, bColor };
+        const auto quickHighlighter = quickHighlighters.at( quickHighlighterIndex );
+
+        std::transform( wordsHighlighters_[ i ].begin(), wordsHighlighters_[ i ].end(),
+                        std::back_inserter( additionalHighlighters ),
+                        [ quickHighlighter ]( const QString& word ) {
+                            Highlighter h{ word, false, true, quickHighlighter.foreColor,
+                                           quickHighlighter.backColor };
                             h.setUseRegex( false );
                             return h;
                         } );

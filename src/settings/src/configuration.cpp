@@ -41,6 +41,7 @@
 
 #include <QFontInfo>
 #include <QKeySequence>
+#include <qcolor.h>
 #include <qglobal.h>
 #include <qmap.h>
 #include <qvariant.h>
@@ -138,11 +139,14 @@ void Configuration::retrieveFromStorage( QSettings& settings )
 
     mainSearchBackColor_.setNamedColor(
         settings
-            .value( "regexpType.mainBackColor", DefaultConfiguration.mainSearchBackColor_.name() )
+            .value( "regexpType.mainBackColor",
+                    DefaultConfiguration.mainSearchBackColor_.name( QColor::HexArgb ) )
             .toString() );
 
     qfBackColor_.setNamedColor(
-        settings.value( "regexpType.quickfindBackColor", DefaultConfiguration.qfBackColor_.name() )
+        settings
+            .value( "regexpType.quickfindBackColor",
+                    DefaultConfiguration.qfBackColor_.name( QColor::HexArgb ) )
             .toString() );
 
     autoRunSearchOnPatternChange_ = settings
@@ -310,13 +314,13 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "regexpType.engine", static_cast<int>( regexpEngine_ ) );
 
     settings.setValue( "regexpType.main", static_cast<int>( mainRegexpType_ ) );
-    settings.setValue( "regexpType.mainBackColor", mainSearchBackColor_.name() );
+    settings.setValue( "regexpType.mainBackColor", mainSearchBackColor_.name( QColor::HexArgb ) );
     settings.setValue( "regexpType.mainHighlight", enableMainSearchHighlight_ );
     settings.setValue( "regexpType.mainHighlightVariate", enableMainSearchHighlightVariance_ );
     settings.setValue( "regexpType.autoRunSearch", autoRunSearchOnPatternChange_ );
 
     settings.setValue( "regexpType.quickfind", static_cast<int>( quickfindRegexpType_ ) );
-    settings.setValue( "regexpType.quickfindBackColor", qfBackColor_.name() );
+    settings.setValue( "regexpType.quickfindBackColor", qfBackColor_.name( QColor::HexArgb ) );
 
     settings.setValue( "quickfind.incremental", quickfindIncremental_ );
 

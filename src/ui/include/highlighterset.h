@@ -47,6 +47,11 @@
 #include "highlightedmatch.h"
 #include "persistable.h"
 
+struct HighlightColor {
+    QColor foreColor;
+    QColor backColor;
+};
+
 // Represents a filter, i.e. a regexp and the colors matching text
 // should be rendered in.
 class Highlighter {
@@ -96,8 +101,7 @@ class Highlighter {
     bool variateColors_ = false;
     int colorVariance_ = 15;
 
-    QColor foreColor_;
-    QColor backColor_;
+    HighlightColor color_;
 };
 
 enum class HighlighterMatchType { NoMatch, WordMatch, LineMatch };
@@ -160,6 +164,9 @@ class HighlighterSetCollection final : public Persistable<HighlighterSetCollecti
     QString currentSetId() const;
     void setCurrentSet( const QString& setId );
 
+    QList<HighlightColor> quickHighlighters() const;
+    void setQuickHighlighters(const QList<HighlightColor>& quickHighlighters);
+
     // Reads/writes the current config in the QSettings object passed
     void saveToStorage( QSettings& settings ) const;
     void retrieveFromStorage( QSettings& settings );
@@ -170,6 +177,8 @@ class HighlighterSetCollection final : public Persistable<HighlighterSetCollecti
   private:
     QList<HighlighterSet> highlighters_;
     QString currentSet_;
+
+    QList<HighlightColor> quickHighlighters_;
 
     // To simplify this class interface, HighlightersDialog can access our
     // internal structure directly.

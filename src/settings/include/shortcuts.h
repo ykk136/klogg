@@ -88,6 +88,7 @@ struct ShortcutAction {
     static constexpr auto LogViewAddColorLabel2 = "logview.add_color_label_2";
     static constexpr auto LogViewAddColorLabel3 = "logview.add_color_label_3";
     static constexpr auto LogViewClearColorLabels = "logview.clear_color_labels";
+    static constexpr auto LogViewAddNextColorLabel = "logview.add_next_color_label";
 
     static const std::map<std::string, QStringList>& defaultShortcuts();
 

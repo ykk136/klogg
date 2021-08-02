@@ -33,7 +33,8 @@ const std::map<std::string, QStringList>& ShortcutAction::defaultShortcuts()
         auto getKeyBindings = []( QKeySequence::StandardKey standardKey ) {
             auto bindings = QKeySequence::keyBindings( standardKey );
             QStringList stringBindings;
-            std::transform( bindings.cbegin(), bindings.cend(), std::back_inserter( stringBindings ),
+            std::transform( bindings.cbegin(), bindings.cend(),
+                            std::back_inserter( stringBindings ),
                             []( const auto& keySequence ) { return keySequence.toString(); } );
 
             return stringBindings;
@@ -129,6 +130,7 @@ const std::map<std::string, QStringList>& ShortcutAction::defaultShortcuts()
         shortcuts.emplace( LogViewAddColorLabel2, QStringList() << "Ctrl+Shift+2" );
         shortcuts.emplace( LogViewAddColorLabel3, QStringList() << "Ctrl+Shift+3" );
         shortcuts.emplace( LogViewClearColorLabels, QStringList() << "Ctrl+Shift+0" );
+        shortcuts.emplace( LogViewAddNextColorLabel, QStringList() << "Ctrl+D" );
 
         return shortcuts;
     }();
@@ -210,6 +212,8 @@ QString ShortcutAction::actionName( const std::string& action )
         shortcuts.emplace( LogViewAddColorLabel1, "Highlight selected text with color 1" );
         shortcuts.emplace( LogViewAddColorLabel2, "Highlight selected text with color 2" );
         shortcuts.emplace( LogViewAddColorLabel3, "Highlight selected text with color 3" );
+        shortcuts.emplace( LogViewAddNextColorLabel, "Highlight selected text with next color" );
+
         shortcuts.emplace( LogViewClearColorLabels, "Clear all color labels" );
 
         return shortcuts;

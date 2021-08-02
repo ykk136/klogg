@@ -405,8 +405,8 @@ void CrawlerWidget::editSearchHistory()
 
     auto history = savedSearches_->recentSearches().join( QChar::LineFeed );
     bool ok;
-    QString newHistory = QInputDialog::getMultiLineText(
-        this, tr( "klogg" ), tr( "Search history:" ), history, &ok );
+    QString newHistory = QInputDialog::getMultiLineText( this, tr( "klogg" ),
+                                                         tr( "Search history:" ), history, &ok );
 
     if ( ok ) {
         savedSearches_->clear();
@@ -1088,8 +1088,10 @@ void CrawlerWidget::setup()
              &CrawlerWidget::showSearchContextMenu );
     connect( saveAsPredefinedFilterAction, &QAction::triggered, this,
              &CrawlerWidget::saveAsPredefinedFilter );
-    connect( clearSearchHistoryAction, &QAction::triggered, this, &CrawlerWidget::clearSearchHistory );
-    connect( editSearchHistoryAction, &QAction::triggered, this, &CrawlerWidget::editSearchHistory );
+    connect( clearSearchHistoryAction, &QAction::triggered, this,
+             &CrawlerWidget::clearSearchHistory );
+    connect( editSearchHistoryAction, &QAction::triggered, this,
+             &CrawlerWidget::editSearchHistory );
     connect( searchButton_, &QToolButton::clicked, this, &CrawlerWidget::startNewSearch );
     connect( stopButton_, &QToolButton::clicked, this, &CrawlerWidget::stopSearch );
 
@@ -1258,12 +1260,16 @@ void CrawlerWidget::registerShortcuts()
                                           }
                                       } );
 
-    const auto addColorLabelToSelection = [ this ]( size_t label ) {
-        auto& wordsHighlighters = std::get<0>( wordsHighlighters_[ label ] );
+    const auto addColorLabelToSelection = [ this ]( size_t label, bool clearHighlight = true ) {
         auto selectedPattern = getSelectedText();
-
-        if ( wordsHighlighters.removeAll( selectedPattern ) == 0 ) {
-            wordsHighlighters.append( std::move( selectedPattern ) );
+        for ( auto i = 0u; i < wordsHighlighters_.size(); ++i ) {
+            const auto wasHighlighted = wordsHighlighters_[ i ].removeAll( selectedPattern ) != 0;
+            if ( i != label ) {
+                continue;
+            }
+            if ( !clearHighlight || !wasHighlighted ) {
+                wordsHighlighters_[ i ].append( std::move( selectedPattern ) );
+            }
         }
 
         logMainView_->setWordsHighlighters( wordsHighlighters_ );
@@ -1285,11 +1291,21 @@ void CrawlerWidget::registerShortcuts()
         ShortcutAction::LogViewAddColorLabel3,
         [ addColorLabelToSelection ]() { addColorLabelToSelection( 2u ); } );
 
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::LogViewAddNextColorLabel, [ this, addColorLabelToSelection ]() {
+            addColorLabelToSelection( nextWordsHighlighterIndex_, false );
+            nextWordsHighlighterIndex_++;
+            if ( nextWordsHighlighterIndex_ == wordsHighlighters_.size() ) {
+                nextWordsHighlighterIndex_ = 0;
+            }
+        } );
+
     ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this,
                                       Qt::WidgetWithChildrenShortcut,
                                       ShortcutAction::LogViewClearColorLabels, [ this ]() {
                                           for ( auto& wordsHighlighters : wordsHighlighters_ ) {
-                                              std::get<0>( wordsHighlighters ).clear();
+                                              wordsHighlighters.clear();
                                           }
                                           logMainView_->setWordsHighlighters( wordsHighlighters_ );
                                           filteredView_->setWordsHighlighters( wordsHighlighters_ );

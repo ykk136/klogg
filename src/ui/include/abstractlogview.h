@@ -218,7 +218,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     void setSearchPattern( const RegularExpressionPattern& pattern );
 
-    using WordsHighlighters = std::tuple<QStringList, QColor, QColor>;
+    using WordsHighlighters = QStringList;
     void setWordsHighlighters( const std::vector<WordsHighlighters>& wordHighlighters );
 
     void registerShortcuts();

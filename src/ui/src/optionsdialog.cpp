@@ -47,6 +47,7 @@
 #include "savedsearches.h"
 #include "shortcuts.h"
 #include "styles.h"
+#include "highlighteredit.h"
 
 #include "optionsdialog.h"
 
@@ -258,10 +259,10 @@ void OptionsDialog::updateDialogFromConfig()
     // Regexp types
     mainSearchBox->setCurrentIndex( getRegexpTypeIndex( config.mainRegexpType() ) );
     mainSearchColor_ = config.mainSearchBackColor();
-    updateIcon( mainSearchColorButton, mainSearchColor_ );
+    HighlighterEdit::updateIcon( mainSearchColorButton, mainSearchColor_ );
     quickFindSearchBox->setCurrentIndex( getRegexpTypeIndex( config.quickfindRegexpType() ) );
     qfSearchColor_ = config.qfBackColor();
-    updateIcon( quickFindColorButton, qfSearchColor_ );
+    HighlighterEdit::updateIcon( quickFindColorButton, qfSearchColor_ );
     regexpEngineComboBox->setCurrentIndex( getRegexpEngineIndex( config.regexpEngine() ) );
     autoRunSearchOnAddCheckBox->setChecked( config.autoRunSearchOnPatternChange() );
 
@@ -329,45 +330,22 @@ void OptionsDialog::updateFontSize( const QString& fontFamily )
         fontSizeBox->setCurrentIndex( i );
 }
 
-void OptionsDialog::updateIcon( QPushButton* button, const QColor& color )
-{
-    QPixmap CustomPixmap( 20, 10 );
-    CustomPixmap.fill( color );
-    button->setIcon( QIcon( CustomPixmap ) );
-}
-
 void OptionsDialog::changeMainColor()
 {
     QColor newColor;
-    if ( showColorPicker( mainSearchColor_, newColor ) ) {
+    if ( HighlighterEdit::showColorPicker( mainSearchColor_, newColor ) ) {
         mainSearchColor_ = newColor;
-        updateIcon( mainSearchColorButton, mainSearchColor_ );
+        HighlighterEdit::updateIcon( mainSearchColorButton, mainSearchColor_ );
     }
 }
 
 void OptionsDialog::changeQfColor()
 {
     QColor newColor;
-    if ( showColorPicker( qfSearchColor_, newColor ) ) {
+    if ( HighlighterEdit::showColorPicker( qfSearchColor_, newColor ) ) {
         qfSearchColor_ = newColor;
-        updateIcon( quickFindColorButton, qfSearchColor_ );
+        HighlighterEdit::updateIcon( quickFindColorButton, qfSearchColor_ );
     }
-}
-
-bool OptionsDialog::showColorPicker( const QColor& in, QColor& out )
-{
-    QColorDialog dialog;
-
-    // non native dialog ensures they will have a default
-    // set of colors to pick from in a pallette. For example,
-    // on some linux desktops, the basic palette is missing
-    dialog.setOption( QColorDialog::DontUseNativeDialog, true );
-    dialog.setModal( true );
-    dialog.setCurrentColor( in );
-    dialog.exec();
-    out = dialog.currentColor();
-
-    return ( dialog.result() == QDialog::Accepted );
 }
 
 void OptionsDialog::updateConfigFromDialog()

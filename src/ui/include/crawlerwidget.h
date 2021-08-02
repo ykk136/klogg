@@ -40,6 +40,7 @@
 #ifndef CRAWLERWIDGET_H
 #define CRAWLERWIDGET_H
 
+#include <cstddef>
 #include <optional>
 
 #include <QCheckBox>
@@ -388,10 +389,11 @@ class CrawlerWidget : public QSplitter,
     std::vector<LineNumber> savedMarkedLines_;
 
     std::vector<AbstractLogView::WordsHighlighters> wordsHighlighters_ = {
-        { {}, {}, Qt::red },
-        { {}, {}, Qt::green },
-        { {}, {}, Qt::cyan },
+        { {} },
+        { {} },
+        { {} },
     };
+    size_t nextWordsHighlighterIndex_ = 0;
 
     // Current encoding setting;
     std::optional<int> encodingMib_;

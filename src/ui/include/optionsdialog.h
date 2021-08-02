@@ -98,9 +98,6 @@ class OptionsDialog : public QDialog, public Ui::OptionsDialog {
     void setupArchives();
     void setupStyles();
 
-    void updateIcon( QPushButton* button, const QColor& color );
-    static bool showColorPicker( const QColor& in, QColor& out );
-
     void buildShortcutsTable();
 
     int getRegexpTypeIndex( SearchRegexpType syntax ) const;
