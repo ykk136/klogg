@@ -81,7 +81,7 @@ void StyleManager::applyStyle( const QString& style )
         QPalette darkPalette;
         darkPalette.setColor( QPalette::Window, darkGray );
         darkPalette.setColor( QPalette::WindowText, white );
-        darkPalette.setColor( QPalette::Base, gray.darker() );
+        darkPalette.setColor( QPalette::Base, black );
         darkPalette.setColor( QPalette::AlternateBase, darkGray );
         darkPalette.setColor( QPalette::ToolTipBase, blue );
         darkPalette.setColor( QPalette::ToolTipText, white );

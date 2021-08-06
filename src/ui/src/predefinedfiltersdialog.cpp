@@ -43,8 +43,10 @@
 #include <QTimer>
 #include <QToolButton>
 #include <qabstractitemmodel.h>
+#include <qboxlayout.h>
 #include <qcheckbox.h>
 #include <qglobal.h>
+#include <qwidget.h>
 #include <tuple>
 #include <vector>
 
@@ -52,6 +54,34 @@
 #include "iconloader.h"
 #include "log.h"
 #include "predefinedfilters.h"
+
+class CenteredCheckbox : public QWidget
+{
+    public: 
+        explicit CenteredCheckbox(QWidget* parent = nullptr) : QWidget(parent)
+        {
+            auto layout = new QHBoxLayout;
+            layout->setAlignment(Qt::AlignCenter);
+            checkbox_ = new QCheckBox;
+            layout->addWidget(checkbox_);
+            this->setLayout(layout);
+
+            QPalette palette = this->palette();
+            palette.setColor(QPalette::Base, palette.color(QPalette::Window));
+            checkbox_->setPalette(palette);
+        }
+
+        bool isChecked() const {
+            return checkbox_->isChecked();
+        }
+
+        void setChecked(bool isChecked) {
+            checkbox_->setChecked(isChecked);
+        }
+
+    private:
+        QCheckBox* checkbox_;
+};
 
 PredefinedFiltersDialog::PredefinedFiltersDialog( QWidget* parent )
     : QDialog( parent )
@@ -134,7 +164,7 @@ void PredefinedFiltersDialog::populateFiltersTable(
     for ( const auto& filter : filters ) {
         filtersTableWidget->setItem( filterIndex, 0, new QTableWidgetItem( filter.name ) );
         filtersTableWidget->setItem( filterIndex, 1, new QTableWidgetItem( filter.pattern ) );
-        QCheckBox* regexCheckbox = new QCheckBox;
+        auto* regexCheckbox = new CenteredCheckbox;
         regexCheckbox->setChecked( filter.useRegex );
         filtersTableWidget->setCellWidget( filterIndex, 2, regexCheckbox );
 
@@ -167,7 +197,7 @@ PredefinedFiltersCollection::Collection PredefinedFiltersDialog::readFiltersTabl
         const auto value = filtersTableWidget->item( i, 1 )->text();
 
         const auto useRegexCheckbox
-            = qobject_cast<QCheckBox*>( filtersTableWidget->cellWidget( i, 2 ) );
+            = static_cast<CenteredCheckbox*>( filtersTableWidget->cellWidget( i, 2 ) );
         const auto useRegex = useRegexCheckbox ? useRegexCheckbox->isChecked() : false;
 
         if ( !name.isEmpty() && !value.isEmpty() ) {
@@ -189,7 +219,8 @@ void PredefinedFiltersDialog::addFilterRow( const QString& newFilter )
     filtersTableWidget->setRowCount( newRow + 1 );
     filtersTableWidget->setItem( newRow, 1, new QTableWidgetItem( newFilter ) );
     filtersTableWidget->setItem( newRow, 0, new QTableWidgetItem( "" ) );
-    filtersTableWidget->setCellWidget( newRow, 2, new QCheckBox );
+    auto regexCheckBox = new CenteredCheckbox;
+    filtersTableWidget->setCellWidget( newRow, 2, regexCheckBox );
 
     filtersTableWidget->scrollToItem( filtersTableWidget->item( newRow, 0 ) );
     filtersTableWidget->setCurrentCell( newRow, 0 );
@@ -228,15 +259,15 @@ void PredefinedFiltersDialog::swapFilters( int currentRow, int newRow, int selec
     dispatchToMainThread( [ this, currentRow, newRow, selectedColumn ] {
         for ( int column = 0; column < filtersTableWidget->columnCount(); ++column ) {
             auto currentUseRegex
-                = qobject_cast<QCheckBox*>( filtersTableWidget->cellWidget( currentRow, column ) );
+                = static_cast<CenteredCheckbox*>( filtersTableWidget->cellWidget( currentRow, column ) );
             auto newUseRegex
-                = qobject_cast<QCheckBox*>( filtersTableWidget->cellWidget( newRow, column ) );
+                = static_cast<CenteredCheckbox*>( filtersTableWidget->cellWidget( newRow, column ) );
 
             if ( currentUseRegex && newUseRegex ) {
-                const auto currentCheckState = currentUseRegex->checkState();
-                const auto newCheckState = newUseRegex->checkState();
-                currentUseRegex->setCheckState( newCheckState );
-                newUseRegex->setCheckState( currentCheckState );
+                const auto currentCheckState = currentUseRegex->isChecked();
+                const auto newCheckState = newUseRegex->isChecked();
+                currentUseRegex->setChecked( newCheckState );
+                newUseRegex->setChecked( currentCheckState );
             }
             else {
                 auto currentItem = filtersTableWidget->takeItem( currentRow, column );

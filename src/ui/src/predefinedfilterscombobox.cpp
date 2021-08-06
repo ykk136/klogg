@@ -56,7 +56,7 @@ class QCheckListStyledItemDelegate : public QStyledItemDelegate {
     void paint( QPainter* painter, const QStyleOptionViewItem& option,
                 const QModelIndex& index ) const
     {
-        QStyleOptionViewItem& refToNonConstOption = const_cast<QStyleOptionViewItem&>( option );
+        QStyleOptionViewItem refToNonConstOption = option;
         refToNonConstOption.showDecorationSelected = false;
         QStyledItemDelegate::paint( painter, refToNonConstOption, index );
     }
@@ -76,9 +76,9 @@ PredefinedFiltersComboBox::PredefinedFiltersComboBox( QWidget* parent )
                  collectFilters();
              } );
 
-    connect( view(), &QAbstractItemView::pressed, this, [ this ]( const QModelIndex& index ) {
+    const auto changeCheckState = [ this ]( const QModelIndex& index ) {
         auto item = model_->itemFromIndex( index );
-        if (!item || !item->isCheckable()) {
+        if ( !item || !item->isCheckable() ) {
             return;
         }
         if ( item->checkState() == Qt::Checked ) {
@@ -87,7 +87,14 @@ PredefinedFiltersComboBox::PredefinedFiltersComboBox( QWidget* parent )
         else {
             item->setCheckState( Qt::Checked );
         }
-    } );
+    };
+
+    connect( view(), &QAbstractItemView::pressed, this, changeCheckState );
+    connect( view(), &QAbstractItemView::doubleClicked, this, changeCheckState );
+
+    QPalette palette = this->palette();
+    palette.setColor( QPalette::Base, palette.color( QPalette::Window ) );
+    view()->setPalette( palette );
 }
 
 void PredefinedFiltersComboBox::populatePredefinedFilters()
