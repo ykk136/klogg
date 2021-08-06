@@ -38,17 +38,56 @@
 
 #include "predefinedfilterscombobox.h"
 
+#include <QListView>
 #include <QStandardItemModel>
-#include <qregularexpression.h>
+#include <QStyledItemDelegate>
+#include <plog/Log.h>
+#include <qabstractitemview.h>
 
 #include "log.h"
+
+class QCheckListStyledItemDelegate : public QStyledItemDelegate {
+  public:
+    QCheckListStyledItemDelegate( QObject* parent = 0 )
+        : QStyledItemDelegate( parent )
+    {
+    }
+
+    void paint( QPainter* painter, const QStyleOptionViewItem& option,
+                const QModelIndex& index ) const
+    {
+        QStyleOptionViewItem& refToNonConstOption = const_cast<QStyleOptionViewItem&>( option );
+        refToNonConstOption.showDecorationSelected = false;
+        QStyledItemDelegate::paint( painter, refToNonConstOption, index );
+    }
+};
 
 PredefinedFiltersComboBox::PredefinedFiltersComboBox( QWidget* parent )
     : QComboBox( parent )
     , model_( new QStandardItemModel() )
 {
     setFocusPolicy( Qt::ClickFocus );
+    setItemDelegate( new QCheckListStyledItemDelegate( this ) );
     populatePredefinedFilters();
+
+    connect( model_, &QStandardItemModel::itemChanged, this,
+             [ this ]( const QStandardItem* changedItem ) {
+                 Q_UNUSED( changedItem );
+                 collectFilters();
+             } );
+
+    connect( view(), &QAbstractItemView::pressed, this, [ this ]( const QModelIndex& index ) {
+        auto item = model_->itemFromIndex( index );
+        if (!item || !item->isCheckable()) {
+            return;
+        }
+        if ( item->checkState() == Qt::Checked ) {
+            item->setCheckState( Qt::Unchecked );
+        }
+        else {
+            item->setCheckState( Qt::Checked );
+        }
+    } );
 }
 
 void PredefinedFiltersComboBox::populatePredefinedFilters()
@@ -61,12 +100,6 @@ void PredefinedFiltersComboBox::populatePredefinedFilters()
     insertFilters( filters );
 
     this->setModel( model_ );
-
-    connect( model_, &QStandardItemModel::itemChanged,
-             [ this ]( const QStandardItem* changedItem ) {
-                 Q_UNUSED( changedItem );
-                 collectFilters();
-             } );
 }
 
 void PredefinedFiltersComboBox::setTitle( const QString& title )
