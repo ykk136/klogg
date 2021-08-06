@@ -180,7 +180,7 @@ inline QString untabify( QString&& line, int initialPosition = 0 )
 
     int position = 0;
     position = line.indexOf( QChar::Tabulation, position );
-    while ( position > 0 ) {
+    while ( position >= 0 ) {
         const int spaces = TabStop - ( ( initialPosition + position + totalSpaces ) % TabStop );
         line.replace( position, 1, QString( spaces, QChar::Space ) );
         totalSpaces += spaces - 1;
