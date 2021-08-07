@@ -103,11 +103,11 @@ class QuickFindMux : public QObject
   public slots:
     // Signal the current pattern must be altered (will start an incremental
     // search if the options are configured in such a way).
-    void setNewPattern( const QString& new_pattern, bool ignore_case );
+    void setNewPattern( const QString& newPattern, bool ignoreCase, bool isRegexSearch );
 
     // Signal the current pattern must be altered and is confirmed
     // (will stop an incremental search if needed)
-    void confirmPattern( const QString& new_pattern, bool ignore_case );
+    void confirmPattern( const QString& newPattern, bool ignoreCase, bool isRegexSearch );
 
     // Signal the user cancelled the search
     // (used for incremental only)
@@ -123,8 +123,8 @@ class QuickFindMux : public QObject
     void searchBackward();
 
   private slots:
-    void changeQuickFind( const QString& new_pattern,
-            QuickFindMux::QFDirection new_direction );
+    void changeQuickFind( const QString& newPattern,
+            QuickFindMux::QFDirection newDirection );
     void notifyPatternChanged();
 
   private:

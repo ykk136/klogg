@@ -189,10 +189,10 @@ MainWindow::MainWindow( WindowSession session )
 
     // Establish the QuickFindWidget and mux ( to send requests from the
     // QFWidget to the right window )
-    connect( &quickFindWidget_, SIGNAL( patternConfirmed( const QString&, bool ) ), &quickFindMux_,
-             SLOT( confirmPattern( const QString&, bool ) ) );
-    connect( &quickFindWidget_, SIGNAL( patternUpdated( const QString&, bool ) ), &quickFindMux_,
-             SLOT( setNewPattern( const QString&, bool ) ) );
+    connect( &quickFindWidget_, SIGNAL( patternConfirmed( const QString&, bool, bool ) ), &quickFindMux_,
+             SLOT( confirmPattern( const QString&, bool, bool ) ) );
+    connect( &quickFindWidget_, SIGNAL( patternUpdated( const QString&, bool, bool ) ), &quickFindMux_,
+             SLOT( setNewPattern( const QString&, bool, bool ) ) );
     connect( &quickFindWidget_, SIGNAL( cancelSearch() ), &quickFindMux_, SLOT( cancelSearch() ) );
     connect( &quickFindWidget_, SIGNAL( searchForward() ), &quickFindMux_,
              SLOT( searchForward() ) );
@@ -1232,7 +1232,7 @@ void MainWindow::currentTabChanged( int index )
 
 void MainWindow::changeQFPattern( const QString& newPattern )
 {
-    quickFindWidget_.changeDisplayedPattern( newPattern );
+    quickFindWidget_.changeDisplayedPattern( newPattern, true );
 }
 
 void MainWindow::loadFileNonInteractive( const QString& file_name )
@@ -1956,7 +1956,7 @@ void MainWindow::displayQuickFindBar( QuickFindMux::QFDirection direction )
     if ( crawler != nullptr && crawler->isPartialSelection() ) {
         auto selection = crawler->getSelectedText();
         if ( !selection.isEmpty() ) {
-            quickFindWidget_.changeDisplayedPattern( selection );
+            quickFindWidget_.changeDisplayedPattern( selection, false );
         }
     }
 

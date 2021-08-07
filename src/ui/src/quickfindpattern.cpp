@@ -99,34 +99,22 @@ void QuickFindMatcher::getLastMatch( int* start_col, int* end_col ) const
     *end_col = lastMatchEnd_;
 }
 
-void QuickFindPattern::changeSearchPattern( const QString& pattern )
+void QuickFindPattern::changeSearchPattern( const QString& pattern, bool isRegex )
 {
-    pattern_ = pattern;
 
     // Determine the type of regexp depending on the config
-    QString searchPattern;
     switch ( Configuration::get().quickfindRegexpType() ) {
-    case SearchRegexpType::Wildcard:
-#if ( QT_VERSION >= QT_VERSION_CHECK( 5, 12, 0 ) )
-        searchPattern = QRegularExpression::wildcardToRegularExpression( pattern );
-        searchPattern = searchPattern.mid( 2, searchPattern.size() - 4 );
-#else
-        searchPattern = pattern;
-        searchPattern.replace( '*', ".*" ).replace( '?', "." );
-#endif
-
-        break;
-    case SearchRegexpType::FixedString:
-        searchPattern = QRegularExpression::escape( pattern );
+    case SearchRegexpType::ExtendedRegexp:
+        pattern_ = isRegex ? pattern : QRegularExpression::escape( pattern );
         break;
     default:
-        searchPattern = pattern;
+        pattern_ = pattern;
         break;
     }
 
-    regexp_.setPattern( searchPattern );
+    regexp_.setPattern( pattern_ );
 
-    if ( regexp_.isValid() && ( !searchPattern.isEmpty() ) )
+    if ( regexp_.isValid() && ( !pattern_.isEmpty() ) )
         active_ = true;
     else
         active_ = false;
@@ -134,7 +122,7 @@ void QuickFindPattern::changeSearchPattern( const QString& pattern )
     emit patternUpdated();
 }
 
-void QuickFindPattern::changeSearchPattern( const QString& pattern, bool ignoreCase )
+void QuickFindPattern::changeSearchPattern( const QString& pattern, bool ignoreCase, bool isRegex )
 {
     QRegularExpression::PatternOptions options = QRegularExpression::UseUnicodePropertiesOption;
 
@@ -142,7 +130,7 @@ void QuickFindPattern::changeSearchPattern( const QString& pattern, bool ignoreC
         options |= QRegularExpression::CaseInsensitiveOption;
 
     regexp_.setPatternOptions( options );
-    changeSearchPattern( pattern );
+    changeSearchPattern( pattern, isRegex );
 }
 
 bool QuickFindPattern::matchLine( const QString& line,

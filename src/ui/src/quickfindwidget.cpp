@@ -44,6 +44,7 @@
 #include <QLineEdit>
 #include <QToolButton>
 #include <qkeysequence.h>
+#include <qregularexpression.h>
 
 #include "configuration.h"
 #include "qfnotifications.h"
@@ -128,9 +129,11 @@ void QuickFindWidget::userActivate()
 // SLOTS
 //
 
-void QuickFindWidget::changeDisplayedPattern( const QString& newPattern )
+void QuickFindWidget::changeDisplayedPattern( const QString& newPattern, bool isRegex )
 {
-    editQuickFind_->setText( newPattern );
+    auto pattern
+        = ( !isRegex && isRegexSearch() ) ? QRegularExpression::escape( newPattern ) : newPattern;
+    editQuickFind_->setText( pattern );
     editQuickFind_->setCursorPosition( patternCursorPosition_ );
 }
 
@@ -159,7 +162,7 @@ void QuickFindWidget::doSearchForward()
     // the widget to stay visible.
     userRequested_ = true;
 
-    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase() );
+    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
     emit searchForward();
 }
 
@@ -172,14 +175,14 @@ void QuickFindWidget::doSearchBackward()
     // the widget to stay visible.
     userRequested_ = true;
 
-    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase() );
+    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
     emit searchBackward();
 }
 
 // Close and search when the user presses Return
 void QuickFindWidget::returnHandler()
 {
-    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase() );
+    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
     // Close the widget
     userRequested_ = false;
     this->hide();
@@ -205,7 +208,7 @@ void QuickFindWidget::notificationTimeout()
 void QuickFindWidget::textChanged()
 {
     patternCursorPosition_ = editQuickFind_->cursorPosition();
-    emit patternUpdated( editQuickFind_->text(), isIgnoreCase() );
+    emit patternUpdated( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
 }
 
 //
@@ -232,4 +235,9 @@ QToolButton* QuickFindWidget::setupToolButton( const QString& text, const QStrin
 bool QuickFindWidget::isIgnoreCase() const
 {
     return ( ignoreCaseCheck_->checkState() == Qt::Checked );
+}
+
+bool QuickFindWidget::isRegexSearch() const
+{
+    return ( Configuration::get().quickfindRegexpType() == SearchRegexpType::ExtendedRegexp );
 }
