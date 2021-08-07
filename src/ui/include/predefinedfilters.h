@@ -45,15 +45,15 @@
 
 #include "persistable.h"
 
+struct PredefinedFilter {
+    QString name;
+    QString pattern;
+    bool useRegex;
+};
+
 // Represents collection of filters read from settings file.
 class PredefinedFiltersCollection final : public Persistable<PredefinedFiltersCollection> {
   public:
-    struct PredefinedFilter {
-        QString name;
-        QString pattern;
-        bool useRegex;
-    };
-
     using Collection = QList<PredefinedFilter>;
 
     static const char* persistableName()
@@ -74,5 +74,7 @@ class PredefinedFiltersCollection final : public Persistable<PredefinedFiltersCo
 
     Collection filters_;
 };
+
+Q_DECLARE_METATYPE(PredefinedFilter)
 
 #endif

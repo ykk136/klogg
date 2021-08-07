@@ -233,6 +233,7 @@ class CrawlerWidget : public QSplitter,
 
     // Save current search as predefined filter
     void saveAsPredefinedFilter();
+    void setSearchPatternFromPredefinedFilters( const QList<PredefinedFilter>& filters );
 
     // Search Context Menu
     void showSearchContextMenu();
@@ -312,7 +313,8 @@ class CrawlerWidget : public QSplitter,
     // Reload predefined filters after changing settings
     void reloadPredefinedFilters() const;
 
-    QString escapeSearchPattern( const QString& searchPattern ) const;
+    QString escapeSearchPattern( const QString& searchPattern, bool isRegex = false ) const;
+    QString& combinePatterns( QString& currentPattern, const QString& newPattern ) const;
     void setSearchPattern( const QString& searchPattern );
 
     void resetStateOnSearchPatternChanges();

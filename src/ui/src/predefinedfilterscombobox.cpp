@@ -46,6 +46,9 @@
 
 #include "log.h"
 
+constexpr int PatternRole = Qt::UserRole + 1;
+constexpr int RegexRole = PatternRole + 1;
+
 class QCheckListStyledItemDelegate : public QStyledItemDelegate {
   public:
     QCheckListStyledItemDelegate( QObject* parent = 0 )
@@ -124,10 +127,8 @@ void PredefinedFiltersComboBox::insertFilters(
         item->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled );
         item->setData( Qt::Unchecked, Qt::CheckStateRole );
 
-        const auto pattern
-            = filter.useRegex ? filter.pattern : QRegularExpression::escape( filter.pattern );
-
-        item->setData( pattern, Qt::UserRole );
+        item->setData( filter.pattern, PatternRole );
+        item->setData( filter.useRegex, RegexRole );
 
         model_->insertRow( model_->rowCount(), item );
     }
@@ -139,7 +140,8 @@ void PredefinedFiltersComboBox::collectFilters()
 
     /* If multiple filters are selected connect those with "|" */
 
-    QString fullFilter;
+    QList<PredefinedFilter> selectedPatterns;
+    selectedPatterns.reserve( totalRows );
     for ( auto filterIndex = 0; filterIndex < totalRows; ++filterIndex ) {
         const auto item = model_->item( filterIndex );
 
@@ -147,13 +149,9 @@ void PredefinedFiltersComboBox::collectFilters()
             continue;
         }
 
-        const auto filter = item->data( Qt::UserRole ).toString();
-        if ( !fullFilter.isEmpty() ) {
-            fullFilter += "|";
-        }
-
-        fullFilter.append( filter );
+        selectedPatterns.append( { item->text(), item->data( PatternRole ).toString(),
+                                   item->data( RegexRole ).toBool() } );
     }
 
-    emit filterChanged( fullFilter );
+    emit filterChanged( selectedPatterns );
 }

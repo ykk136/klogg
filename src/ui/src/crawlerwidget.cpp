@@ -62,6 +62,7 @@
 #include <QShortcut>
 #include <QStandardItemModel>
 #include <QStringListModel>
+#include <qglobal.h>
 
 #include "data/regularexpression.h"
 
@@ -777,10 +778,20 @@ void CrawlerWidget::changeFilteredViewVisibility( int index )
     }
 }
 
-QString CrawlerWidget::escapeSearchPattern( const QString& pattern ) const
+void CrawlerWidget::setSearchPatternFromPredefinedFilters( const QList<PredefinedFilter>& filters )
 {
-    auto escapedPattern
-        = useRegexpButton_->isChecked() ? QRegularExpression::escape( pattern ) : pattern;
+    QString searchPattern;
+    for ( const auto& filter : qAsConst( filters ) ) {
+        combinePatterns( searchPattern, escapeSearchPattern( filter.pattern, filter.useRegex ) );
+    }
+    setSearchPattern( searchPattern );
+}
+
+QString CrawlerWidget::escapeSearchPattern( const QString& pattern, bool isRegex ) const
+{
+    auto escapedPattern = ( !isRegex && useRegexpButton_->isChecked() )
+                              ? QRegularExpression::escape( pattern )
+                              : pattern;
 
     if ( booleanButton_->isChecked() ) {
         escapedPattern.replace( '"', "\"" ).prepend( '"' ).append( '"' );
@@ -789,12 +800,8 @@ QString CrawlerWidget::escapeSearchPattern( const QString& pattern ) const
     return escapedPattern;
 }
 
-void CrawlerWidget::addToSearch( const QString& searchString )
+QString& CrawlerWidget::combinePatterns( QString& currentPattern, const QString& newPattern ) const
 {
-    const auto newPattern = escapeSearchPattern( searchString );
-
-    QString currentPattern = searchLineEdit_->currentText();
-
     if ( !currentPattern.isEmpty() ) {
         if ( booleanButton_->isChecked() ) {
             currentPattern.append( " or " );
@@ -806,7 +813,14 @@ void CrawlerWidget::addToSearch( const QString& searchString )
 
     currentPattern.append( newPattern );
 
-    setSearchPattern( currentPattern );
+    return currentPattern;
+}
+
+void CrawlerWidget::addToSearch( const QString& searchString )
+{
+    const auto newPattern = escapeSearchPattern( searchString );
+    QString currentPattern = searchLineEdit_->currentText();
+    setSearchPattern( combinePatterns( currentPattern, newPattern ) );
 }
 
 void CrawlerWidget::excludeFromSearch( const QString& searchString )
@@ -1081,8 +1095,8 @@ void CrawlerWidget::setup()
     connect( searchLineEdit_->lineEdit(), &QLineEdit::textEdited, this,
              &CrawlerWidget::searchTextChangeHandler );
 
-    connect( predefinedFilters_, &PredefinedFiltersComboBox::filterChanged, searchLineEdit_,
-             &QComboBox::setCurrentText );
+    connect( predefinedFilters_, &PredefinedFiltersComboBox::filterChanged, this,
+             &CrawlerWidget::setSearchPatternFromPredefinedFilters );
 
     connect( searchLineEdit_, &QWidget::customContextMenuRequested, this,
              &CrawlerWidget::showSearchContextMenu );
