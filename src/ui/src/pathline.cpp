@@ -36,25 +36,30 @@ void PathLine::contextMenuEvent( QContextMenuEvent* event )
 {
     QMenu menu( this );
 
-    auto copyPath = menu.addAction( "Copy full path" );
+    auto copyFullPath = menu.addAction( "Copy full path" );
+    auto copyFileName = menu.addAction( "Copy file name" );
     auto openContainingFolder = menu.addAction( "Open containing folder" );
     menu.addSeparator();
     auto copySelection = menu.addAction( "Copy" );
     menu.addSeparator();
     auto selectAll = menu.addAction( "Select all" );
 
-    connect( copyPath, &QAction::triggered,
-             [this]( auto ) { QApplication::clipboard()->setText( this->path_ ); } );
+    connect( copyFullPath, &QAction::triggered, this,
+             [ this ]( auto ) { QApplication::clipboard()->setText( this->path_ ); } );
 
-    connect( openContainingFolder, &QAction::triggered,
-             [this]( auto ) { showPathInFileExplorer( this->path_ ); } );
+    connect( copyFileName, &QAction::triggered, this, [ this ]( auto ) {
+        QApplication::clipboard()->setText( QFileInfo( this->path_ ).fileName() );
+    } );
+
+    connect( openContainingFolder, &QAction::triggered, this,
+             [ this ]( auto ) { showPathInFileExplorer( this->path_ ); } );
 
     copySelection->setEnabled( this->hasSelectedText() );
-    connect( copySelection, &QAction::triggered,
-             [this]( auto ) { QApplication::clipboard()->setText( this->selectedText() ); } );
+    connect( copySelection, &QAction::triggered, this,
+             [ this ]( auto ) { QApplication::clipboard()->setText( this->selectedText() ); } );
 
-    connect( selectAll, &QAction::triggered,
-             [this]( auto ) { setSelection( 0, this->text().length() ); } );
+    connect( selectAll, &QAction::triggered, this,
+             [ this ]( auto ) { setSelection( 0, this->text().length() ); } );
 
     menu.exec( event->globalPos() );
 }

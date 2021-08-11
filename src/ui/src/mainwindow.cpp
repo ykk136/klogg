@@ -189,10 +189,10 @@ MainWindow::MainWindow( WindowSession session )
 
     // Establish the QuickFindWidget and mux ( to send requests from the
     // QFWidget to the right window )
-    connect( &quickFindWidget_, SIGNAL( patternConfirmed( const QString&, bool, bool ) ), &quickFindMux_,
-             SLOT( confirmPattern( const QString&, bool, bool ) ) );
-    connect( &quickFindWidget_, SIGNAL( patternUpdated( const QString&, bool, bool ) ), &quickFindMux_,
-             SLOT( setNewPattern( const QString&, bool, bool ) ) );
+    connect( &quickFindWidget_, SIGNAL( patternConfirmed( const QString&, bool, bool ) ),
+             &quickFindMux_, SLOT( confirmPattern( const QString&, bool, bool ) ) );
+    connect( &quickFindWidget_, SIGNAL( patternUpdated( const QString&, bool, bool ) ),
+             &quickFindMux_, SLOT( setNewPattern( const QString&, bool, bool ) ) );
     connect( &quickFindWidget_, SIGNAL( cancelSearch() ), &quickFindMux_, SLOT( cancelSearch() ) );
     connect( &quickFindWidget_, SIGNAL( searchForward() ), &quickFindMux_,
              SLOT( searchForward() ) );
@@ -841,10 +841,12 @@ void MainWindow::closeAll( ActionInitiator initiator )
 // Select all the text in the currently selected view
 void MainWindow::selectAll()
 {
-    CrawlerWidget* current = currentCrawlerWidget();
-
-    if ( current )
+    if ( infoLine->hasFocus() ) {
+        infoLine->setSelection( 0, infoLine->text().length() );
+    }
+    else if ( auto current = currentCrawlerWidget(); current != nullptr ) {
         current->selectAll();
+    }
 }
 
 // Copy the currently selected line into the clipboard
@@ -853,7 +855,12 @@ void MainWindow::copy()
     try {
         auto clipboard = QApplication::clipboard();
 
-        if ( auto current = currentCrawlerWidget() ) {
+        if ( infoLine->hasFocus() && infoLine->hasSelectedText() ) {
+            clipboard->setText( infoLine->selectedText() );
+            return;
+        }
+
+        if ( auto current = currentCrawlerWidget(); current != nullptr ) {
             auto text = current->getSelectedText();
             text.replace( QChar::Null, QChar::Space );
 
