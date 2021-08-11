@@ -43,11 +43,11 @@
 #include <QtGui>
 
 #include "fontutils.h"
+#include "highlighteredit.h"
 #include "log.h"
 #include "savedsearches.h"
 #include "shortcuts.h"
 #include "styles.h"
-#include "highlighteredit.h"
 
 #include "optionsdialog.h"
 
@@ -256,6 +256,8 @@ void OptionsDialog::updateDialogFromConfig()
         styleComboBox->setCurrentText( style );
     }
 
+    hideAnsiColorsCheckBox->setChecked( config.hideAnsiColorSequences() );
+
     // Regexp types
     mainSearchBox->setCurrentIndex( getRegexpTypeIndex( config.mainRegexpType() ) );
     mainSearchColor_ = config.mainSearchBackColor();
@@ -409,6 +411,7 @@ void OptionsDialog::updateConfigFromDialog()
     }
 
     config.setStyle( styleComboBox->currentText() );
+    config.setHideAnsiColorSequences( hideAnsiColorsCheckBox->isChecked() );
 
     auto shortcuts = config.shortcuts();
     for ( auto shortcutRow = 0; shortcutRow < shortcutsTable->rowCount(); ++shortcutRow ) {

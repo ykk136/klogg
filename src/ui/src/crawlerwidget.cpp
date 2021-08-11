@@ -78,6 +78,8 @@
 #include "savedsearches.h"
 #include "shortcuts.h"
 
+static constexpr char AnsiColorSequenceRegex[] = "\\x1B\\[([0-9]{1,2}(;[0-9]{1,2})?)?[mK]";
+
 // Palette for error signaling (yellow background)
 const QPalette CrawlerWidget::ErrorPalette( Qt::darkYellow );
 
@@ -582,6 +584,13 @@ void CrawlerWidget::applyConfiguration()
     // Necessary on systems doing subpixel positionning (e.g. Ubuntu 12.04)
     if ( config.forceFontAntialiasing() ) {
         font.setStyleStrategy( QFont::PreferAntialias );
+    }
+
+    if ( config.hideAnsiColorSequences() ) {
+        logData_->setPrefilter( AnsiColorSequenceRegex );
+    }
+    else {
+        logData_->setPrefilter( {} );
     }
 
     logMainView_->setLineNumbersVisible( config.mainLineNumbersVisible() );

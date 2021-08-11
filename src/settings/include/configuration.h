@@ -452,6 +452,15 @@ class Configuration final : public Persistable<Configuration> {
         optimizeForNotLatinEncodings_ = enable;
     }
 
+    bool hideAnsiColorSequences() const
+    {
+        return hideAnsiColorSequences_;
+    }
+    void setHideAnsiColorSequences( bool hide )
+    {
+        hideAnsiColorSequences_ = hide;
+    }
+
     // Reads/writes the current config in the QSettings object passed
     void saveToStorage( QSettings& settings ) const;
     void retrieveFromStorage( QSettings& settings );
@@ -525,6 +534,8 @@ class Configuration final : public Persistable<Configuration> {
     bool autoRunSearchOnPatternChange_ = false;
 
     bool optimizeForNotLatinEncodings_ = false;
+
+    bool hideAnsiColorSequences_ = false;
 
     std::map<std::string, QStringList> shortcuts_;
 };

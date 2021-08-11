@@ -253,6 +253,11 @@ void Configuration::retrieveFromStorage( QSettings& settings )
     minimizeToTray_
         = settings.value( "view.minimizeToTray", DefaultConfiguration.minimizeToTray_ ).toBool();
 
+    hideAnsiColorSequences_
+        = settings
+              .value( "view.hideAnsiColorSequences", DefaultConfiguration.hideAnsiColorSequences_ )
+              .toBool();
+
     style_ = settings.value( "view.style", DefaultConfiguration.style_ ).toString();
 
     auto styles = StyleManager::availableStyles();
@@ -361,6 +366,8 @@ void Configuration::saveToStorage( QSettings& settings ) const
 
     settings.setValue( "view.qtHiDpi", enableQtHighDpi_ );
     settings.setValue( "view.scaleFactorRounding", scaleFactorRounding_ );
+
+    settings.setValue( "view.hideAnsiColorSequences", hideAnsiColorSequences_ );
 
     settings.setValue( "defaultView.searchAutoRefresh", searchAutoRefresh_ );
     settings.setValue( "defaultView.searchIgnoreCase", searchIgnoreCase_ );

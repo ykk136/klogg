@@ -44,6 +44,7 @@
 #include <iterator>
 #include <numeric>
 #include <plog/Log.h>
+#include <qregularexpression.h>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -92,6 +93,12 @@ LogData::~LogData()
 {
     LOG_DEBUG << "Destroying log data";
     operationQueue_.shutdown();
+}
+
+void LogData::setPrefilter( const QString& prefilterPattern )
+{
+    IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
+    prefilterPattern_ = prefilterPattern;
 }
 
 void LogData::attachFile( const QString& fileName )
@@ -342,6 +349,10 @@ LogData::RawLines LogData::getLinesRaw( LineNumber firstLine, LinesCount number 
         rawLines.endOfLines.reserve( number.get() );
 
         IndexingData::ConstAccessor scopedAccessor{ indexing_data_.get() };
+        rawLines.prefilterPattern
+            = !prefilterPattern_.isEmpty() ? QRegularExpression(
+                  prefilterPattern_, QRegularExpression::CaseInsensitiveOption )
+                                           : QRegularExpression{};
 
         if ( lastLine >= scopedAccessor.getNbLines() ) {
             LOG_WARNING << "Lines out of bound asked for";
@@ -465,8 +476,14 @@ std::vector<QString> LogData::RawLines::decodeLines() const
                 break;
             }
 
-            decodedLines.push_back( textDecoder.decoder->toUnicode( buffer.data() + lineStart,
-                                                                    static_cast<int>( length ) ) );
+            auto decodedLine = textDecoder.decoder->toUnicode( buffer.data() + lineStart,
+                                                               static_cast<int>( length ) );
+
+            if ( !prefilterPattern.pattern().isEmpty() ) {
+                decodedLine.remove( prefilterPattern );
+            }
+
+            decodedLines.push_back( std::move( decodedLine ) );
 
             lineStart = lineEnd;
         }
@@ -497,19 +514,23 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
 
         std::string_view wholeString;
 
-        if ( textDecoder.encodingParams.isUtf8Compatible ) {
+        if ( prefilterPattern.pattern().isEmpty() && textDecoder.encodingParams.isUtf8Compatible ) {
             wholeString = std::string_view( buffer.data(), buffer.size() );
         }
         else {
 
             QString utf16Data;
-            if ( textDecoder.encodingParams.isUtf16LE ) {
+            if ( prefilterPattern.pattern().isEmpty() && textDecoder.encodingParams.isUtf16LE ) {
                 utf16Data = QString::fromRawData( reinterpret_cast<const QChar*>( buffer.data() ),
                                                   static_cast<int>( buffer.size() / 2 ) );
             }
             else {
                 utf16Data = textDecoder.decoder->toUnicode( buffer.data(),
                                                             static_cast<int>( buffer.size() ) );
+            }
+
+            if ( !prefilterPattern.pattern().isEmpty() ) {
+                utf16Data.remove( prefilterPattern );
             }
 
             size_t resultSize = 0;

@@ -46,6 +46,7 @@
 #include <QObject>
 #include <QString>
 #include <QTextCodec>
+#include <qregularexpression.h>
 #include <qtextcodec.h>
 #include <string_view>
 
@@ -100,6 +101,8 @@ class LogData : public AbstractLogData {
     // Get the auto-detected encoding for the indexed text.
     QTextCodec* getDetectedEncoding() const;
 
+    void setPrefilter(const QString& prefilterPattern);
+
     struct RawLines {
         LineNumber startLine;
         LinesCount numberOfLines;
@@ -108,6 +111,8 @@ class LogData : public AbstractLogData {
         std::vector<qint64> endOfLines;
 
         TextDecoder textDecoder;
+
+        QRegularExpression prefilterPattern;
 
       public:
         std::vector<QString> decodeLines() const;
@@ -175,6 +180,8 @@ class LogData : public AbstractLogData {
     // Codec to decode text
     TextCodecHolder codec_;
     MonitoredFileStatus fileChangedOnDisk_;
+
+    QString prefilterPattern_;
 };
 
 #endif
