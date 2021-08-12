@@ -87,7 +87,7 @@ class LogFilteredData : public AbstractLogData {
     // Nothing is done if no search is in progress.
     void interruptSearch();
     // Clear the search and the list of results.
-    void clearSearch();
+    void clearSearch( bool dropCache = false );
 
     // Returns the line number in the original LogData where the element
     // 'index' was found.

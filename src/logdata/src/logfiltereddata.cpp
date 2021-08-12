@@ -52,6 +52,7 @@
 #include <functional>
 #include <limits>
 #include <numeric>
+#include <plog/Log.h>
 #include <tuple>
 #include <utility>
 
@@ -107,12 +108,14 @@ void LogFilteredData::runSearch( const RegularExpressionPattern& regExp, LineNum
     clearSearch();
     currentRegExp_ = regExp;
     currentSearchKey_ = makeCacheKey( regExp, startLine, endLine );
+    LOG_INFO << "Search cache key: " << regExp.pattern << "_" << startLine.get() << "_"
+             << endLine.get();
 
     bool shouldRunSearch = true;
     if ( config.useSearchResultsCache() ) {
         const auto cachedResults = searchResultsCache_.find( currentSearchKey_ );
         if ( cachedResults != std::end( searchResultsCache_ ) ) {
-            LOG_DEBUG << "Got result from cache";
+            LOG_INFO << "Got result from cache";
             shouldRunSearch = false;
             matching_lines_ = cachedResults->second.matching_lines;
             maxLength_ = cachedResults->second.maxLength;
@@ -133,7 +136,7 @@ void LogFilteredData::updateSearch( LineNumber startLine, LineNumber endLine )
 {
     LOG_DEBUG << "Entering updateSearch";
 
-    currentSearchKey_ = makeCacheKey( currentRegExp_, startLine, endLine );
+    currentSearchKey_ = {};
 
     attachReader();
     workerThread_.updateSearch( currentRegExp_, startLine, endLine,
@@ -147,7 +150,7 @@ void LogFilteredData::interruptSearch()
     workerThread_.interrupt();
 }
 
-void LogFilteredData::clearSearch()
+void LogFilteredData::clearSearch(bool dropCache)
 {
     interruptSearch();
 
@@ -156,6 +159,10 @@ void LogFilteredData::clearSearch()
     marks_and_matches_ = marks_;
     maxLength_ = 0_length;
     nbLinesProcessed_ = 0_lcount;
+
+    if (dropCache) {
+        searchResultsCache_.clear();
+    }
 }
 
 LineNumber LogFilteredData::getMatchingLineNumber( LineNumber matchNum ) const
@@ -347,16 +354,19 @@ void LogFilteredData::updateSearchResultsCache()
         return;
     }
 
+    if ( currentSearchKey_ == SearchCacheKey{} ) {
+        return;
+    }
+
     const uint64_t maxCacheLines = config.searchResultsCacheLines();
 
     if ( matching_lines_.cardinality() > maxCacheLines ) {
         LOG_DEBUG << "LogFilteredData: too many matches to place in cache";
     }
-    else if ( !config.useSearchResultsCache() ) {
-        LOG_DEBUG << "LogFilteredData: search results cache disabled by configs";
-    }
     else {
-        LOG_DEBUG << "LogFilteredData: caching results for pattern " << currentRegExp_.pattern;
+        LOG_INFO << "LogFilteredData: caching results for key " << std::get<0>( currentSearchKey_ ).pattern
+                 << "_" << std::get<1>( currentSearchKey_ ) << "_"
+                 << std::get<2>( currentSearchKey_ );
 
         searchResultsCache_[ currentSearchKey_ ] = { matching_lines_, maxLength_ };
 
@@ -366,7 +376,7 @@ void LogFilteredData::updateSearchResultsCache()
                                          return cachedResults.second.matching_lines.cardinality();
                                      } );
 
-        LOG_DEBUG << "LogFilteredData: cache size " << cacheSize;
+        LOG_INFO << "LogFilteredData: cache size " << cacheSize;
 
         auto cachedResult = std::begin( searchResultsCache_ );
         while ( cachedResult != std::end( searchResultsCache_ ) && cacheSize > maxCacheLines ) {

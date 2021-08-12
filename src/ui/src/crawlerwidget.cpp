@@ -262,7 +262,8 @@ void CrawlerWidget::stopLoading()
 void CrawlerWidget::reload()
 {
     searchState_.resetState();
-    logFilteredData_->clearSearch();
+    constexpr auto DropCache = true;
+    logFilteredData_->clearSearch( DropCache );
     logFilteredData_->clearMarks();
     filteredView_->updateData();
     printSearchInfoMessage();
@@ -692,7 +693,8 @@ void CrawlerWidget::fileChangedHandler( MonitoredFileStatus status )
         logFilteredData_->clearMarks();
         if ( !searchInfoLine_->text().isEmpty() ) {
             // Invalidate the search
-            logFilteredData_->clearSearch();
+            constexpr auto DropCache = true;
+            logFilteredData_->clearSearch( DropCache );
             filteredView_->updateData();
             searchState_.truncateFile();
             printSearchInfoMessage();
