@@ -45,24 +45,10 @@ jobs:
 #Install build deps
       - uses: seanmiddleditch/gha-setup-ninja@master
 
-      - name: Cache Qt
-        id: cache-qt
-        uses: actions/cache@v1
-        with:
-          path: ../Qt
-          key: ${{ matrix.config.os }}-${{ matrix.config.arch }}-${{ matrix.config.qt_version }}-QtCache
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v2
-        with:
-          version: ${{ matrix.config.qt_version }}
-          arch: ${{ matrix.config.qt_arch }}
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
-
       - name: Install deps
         run: |
-          sudo apt-get update
-          sudo apt-get install g++-9 ragel -y
+          sudo apt update
+          sudo apt install g++-9 ragel qt5-default qtbase5-dev qt5-qmake qtbase5-dev-tools -y
 
       - uses: ./.github/actions/boost-env
       - name: Restore Boost cache
@@ -96,7 +82,7 @@ jobs:
           DESTDIR=$(readlink -f appdir) ninja install
           wget -c -q "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-          VERSION=$KLOGG_VERSION ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/applications/*.desktop -qmake=$Qt5_Dir/bin/qmake -bundle-non-qt-libs
+          VERSION=$KLOGG_VERSION ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
           VERSION=$KLOGG_VERSION ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/applications/*.desktop -appimage
           cp ./klogg-$KLOGG_VERSION-x86_64.AppImage ./packages/klogg-$KLOGG_VERSION-x86_64.AppImage
 
