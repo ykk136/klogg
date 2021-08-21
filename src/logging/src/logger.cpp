@@ -29,9 +29,9 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QDir>
 #include <QFile>
 #include <QTextStream>
-#include <QDir>
 
 namespace logging {
 
@@ -54,14 +54,12 @@ class Logger {
         if ( !needLogging( type ) ) {
             return;
         }
+        const auto formattedMessage = qPrintable( qFormatLogMessage( type, context, msg ) );
 
         ScopedLock lock( mutex_ );
-
-        const auto formattedMessage = qPrintable( qFormatLogMessage( type, context, msg ) );
         QTextStream ts( logFile_.get() );
         ts << formattedMessage << '\n';
-
-        std::cout << formattedMessage << '\n';
+        std::cout << formattedMessage << std::endl;
     }
 
     void consoleMessageHandler( QtMsgType type, const QMessageLogContext& context,
@@ -71,10 +69,10 @@ class Logger {
             return;
         }
 
-        ScopedLock lock( mutex_ );
-
         const auto formattedMessage = qPrintable( qFormatLogMessage( type, context, msg ) );
-        std::cout << formattedMessage << '\n';
+
+        ScopedLock lock( mutex_ );
+        std::cout << formattedMessage << std::endl;
     }
 
     void enableLogging( bool isEnabled, uint8_t logLevel, bool logToFile )
