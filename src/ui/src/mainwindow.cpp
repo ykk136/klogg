@@ -975,8 +975,8 @@ void MainWindow::options()
 
     connect( &dialog, &OptionsDialog::optionsChanged, [ this ]() {
         const auto& config = Configuration::get();
-        logging::enableLogging( config.enableLogging(),
-                                static_cast<logging::LogLevel>( config.loggingLevel() ), true );
+        logging::enableFileLogging( config.enableLogging(),
+                                    static_cast<logging::LogLevel>( config.loggingLevel() ) );
 
         newWindowAction->setVisible( config.allowMultipleWindows() );
         followAction->setEnabled( config.anyFileWatchEnabled() );

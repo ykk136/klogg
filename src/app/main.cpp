@@ -130,10 +130,10 @@ int main( int argc, char* argv[] )
     KloggApp app( argc, argv );
     CliParameters parameters( app );
 
-    logging::enableLogging(
-        parameters.enable_logging || config.enableLogging(),
-        static_cast<logging::LogLevel>( std::max( parameters.log_level, config.loggingLevel() ) ),
-        parameters.log_to_file || config.enableLogging() );
+    const auto logLevel
+        = static_cast<logging::LogLevel>( std::max( parameters.log_level, config.loggingLevel() ) );
+    logging::enableLogging( parameters.enable_logging || config.enableLogging(), logLevel );
+    logging::enableFileLogging( parameters.log_to_file || config.enableLogging(), logLevel );
 
     app.initCrashHandler();
 

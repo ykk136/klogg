@@ -59,7 +59,10 @@ class Logger {
         ScopedLock lock( mutex_ );
         QTextStream ts( logFile_.get() );
         ts << formattedMessage << '\n';
-        std::cout << formattedMessage << std::endl;
+
+        if ( isConsoleLogEnabled_ ) {
+            std::cout << formattedMessage << std::endl;
+        }
     }
 
     void consoleMessageHandler( QtMsgType type, const QMessageLogContext& context,
@@ -75,16 +78,28 @@ class Logger {
         std::cout << formattedMessage << std::endl;
     }
 
-    void enableLogging( bool isEnabled, uint8_t logLevel, bool logToFile )
+    void enableLogging( bool isEnabled, uint8_t logLevel )
     {
         ScopedLock lock( mutex_ );
 
         qSetMessagePattern( "%{time} %{type} [%{threadid}] [%{function}@%{line}] %{message}" );
 
-        isEnabled_ = isEnabled;
+        isConsoleLogEnabled_ = isEnabled;
         logLevel_ = logLevel;
 
-        if ( logToFile && !logFile_ ) {
+        setMessageHandler();
+    }
+
+    void enableFileLogging( bool isEnabled, uint8_t logLevel )
+    {
+        ScopedLock lock( mutex_ );
+
+        qSetMessagePattern( "%{time} %{type} [%{threadid}] [%{function}@%{line}] %{message}" );
+
+        isFileLogEnabled_ = isEnabled;
+        logLevel_ = logLevel;
+
+        if ( isEnabled && !logFile_ ) {
             auto logFileName
                 = QString( "klogg_%1_%2.log" )
                       .arg( QDateTime::currentDateTime().toString( "yyyy-MM-dd_HH-mm-ss" ) )
@@ -95,8 +110,32 @@ class Logger {
                 logFile_.release();
             }
         }
+        else if ( !isEnabled && logFile_ ) {
+            logFile_.release();
+        }
 
-        if ( !isEnabled_ ) {
+        setMessageHandler();
+    }
+
+    bool isAnyEnabled() const
+    {
+        return isConsoleLogEnabled_ || isFileLogEnabled_;
+    }
+
+    bool needLogging( QtMsgType type ) const
+    {
+        if ( !isAnyEnabled() || static_cast<uint8_t>( logLevel( type ) ) > logLevel_ ) {
+            return false;
+        }
+        return true;
+    }
+
+  private:
+    Logger() {}
+
+    void setMessageHandler()
+    {
+        if ( !isAnyEnabled() ) {
             qInstallMessageHandler( logging::kloggNoopMessageHandler );
         }
         else if ( logFile_ ) {
@@ -106,17 +145,6 @@ class Logger {
             qInstallMessageHandler( logging::kloggConsoleMessageHandler );
         }
     }
-
-    bool needLogging( QtMsgType type ) const
-    {
-        if ( !isEnabled_ || static_cast<uint8_t>( logLevel( type ) ) > logLevel_ ) {
-            return false;
-        }
-        return true;
-    }
-
-  private:
-    Logger() {}
 
   private:
     static LogLevel logLevel( QtMsgType type )
@@ -143,16 +171,22 @@ class Logger {
     mutable std::shared_mutex mutex_;
     using ScopedLock = std::unique_lock<std::shared_mutex>;
 
-    std::atomic_bool isEnabled_ = false;
+    std::atomic_bool isConsoleLogEnabled_ = false;
+    std::atomic_bool isFileLogEnabled_ = false;
+
     std::atomic_int logLevel_ = 0;
 
-    QString logFileName_;
     std::unique_ptr<QFile> logFile_;
 };
 
-void enableLogging( bool isEnabled, LogLevel logLevel, bool logToFile )
+void enableLogging( bool isEnabled, LogLevel logLevel )
 {
-    Logger::instance().enableLogging( isEnabled, static_cast<uint8_t>( logLevel ), logToFile );
+    Logger::instance().enableLogging( isEnabled, static_cast<uint8_t>( logLevel ) );
+}
+
+void enableFileLogging( bool isEnabled, LogLevel logLevel )
+{
+    Logger::instance().enableFileLogging( isEnabled, static_cast<uint8_t>( logLevel ) );
 }
 
 void kloggFileMessageHandler( QtMsgType type, const QMessageLogContext& context,
