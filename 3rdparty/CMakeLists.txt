@@ -1,4 +1,3 @@
-add_subdirectory(cli11) #1.9.0
 add_subdirectory(plog) #1.1.5
 add_subdirectory(named_type)
 add_subdirectory(catch) #v2.12.1
