@@ -52,7 +52,6 @@
 #include <functional>
 #include <limits>
 #include <numeric>
-#include <plog/Log.h>
 #include <tuple>
 #include <utility>
 

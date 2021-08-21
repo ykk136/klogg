@@ -5,6 +5,7 @@
 #ifdef Q_OS_WIN
 #include <fcntl.h>
 #include <windows.h>
+#include <io.h>
 #else
 #include <sys/stat.h>
 #endif

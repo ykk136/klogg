@@ -71,21 +71,34 @@ QString sentryDatabasePath()
 
 void logSentry( sentry_level_t level, const char* message, va_list args, void* userdata )
 {
+#if defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+
     Q_UNUSED( userdata );
-    plog::Severity severity;
+    QString formattedMessage;
     switch ( level ) {
     case SENTRY_LEVEL_WARNING:
-        severity = plog::Severity::warning;
+        qWarning( message, args );
         break;
     case SENTRY_LEVEL_ERROR:
-        severity = plog::Severity::error;
+        qCritical( message, args );
         break;
     default:
-        severity = plog::Severity::info;
+        qInfo( message, args );
         break;
     }
 
-    PLOG( severity ).printf( message, args );
+#if defined __clang__  
+#pragma clang diagnostic pop
+#elif defined __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 }
 
 QDialog::DialogCode askUserConfirmation( const QString& formattedReport, const QString& reportPath )

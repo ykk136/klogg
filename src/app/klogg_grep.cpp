@@ -17,8 +17,6 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <plog/Appenders/ColorConsoleAppender.h>
-
 #if defined( KLOGG_USE_TBBMALLOC )
 #include <tbb/tbbmalloc_proxy.h>
 #elif defined( KLOGG_USE_MIMALLOC )
@@ -29,7 +27,7 @@
 #include "data/logdata.h"
 #include "data/logfiltereddata.h"
 #include "dispatch_to.h"
-#include "log.h"
+#include "logger.h"
 #include "persistentinfo.h"
 
 #include "cli.h"
@@ -47,9 +45,7 @@ int main( int argc, char* argv[] )
     QCoreApplication app( argc, argv );
     CliParameters parameters( app, true );
 
-    auto logAppender = std::make_unique<plog::ColorConsoleAppender<plog::GloggFormatter>>();
-
-    plog::init( static_cast<plog::Severity>( parameters.log_level ), logAppender.get() );
+    logging::enableLogging( true, static_cast<logging::LogLevel>( parameters.log_level ) );
 
     auto configuration = Configuration::getSynced();
 

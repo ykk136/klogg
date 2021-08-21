@@ -20,6 +20,7 @@
 #ifndef KLOGG_CLI_H
 #define KLOGG_CLI_H
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 
@@ -37,7 +38,9 @@ struct CliParameters {
     bool multi_instance = false;
     bool log_to_file = false;
     bool follow_file = false;
-    int64_t log_level = static_cast<int64_t>( plog::warning );
+
+    bool enable_logging = false;
+    int log_level = 3;
 
     std::vector<QString> filenames;
 
@@ -115,7 +118,11 @@ struct CliParameters {
             exit( EXIT_SUCCESS );
         }
 
-        log_level = static_cast<int64_t>( plog::warning ) + parser.value( debugOption ).toInt();
+        if (parser.value( debugOption ).toInt() > 0) {
+            enable_logging = true;
+        }
+
+        log_level += parser.value( debugOption ).toInt();
 
         if ( !console ) {
             if ( parser.isSet( multiInstanceOption ) ) {

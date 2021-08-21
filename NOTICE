@@ -134,17 +134,6 @@ terms of MIT licence
 > SOFTWARE.
 
 ===
-This product includes software developed by Sergey Podobry:
-plog (https://github.com/SergiusTheBest/plog) licensed under the terms of
-Mozilla Public License Version 2.0
-
-> Copyright (c) 2016 Sergey Podobry (sergey.podobry at gmail.com).
-> Mozilla Public License Version 2.0
-> This Source Code Form is subject to the terms of the Mozilla Public
-> License, v. 2.0. If a copy of the MPL was not distributed with this
-> file, You can obtain one at http://mozilla.org/MPL/2.0/
-
-===
 This product includes software developed by Netscape Communications Corporation,
 BYVoid <byvoid.kcp@gmail.com> and Jehan <jehan@girinstud.io>:
 uchardet (https://github.com/BYVoid/uchardet) licensed under the terms of:

@@ -21,18 +21,17 @@
 #include <QThread>
 
 #include "file_write_helper.h"
-#include <log.h>
-#include <plog/Appenders/ConsoleAppender.h>
+#include "logger.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <io.h>
 #endif // _WIN32
 
 int main( int argc, const char** argv )
 {
-    plog::ConsoleAppender<plog::GloggFormatter> appender;
-    plog::init( plog::info, &appender );
+    logging::enableLogging();
 
     if ( argc < 4 ) {
         LOG_ERROR << "Expected 3 arguments";

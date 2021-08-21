@@ -49,9 +49,6 @@
 #include "session.h"
 #include "uuid.h"
 
-#include <plog/Appenders/ColorConsoleAppender.h>
-#include <plog/Appenders/RollingFileAppender.h>
-
 #include <singleapp/singleapplication.h>
 
 #include "mainwindow.h"
@@ -128,29 +125,6 @@ class KloggApp : public SingleApplication {
 
             QTimer::singleShot( 100, this, &SingleApplication::quit );
         } );
-    }
-
-    void initLogger( plog::Severity log_level, bool log_to_file )
-    {
-        QString log_file_name
-            = QString( "klogg_%1_%2.log" )
-                  .arg( QDateTime::currentDateTime().toString( "yyyy-MM-dd_HH-mm-ss" ) )
-                  .arg( applicationPid() );
-
-        tempAppender_ = std::make_unique<plog::RollingFileAppender<plog::GloggFormatter>>(
-            QDir::temp().filePath( log_file_name ).toStdString().c_str(), 10 * 1024 * 1024, 5 );
-
-        plog::init<1>( plog::none, tempAppender_.get() );
-
-        if ( log_to_file ) {
-            logAppender_ = std::make_unique<plog::RollingFileAppender<plog::GloggFormatter>>(
-                log_file_name.toStdString().c_str() );
-        }
-        else {
-            logAppender_ = std::make_unique<plog::ColorConsoleAppender<plog::GloggFormatter>>();
-        }
-
-        plog::init( log_level, logAppender_.get() ).addAppender( plog::get<1>() );
     }
 
     void initCrashHandler()
@@ -343,9 +317,6 @@ class KloggApp : public SingleApplication {
     }
 
   private:
-    std::unique_ptr<plog::RollingFileAppender<plog::GloggFormatter>> tempAppender_;
-    std::unique_ptr<plog::IAppender> logAppender_;
-
     std::unique_ptr<CrashHandler> crashHandler_;
 
     MessageReceiver messageReceiver_;

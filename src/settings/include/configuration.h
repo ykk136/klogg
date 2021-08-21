@@ -286,7 +286,7 @@ class Configuration final : public Persistable<Configuration> {
     {
         return enableLogging_;
     }
-    uint8_t loggingLevel() const
+    int loggingLevel() const
     {
         return loggingLevel_;
     }
@@ -295,7 +295,7 @@ class Configuration final : public Persistable<Configuration> {
     {
         enableLogging_ = enableLogging;
     }
-    void setLoggingLevel( uint8_t level )
+    void setLoggingLevel( int level )
     {
         loggingLevel_ = level;
     }
@@ -509,7 +509,7 @@ class Configuration final : public Persistable<Configuration> {
     bool keepFileClosed_ = false;
 
     bool enableLogging_ = false;
-    uint8_t loggingLevel_ = 4;
+    int loggingLevel_ = 4;
 
     bool enableVersionChecking_ = true;
 

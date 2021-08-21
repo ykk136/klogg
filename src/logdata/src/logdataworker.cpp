@@ -40,7 +40,6 @@
 #include <cmath>
 #include <exception>
 #include <functional>
-#include <plog/Log.h>
 #include <string_view>
 #include <thread>
 
@@ -376,7 +375,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
             if ( nextLineFeed != std::string_view::npos ) {
                 expandTabs( blockView.substr( 0, nextLineFeed ) );
                 posWithinBlock = charOffsetWithinBlock( searchStart + nextLineFeed );
-                LOG_DEBUG << "LF at " << posWithinBlock;
+                //LOG_DEBUG << "LF at " << posWithinBlock;
             }
             else {
                 expandTabs( blockView );

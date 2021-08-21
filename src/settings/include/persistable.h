@@ -21,6 +21,7 @@
 #define KLOGG_PERSISTABLE_H
 
 #include <type_traits>
+#include <stdexcept>
 
 #include "log.h"
 #include "persistentinfo.h"

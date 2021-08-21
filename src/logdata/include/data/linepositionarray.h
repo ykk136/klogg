@@ -145,7 +145,6 @@ template <typename Storage> class LinePosition {
     // (this is NOT checked!)
     inline void append( LineOffset pos )
     {
-        LOG_DEBUG << "Next line at " << pos;
         if ( fakeFinalLF_ )
             array.pop_back();
 

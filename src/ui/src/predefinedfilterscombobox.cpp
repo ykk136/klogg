@@ -41,7 +41,6 @@
 #include <QListView>
 #include <QStandardItemModel>
 #include <QStyledItemDelegate>
-#include <plog/Log.h>
 #include <qabstractitemview.h>
 
 #include "log.h"

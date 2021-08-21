@@ -192,8 +192,8 @@ void Configuration::retrieveFromStorage( QSettings& settings )
 
     enableLogging_
         = settings.value( "logging.enableLogging", DefaultConfiguration.enableLogging_ ).toBool();
-    loggingLevel_ = static_cast<uint8_t>(
-        settings.value( "logging.verbosity", DefaultConfiguration.loggingLevel_ ).toInt() );
+    loggingLevel_
+        = settings.value( "logging.verbosity", DefaultConfiguration.loggingLevel_ ).toInt();
 
     enableVersionChecking_
         = settings.value( "versionchecker.enabled", DefaultConfiguration.enableVersionChecking_ )

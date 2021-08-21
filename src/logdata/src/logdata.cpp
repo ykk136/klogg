@@ -43,7 +43,6 @@
 #include <iostream>
 #include <iterator>
 #include <numeric>
-#include <plog/Log.h>
 #include <qregularexpression.h>
 #include <string_view>
 #include <utility>

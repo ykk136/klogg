@@ -39,7 +39,6 @@
 #include <chrono>
 #include <cmath>
 #include <exception>
-#include <plog/Log.h>
 #include <stdexcept>
 #include <utility>
 

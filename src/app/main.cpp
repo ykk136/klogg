@@ -36,10 +36,9 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtGlobal>
 #include <QMessageBox>
+#include <QtGlobal>
 #include <qapplication.h>
-
 
 #ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
@@ -57,7 +56,7 @@
 
 #include "configuration.h"
 #include "cpu_info.h"
-#include "log.h"
+#include "logger.h"
 #include "mainwindow.h"
 #include "styles.h"
 
@@ -118,8 +117,9 @@ int main( int argc, char* argv[] )
     requiredInstructuins |= CpuInstructions::SSSE3;
 
     if ( !hasRequiredInstructions( supportedCpuInstructions(), requiredInstructuins ) ) {
-        QApplication app(argc, argv);
-        QMessageBox::critical( nullptr, "Klogg", "Current CPU is not supported. SSE2 and SSSE3 are required.",
+        QApplication app( argc, argv );
+        QMessageBox::critical( nullptr, "Klogg",
+                               "Current CPU is not supported. SSE2 and SSSE3 are required.",
                                QMessageBox::Close );
         exit( EXIT_FAILURE );
     }
@@ -130,9 +130,12 @@ int main( int argc, char* argv[] )
     KloggApp app( argc, argv );
     CliParameters parameters( app );
 
-    app.initLogger( static_cast<plog::Severity>( parameters.log_level ), parameters.log_to_file );
+    logging::enableLogging(
+        parameters.enable_logging || config.enableLogging(),
+        static_cast<logging::LogLevel>( std::max( parameters.log_level, config.loggingLevel() ) ),
+        parameters.log_to_file || config.enableLogging() );
+
     app.initCrashHandler();
-    plog::enableLogging( config.enableLogging(), config.loggingLevel() );
 
     LOG_INFO << "Klogg instance " << app.instanceId();
 

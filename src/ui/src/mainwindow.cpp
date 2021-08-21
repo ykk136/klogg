@@ -91,7 +91,7 @@
 #include "highlightersmenu.h"
 #include "issuereporter.h"
 #include "klogg_version.h"
-#include "log.h"
+#include "logger.h"
 #include "openfilehelper.h"
 #include "optionsdialog.h"
 #include "predefinedfilters.h"
@@ -975,7 +975,8 @@ void MainWindow::options()
 
     connect( &dialog, &OptionsDialog::optionsChanged, [ this ]() {
         const auto& config = Configuration::get();
-        plog::enableLogging( config.enableLogging(), config.loggingLevel() );
+        logging::enableLogging( config.enableLogging(),
+                                static_cast<logging::LogLevel>( config.loggingLevel() ), true );
 
         newWindowAction->setVisible( config.allowMultipleWindows() );
         followAction->setEnabled( config.anyFileWatchEnabled() );

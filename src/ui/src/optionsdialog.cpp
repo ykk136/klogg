@@ -387,7 +387,7 @@ void OptionsDialog::updateConfigFromDialog()
     config.setAllowMultipleWindows( multipleWindowsCheckBox->isChecked() );
     config.setMinimizeToTray( minimizeToTrayCheckBox->isChecked() );
     config.setEnableLogging( loggingCheckBox->isChecked() );
-    config.setLoggingLevel( static_cast<uint8_t>( verbositySpinBox->value() ) );
+    config.setLoggingLevel( verbositySpinBox->value() );
 
     config.setExtractArchives( extractArchivesCheckBox->isChecked() );
     config.setExtractArchivesAlways( extractArchivesAlwaysCheckBox->isChecked() );

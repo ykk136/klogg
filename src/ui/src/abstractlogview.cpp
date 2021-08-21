@@ -54,7 +54,6 @@
 #include <limits>
 #include <memory>
 #include <numeric>
-#include <plog/Log.h>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -687,7 +686,6 @@ void AbstractLogView::keyPressEvent( QKeyEvent* keyEvent )
     else {
         // Only pass bare keys to the superclass this is so that
         // shortcuts such as Ctrl+Alt+Arrow are handled by the parent.
-        LOG_DEBUG << std::hex << keyEvent->modifiers();
         if ( keyEvent->modifiers() == Qt::NoModifier
              || keyEvent->modifiers() == Qt::KeypadModifier ) {
             QAbstractScrollArea::keyPressEvent( keyEvent );

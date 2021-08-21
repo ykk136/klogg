@@ -1,4 +1,3 @@
-add_subdirectory(plog) #1.1.5
 add_subdirectory(named_type)
 add_subdirectory(singleapp) #3.1.5
 add_subdirectory(maddy)
@@ -109,6 +108,7 @@ else(NOT Hyperscan_FOUND)
     set(BUILD_EXAMPLES OFF CACHE INTERNAL "" FORCE)
     add_subdirectory(hyperscan) #5.4.0
     target_link_libraries(hypersan_wrapper INTERFACE hs)
+    target_compile_definitions(hs_compile PRIVATE "-DBOOST_ALLOW_DEPRECATED_HEADERS")
 endif()
 endif(KLOGG_USE_HYPERSCAN)
 

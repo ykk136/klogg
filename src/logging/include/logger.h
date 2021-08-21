@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 -- 2019 Anton Filimonov and other contributors
+ * Copyright (C) 2021 Anton Filimonov and other contributors
  *
  * This file is part of klogg.
  *
@@ -17,25 +17,19 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
+#ifndef KLOGG_LOGGER_H
+#define KLOGG_LOGGER_H
 
-#include <QApplication>
+#include <cstdint>
 
-#include <logger.h>
+#include "log.h"
 
-#include "configuration.h"
-#include <persistentinfo.h>
+namespace logging {
 
-const bool PersistentInfo::ForcePortable = true;
+enum class LogLevel { None, Fatal, Error, Warning, Info, Debug };
 
-int main( int argc, char* argv[] )
-{
-    QApplication a( argc, argv );
+void enableLogging( bool enableLogging = true, LogLevel logLevel = LogLevel::Info,
+                    bool logToFile = false );
+} // namespace logging
 
-    logging::enableLogging();
-
-    Configuration::getSynced();
-
-    return Catch::Session().run( argc, argv );
-}
+#endif

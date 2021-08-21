@@ -23,15 +23,14 @@
 #include <cstdint>
 #include <limits>
 #include <optional>
+#include <string_view>
 
 #include <named_type/named_type.hpp>
 
 #include <QMetaType>
 #include <QString>
 
-#include <plog/Record.h>
-#include <qchar.h>
-#include <string_view>
+#include "log.h"
 
 using LineOffset
     = fluent::NamedType<int64_t, struct line_offset, fluent::Addable, fluent::Incrementable,
@@ -73,28 +72,13 @@ constexpr StrongType maxValue()
 using OptionalLineNumber = std::optional<LineNumber>;
 
 template <typename T, typename Parameter, template <typename> class... Skills>
-plog::util::nostringstream& operator<<( plog::util::nostringstream& os,
-                                        fluent::NamedType<T, Parameter, Skills...> const& object )
+QDebug operator<<( QDebug dbg, fluent::NamedType<T, Parameter, Skills...> const& object )
 {
-    os << object.get();
-    return os;
+    QDebugStateSaver saver( dbg );
+    dbg << object.get();
+
+    return dbg;
 }
-
-namespace plog {
-
-inline Record& operator<<( Record& record, const OptionalLineNumber& t )
-{
-    if ( t ) {
-        t->print( record );
-    }
-    else {
-        record << "none";
-    }
-
-    return record;
-}
-
-} // namespace plog
 
 // Represents a position in a file (line, column)
 class FilePosition {
@@ -187,7 +171,7 @@ inline QString untabify( QString&& line, int initialPosition = 0 )
         position = line.indexOf( QChar::Tabulation, position );
     }
 
-    return std::move(line);
+    return std::move( line );
 }
 
 template <typename LineType>

@@ -25,12 +25,11 @@
 #include <QtConcurrent>
 
 #include <configuration.h>
-#include <highlighterset.h>
 #include <data/linetypes.h>
+#include <highlighterset.h>
 #include <persistentinfo.h>
 
-#include <log.h>
-#include <plog/Appenders/ConsoleAppender.h>
+#include <logger.h>
 
 const bool PersistentInfo::ForcePortable = true;
 
@@ -53,11 +52,11 @@ class TestRunner : public QObject {
     void process()
     {
         result_ = Catch::Session().run( argc_, argv_ );
-        emit finished(result_);
+        emit finished( result_ );
     }
 
   signals:
-    void finished(int);
+    void finished( int );
 
   private:
     int argc_;
@@ -72,8 +71,7 @@ int main( int argc, char* argv[] )
 {
     QApplication a( argc, argv );
 
-    plog::ConsoleAppender<plog::GloggFormatter> appender;
-    plog::init( plog::info, &appender );
+    logging::enableLogging();
 
     qRegisterMetaType<LinesCount>( "LinesCount" );
     qRegisterMetaType<LineNumber>( "LineNumber" );
@@ -86,7 +84,7 @@ int main( int argc, char* argv[] )
 
     auto higthlighters = HighlighterSetCollection::getSynced();
 
-#if defined(Q_OS_WIN) || defined (Q_OS_MAC)
+#if defined( Q_OS_WIN ) || defined( Q_OS_MAC )
     config.setPollingEnabled( true );
     config.setPollIntervalMs( 1000 );
 #else
@@ -97,9 +95,8 @@ int main( int argc, char* argv[] )
 
     QThreadPool::globalInstance()->reserveThread();
 
-    TestRunner* runner = new TestRunner(argc, argv);
+    TestRunner* runner = new TestRunner( argc, argv );
 
     runner->process();
     return runner->result();
-
 }

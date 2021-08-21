@@ -38,7 +38,6 @@
 
 // This file implements classes Highlighter and HighlighterSet
 
-#include <plog/Log.h>
 #include <qcolor.h>
 #include <qnamespace.h>
 #include <random>
