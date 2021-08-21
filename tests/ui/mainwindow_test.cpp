@@ -17,13 +17,13 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <catch2/catch.hpp>
+
 #include <QSignalSpy>
 #include <QTemporaryFile>
 #include <QTest>
 
 #include <QToolBar>
-
-#include <catch.hpp>
 
 #include "test_utils.h"
 

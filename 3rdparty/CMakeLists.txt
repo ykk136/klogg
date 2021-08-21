@@ -1,6 +1,5 @@
 add_subdirectory(plog) #1.1.5
 add_subdirectory(named_type)
-add_subdirectory(catch) #v2.12.1
 add_subdirectory(singleapp) #3.1.5
 add_subdirectory(maddy)
 add_subdirectory(whereami)
@@ -130,5 +129,20 @@ endif()
 
 #KARCHIVE
 add_subdirectory(karchive)
+
+#catch2
+if(KLOGG_BUILD_TESTS)
+add_library(catch2_wrapper INTERFACE)
+pkg_check_modules(CATCH2 catch2>=2.12)
+if(CATCH2_FOUND)
+    message("Using system catch2")
+    target_include_directories(catch2_wrapper SYSTEM INTERFACE ${CATCH2_INCLUDE_DIRS})
+    target_link_libraries(catch2_wrapper INTERFACE ${CATCH2_LINK_LIBRARIES})
+else()
+    message("Using bundled catch2")
+    add_subdirectory(catch) #v2.12.1
+    target_link_libraries(catch2_wrapper INTERFACE catch)
+endif()
+endif()
 
 

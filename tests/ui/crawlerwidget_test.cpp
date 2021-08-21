@@ -17,6 +17,8 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <catch2/catch.hpp>
+
 #include <QSignalSpy>
 #include <QTemporaryFile>
 #include <QTest>
@@ -30,8 +32,6 @@
 #include "data/logfiltereddata.h"
 
 #include "crawlerwidget.h"
-
-#include <catch.hpp>
 
 static const qint64 SL_NB_LINES = 100LL;
 

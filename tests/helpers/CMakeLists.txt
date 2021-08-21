@@ -6,4 +6,4 @@ add_executable(file_write_helper
 target_link_libraries(file_write_helper utils)
 
 add_library(test_utils INTERFACE)
-target_include_directories(catch SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(test_utils SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

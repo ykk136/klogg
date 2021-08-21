@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
+ 
+#include <catch2/catch.hpp>
 
 #include <QSignalSpy>
 #include <QTemporaryFile>
@@ -28,8 +30,6 @@
 
 #include "data/logdata.h"
 #include "data/logfiltereddata.h"
-
-#include <catch.hpp>
 
 static const qint64 SL_NB_LINES = 500LL;
 
