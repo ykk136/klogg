@@ -128,17 +128,6 @@ else()
 endif()
 
 #KARCHIVE
-find_package(KF5Archive)
-if(KF5Archive_FOUND)
-    message("Using system KArchive")
-    add_library(klogg_karchive INTERFACE)
-    target_link_libraries(klogg_karchive INTERFACE KF5::Archive)
-else()
-    message("Using bundled KArchive")
-    add_subdirectory(cmzlib)
-    add_subdirectory(cmbzip2)
-    add_subdirectory(cmliblzma)
-    add_subdirectory(karchive)
-endif()
+add_subdirectory(karchive)
 
 
