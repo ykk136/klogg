@@ -20,9 +20,10 @@ if(KLOGG_USE_SENTRY)
 endif(KLOGG_USE_SENTRY)
 
 set(EFSW_INSTALL OFF CACHE INTERNAL "" FORCE)
-add_subdirectory(efsw) #2bfda30 on 14 Dec 2020
 set(BUILD_TEST_APP OFF CACHE INTERNAL "" FORCE)
-mark_as_advanced(FORCE VERBOSE)
+add_subdirectory(efsw) #2bfda30 on 14 Dec 2020
+mark_as_advanced(BUILD_TEST_APP VERBOSE)
+mark_as_advanced(EFSW_INSTALL VERBOSE)
 
 #TBB
 add_library(tbb_wrapper INTERFACE)
