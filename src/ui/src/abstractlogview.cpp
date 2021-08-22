@@ -55,6 +55,7 @@
 #include <memory>
 #include <numeric>
 #include <optional>
+#include <qpen.h>
 #include <qwidget.h>
 #include <string_view>
 #include <utility>
@@ -1888,6 +1889,9 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     LOG_DEBUG << "bottomOfTextPx: " << bottomOfTextPx;
     LOG_DEBUG << "Height: " << paintDeviceHeight;
 
+    painter->fillRect( 0, 0, paintDeviceWidth, paintDeviceHeight,
+                       palette.color( QPalette::Window ) );
+
     // First draw the bullet left margin
     painter->setPen( palette.color( QPalette::Text ) );
     painter->fillRect( 0, 0, BulletAreaWidth, paintDeviceHeight, Qt::darkGray );
@@ -1989,9 +1993,13 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         const auto lineNumber = firstLine_ + currentLine;
         const QString logLine = logData_->getLineString( lineNumber );
 
+        // Position in pixel of the base line of the line to print
+        const int yPos = static_cast<int>( currentLine.get() ) * fontHeight;
+        const int xPos = contentStartPosX + ContentMarginWidth;
+
         std::vector<HighlightedMatch> highlighterMatches;
 
-        if ( selection_.isLineSelected( lineNumber ) ) {
+        if ( selection_.isLineSelected( lineNumber ) && !selection_.isSingleLine() ) {
             // Reverse the selected line
             foreColor = palette.color( QPalette::HighlightedText );
             backColor = palette.color( QPalette::Highlight );
@@ -2054,10 +2062,6 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         // string to print, cut to fit the length and position of the view
         const QString expandedLine = expandedLines[ currentLine.get() ];
         const QString cutLine = expandedLine.mid( firstCol_, nbCols );
-
-        // Position in pixel of the base line of the line to print
-        const int yPos = static_cast<int>( currentLine.get() ) * fontHeight;
-        const int xPos = contentStartPosX + ContentMarginWidth;
 
         // Has the line got elements to be highlighted
         std::vector<HighlightedMatch> quickFindMatches;
@@ -2131,6 +2135,18 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             painter->drawText( xPos, yPos + fontAscent, cutLine );
         }
 
+        if ( ( selection_.isLineSelected( lineNumber ) && selection_.isSingleLine() )
+             || selection_.getPortionForLine( lineNumber ).isValid() ) {
+            auto selectionPen = QPen( palette.color( QPalette::Highlight ) );
+            selectionPen.setWidth( 3 );
+            painter->setPen( selectionPen );
+            painter->drawLine( xPos - ContentMarginWidth, yPos, viewport()->width(), yPos );
+            selectionPen.setWidth( 5 );
+            painter->setPen( selectionPen );
+            painter->drawLine( xPos - ContentMarginWidth, yPos + fontHeight, viewport()->width(),
+                               yPos + fontHeight );
+        }
+
         // Then draw the bullet
         painter->setPen( Qt::black );
         const int circleSize = 3;
@@ -2178,12 +2194,6 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                                lineNumberStr );
         }
     } // For each line
-
-    if ( bottomOfTextPx < paintDeviceHeight ) {
-        // The lines don't cover the whole device
-        painter->fillRect( contentStartPosX, bottomOfTextPx, paintDeviceWidth - contentStartPosX,
-                           paintDeviceHeight, palette.color( QPalette::Window ) );
-    }
 }
 
 // Draw the "pull to follow" bar and return a pixmap.
