@@ -1285,16 +1285,19 @@ void CrawlerWidget::registerShortcuts()
                                           }
                                       } );
 
-    const auto addColorLabelToSelection = [ this ]( size_t label, bool clearHighlight = true ) {
+    const auto addColorLabelToSelection = [ this ]( size_t label, bool clearHighlight = false ) {
         auto selectedPattern = getSelectedText();
+        auto wasHighlightedAnyLabel = false;
+        auto wasHighlightedThisLabel = false;
+
         for ( auto i = 0u; i < wordsHighlighters_.size(); ++i ) {
             const auto wasHighlighted = wordsHighlighters_[ i ].removeAll( selectedPattern ) != 0;
-            if ( i != label ) {
-                continue;
-            }
-            if ( !clearHighlight || !wasHighlighted ) {
-                wordsHighlighters_[ i ].append( std::move( selectedPattern ) );
-            }
+            wasHighlightedAnyLabel |= wasHighlighted;
+            wasHighlightedThisLabel |= (wasHighlighted && i == label);
+        }
+
+        if ( !( wasHighlightedAnyLabel && clearHighlight ) && !wasHighlightedThisLabel ) {
+            wordsHighlighters_[ label ].append( std::move( selectedPattern ) );
         }
 
         logMainView_->setWordsHighlighters( wordsHighlighters_ );
@@ -1319,7 +1322,7 @@ void CrawlerWidget::registerShortcuts()
     ShortcutAction::registerShortcut(
         configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
         ShortcutAction::LogViewAddNextColorLabel, [ this, addColorLabelToSelection ]() {
-            addColorLabelToSelection( nextWordsHighlighterIndex_, false );
+            addColorLabelToSelection( nextWordsHighlighterIndex_, true );
             nextWordsHighlighterIndex_++;
             if ( nextWordsHighlighterIndex_ == wordsHighlighters_.size() ) {
                 nextWordsHighlighterIndex_ = 0;
