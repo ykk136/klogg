@@ -21,6 +21,7 @@
 #define KLOGG_COLORLABELSMANAGER_H
 
 #include "abstractlogview.h"
+#include <optional>
 #include <qobject.h>
 #include <qobjectdefs.h>
 #include <vector>
@@ -41,7 +42,7 @@ class ColorLabelsManager {
                                                   bool replaceCurrent );
 
     QuickHighlightersCollection quickHighlighters_ = QuickHighlightersCollection{9};
-    size_t nextQuickHighlighterIndex_ = 0;
+    std::optional<size_t> currentLabel_;
 };
 
 #endif

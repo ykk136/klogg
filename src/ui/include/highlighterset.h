@@ -148,6 +148,11 @@ class HighlighterSet {
     friend class HighlighterSetEdit;
 };
 
+struct QuickHighlighter {
+  HighlightColor color;
+  bool useInCycle;
+};
+
 class HighlighterSetCollection final : public Persistable<HighlighterSetCollection> {
   public:
     static const char* persistableName()
@@ -164,8 +169,8 @@ class HighlighterSetCollection final : public Persistable<HighlighterSetCollecti
     QString currentSetId() const;
     void setCurrentSet( const QString& setId );
 
-    QList<HighlightColor> quickHighlighters() const;
-    void setQuickHighlighters(const QList<HighlightColor>& quickHighlighters);
+    QList<QuickHighlighter> quickHighlighters() const;
+    void setQuickHighlighters(const QList<QuickHighlighter>& quickHighlighters);
 
     // Reads/writes the current config in the QSettings object passed
     void saveToStorage( QSettings& settings ) const;
@@ -178,7 +183,7 @@ class HighlighterSetCollection final : public Persistable<HighlighterSetCollecti
     QList<HighlighterSet> highlighters_;
     QString currentSet_;
 
-    QList<HighlightColor> quickHighlighters_;
+    QList<QuickHighlighter> quickHighlighters_;
 
     // To simplify this class interface, HighlightersDialog can access our
     // internal structure directly.

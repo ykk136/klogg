@@ -18,6 +18,10 @@
  */
 
 #include "colorlabelsmanager.h"
+#include "highlighterset.h"
+#include <algorithm>
+#include <cstddef>
+#include <vector>
 
 ColorLabelsManager::QuickHighlightersCollection ColorLabelsManager::colorLabels() const
 {
@@ -41,11 +45,32 @@ ColorLabelsManager::setColorLabel( size_t label, const QString& text )
 ColorLabelsManager::QuickHighlightersCollection
 ColorLabelsManager::setNextColorLabel( const QString& text )
 {
-    const auto nextLabel = nextQuickHighlighterIndex_;
-    nextQuickHighlighterIndex_++;
-    if ( nextQuickHighlighterIndex_ == quickHighlighters_.size() ) {
-        nextQuickHighlighterIndex_ = 0;
+    const auto& quickHighlightersConfiguration
+        = HighlighterSetCollection::get().quickHighlighters();
+
+    std::vector<size_t> cycle;
+    cycle.reserve( static_cast<size_t>( quickHighlightersConfiguration.size() ) );
+
+    for ( auto i = 0; i < quickHighlightersConfiguration.size(); ++i ) {
+        if ( quickHighlightersConfiguration[ i ].useInCycle ) {
+            cycle.push_back( static_cast<size_t>( i ) );
+        }
     }
+
+    if ( cycle.empty() ) {
+        return quickHighlighters_;
+    }
+
+    auto nextLabel = cycle.front();
+
+    if ( currentLabel_.has_value() ) {
+        auto nextIt = std::upper_bound( cycle.cbegin(), cycle.cend(), *currentLabel_ );
+        if ( nextIt != cycle.cend() ) {
+            nextLabel = *nextIt;
+        }
+    }
+
+    currentLabel_ = nextLabel;
 
     return updateColorLabel( nextLabel, text, false );
 }

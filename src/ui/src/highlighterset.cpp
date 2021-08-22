@@ -397,13 +397,13 @@ bool HighlighterSetCollection::hasSet( const QString& setId ) const
                         [ setId ]( const auto& s ) { return s.id() == setId; } );
 }
 
-QList<HighlightColor> HighlighterSetCollection::quickHighlighters() const
+QList<QuickHighlighter> HighlighterSetCollection::quickHighlighters() const
 {
     return quickHighlighters_;
 }
 
 void HighlighterSetCollection::setQuickHighlighters(
-    const QList<HighlightColor>& quickHighlighters )
+    const QList<QuickHighlighter>& quickHighlighters )
 {
     quickHighlighters_ = quickHighlighters;
 }
@@ -426,9 +426,10 @@ void HighlighterSetCollection::saveToStorage( QSettings& settings ) const
     for ( int i = 0; i < quickHighlighters_.size(); ++i ) {
         settings.setArrayIndex( i );
         settings.setValue( "fore_colour",
-                           quickHighlighters_[ i ].foreColor.name( QColor::HexArgb ) );
+                           quickHighlighters_[ i ].color.foreColor.name( QColor::HexArgb ) );
         settings.setValue( "back_colour",
-                           quickHighlighters_[ i ].backColor.name( QColor::HexArgb ) );
+                           quickHighlighters_[ i ].color.backColor.name( QColor::HexArgb ) );
+        settings.setValue( "cycle", quickHighlighters_[ i ].useInCycle );
     }
     settings.endArray();
     settings.endGroup();
@@ -458,24 +459,28 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
             size = settings.beginReadArray( "quick" );
             for ( int i = 0; i < size; ++i ) {
                 settings.setArrayIndex( i );
-                HighlightColor quickHighlighter;
-                quickHighlighter.foreColor = QColor( settings.value( "fore_colour" ).toString() );
-                quickHighlighter.backColor = QColor( settings.value( "back_colour" ).toString() );
+                QuickHighlighter quickHighlighter;
+                quickHighlighter.color.foreColor
+                    = QColor( settings.value( "fore_colour" ).toString() );
+                quickHighlighter.color.backColor
+                    = QColor( settings.value( "back_colour" ).toString() );
+                quickHighlighter.useInCycle = settings.value( "cycle", true ).toBool();
+
                 quickHighlighters_.append( std::move( quickHighlighter ) );
             }
             settings.endArray();
             if ( quickHighlighters_.size() != 9 ) {
                 LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
                 quickHighlighters_.clear();
-                quickHighlighters_.append( { QColor{}, Qt::red } );
-                quickHighlighters_.append( { QColor{}, Qt::green } );
-                quickHighlighters_.append( { QColor{}, Qt::cyan } );
-                quickHighlighters_.append( { QColor{}, Qt::darkRed } );
-                quickHighlighters_.append( { QColor{}, Qt::darkGreen } );
-                quickHighlighters_.append( { QColor{}, Qt::darkCyan } );
-                quickHighlighters_.append( { QColor{}, Qt::magenta } );
-                quickHighlighters_.append( { QColor{}, Qt::darkMagenta } );
-                quickHighlighters_.append( { QColor{}, Qt::gray } );
+                quickHighlighters_.append( { { QColor{}, Qt::red }, true } );
+                quickHighlighters_.append( { { QColor{}, Qt::green }, true } );
+                quickHighlighters_.append( { { QColor{}, Qt::cyan }, true } );
+                quickHighlighters_.append( { { QColor{}, Qt::darkRed }, true } );
+                quickHighlighters_.append( { { QColor{}, Qt::darkGreen }, true } );
+                quickHighlighters_.append( { { QColor{}, Qt::darkCyan }, true } );
+                quickHighlighters_.append( { { QColor{}, Qt::magenta }, true } );
+                quickHighlighters_.append( { { QColor{}, Qt::darkMagenta }, true } );
+                quickHighlighters_.append( { { QColor{}, Qt::gray }, true } );
             }
         }
         else {

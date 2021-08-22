@@ -39,6 +39,7 @@
 #include <QFileDialog>
 #include <QTimer>
 
+#include <qcheckbox.h>
 #include <qcolor.h>
 #include <qlabel.h>
 #include <qnamespace.h>
@@ -106,21 +107,34 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
         setCurrentRow( 0 );
     }
 
+    quickHighlightLayout->removeWidget( colorLabelsPlaceholder );
+    quickHighlightLayout->removeWidget( colorLabelsForeColor );
+    quickHighlightLayout->removeWidget( colorLabelsBackColor );
+    quickHighlightLayout->removeWidget( colorLabelsCycle );
+
+    quickHighlightLayout->addWidget( colorLabelsPlaceholder, 0, 0 );
+    quickHighlightLayout->addWidget( colorLabelsForeColor, 0, 1, Qt::AlignCenter );
+    quickHighlightLayout->addWidget( colorLabelsBackColor, 0, 2, Qt::AlignCenter );
+    quickHighlightLayout->addWidget( colorLabelsCycle, 0, 3, Qt::AlignCenter );
+
     const auto quickHighlighters = highlighterSetCollection_.quickHighlighters();
     for ( int i = 0; i < quickHighlighters.size(); ++i ) {
         const auto row = i + 1;
         auto quickHighlightLabel = new QLabel( QString( "Color label %1" ).arg( row ) );
         auto foreButton = new QPushButton;
         auto backButton = new QPushButton;
+        auto cycleCheckbox = new QCheckBox;
 
-        HighlighterEdit::updateIcon( foreButton, quickHighlighters[ i ].foreColor );
-        HighlighterEdit::updateIcon( backButton, quickHighlighters[ i ].backColor );
+        HighlighterEdit::updateIcon( foreButton, quickHighlighters[ i ].color.foreColor );
+        HighlighterEdit::updateIcon( backButton, quickHighlighters[ i ].color.backColor );
+        cycleCheckbox->setChecked( quickHighlighters[ i ].useInCycle );
 
         connect( foreButton, &QPushButton::clicked, foreButton, [ foreButton, this, index = i ]() {
             auto highlighters = highlighterSetCollection_.quickHighlighters();
             QColor newColor;
-            if ( HighlighterEdit::showColorPicker( highlighters[ index ].foreColor, newColor ) ) {
-                highlighters[ index ].foreColor = newColor;
+            if ( HighlighterEdit::showColorPicker( highlighters[ index ].color.foreColor,
+                                                   newColor ) ) {
+                highlighters[ index ].color.foreColor = newColor;
                 highlighterSetCollection_.setQuickHighlighters( highlighters );
                 HighlighterEdit::updateIcon( foreButton, newColor );
             }
@@ -129,16 +143,25 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
         connect( backButton, &QPushButton::clicked, backButton, [ backButton, this, index = i ]() {
             auto highlighters = highlighterSetCollection_.quickHighlighters();
             QColor newColor;
-            if ( HighlighterEdit::showColorPicker( highlighters[ index ].backColor, newColor ) ) {
-                highlighters[ index ].backColor = newColor;
+            if ( HighlighterEdit::showColorPicker( highlighters[ index ].color.backColor,
+                                                   newColor ) ) {
+                highlighters[ index ].color.backColor = newColor;
                 highlighterSetCollection_.setQuickHighlighters( highlighters );
                 HighlighterEdit::updateIcon( backButton, newColor );
             }
         } );
 
+        connect( cycleCheckbox, &QCheckBox::clicked, cycleCheckbox,
+                 [ this, index = i ]( bool isChecked ) {
+                     auto highlighters = highlighterSetCollection_.quickHighlighters();
+                     highlighters[ index ].useInCycle = isChecked;
+                     highlighterSetCollection_.setQuickHighlighters( highlighters );
+                 } );
+
         quickHighlightLayout->addWidget( quickHighlightLabel, row, 0 );
         quickHighlightLayout->addWidget( foreButton, row, 1 );
         quickHighlightLayout->addWidget( backButton, row, 2 );
+        quickHighlightLayout->addWidget( cycleCheckbox, row, 3, Qt::AlignCenter );
     }
 
     dispatchToMainThread( [ this ] {

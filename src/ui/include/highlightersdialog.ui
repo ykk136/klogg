@@ -186,22 +186,29 @@
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <layout class="QGridLayout" name="quickHighlightLayout">
-         <item row="2" column="2">
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Back color</string>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="1">
-          <widget class="QLabel" name="label_4">
+          <widget class="QLabel" name="colorLabelsForeColor">
            <property name="text">
             <string>Fore color</string>
            </property>
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QWidget" name="placeholder" native="true"/>
+          <widget class="QWidget" name="colorLabelsPlaceholder" native="true"/>
+         </item>
+         <item row="2" column="2">
+          <widget class="QLabel" name="colorLabelsBackColor">
+           <property name="text">
+            <string>Back color</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QLabel" name="colorLabelsCycle">
+           <property name="text">
+            <string>Include into cycle</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

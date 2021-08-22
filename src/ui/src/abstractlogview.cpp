@@ -481,7 +481,8 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                 colorLabelAction->setData( i );
 
                 QPixmap pixmap( 20, 10 );
-                pixmap.fill( quickHighlightersConfiguration.at( static_cast<int>( i ) ).backColor );
+                pixmap.fill(
+                    quickHighlightersConfiguration.at( static_cast<int>( i ) ).color.backColor );
                 colorLabelAction->setIcon( QIcon( pixmap ) );
             }
             colorLabelsMenu_->addSeparator();
@@ -1976,8 +1977,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         std::transform( quickHighlighters_[ i ].begin(), quickHighlighters_[ i ].end(),
                         std::back_inserter( additionalHighlighters ),
                         [ quickHighlighter ]( const QString& word ) {
-                            Highlighter h{ word, false, true, quickHighlighter.foreColor,
-                                           quickHighlighter.backColor };
+                            Highlighter h{ word, false, true, quickHighlighter.color.foreColor,
+                                           quickHighlighter.color.backColor };
                             h.setUseRegex( false );
                             return h;
                         } );
