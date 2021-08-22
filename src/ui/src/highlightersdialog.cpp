@@ -109,7 +109,7 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
     const auto quickHighlighters = highlighterSetCollection_.quickHighlighters();
     for ( int i = 0; i < quickHighlighters.size(); ++i ) {
         const auto row = i + 1;
-        auto quickHighlightLabel = new QLabel( QString( "Highlighter %1" ).arg( row ) );
+        auto quickHighlightLabel = new QLabel( QString( "Color label %1" ).arg( row ) );
         auto foreButton = new QPushButton;
         auto backButton = new QPushButton;
 

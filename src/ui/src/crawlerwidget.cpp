@@ -63,6 +63,7 @@
 #include <QStandardItemModel>
 #include <QStringListModel>
 #include <qglobal.h>
+#include <string>
 
 #include "data/regularexpression.h"
 
@@ -1248,6 +1249,16 @@ void CrawlerWidget::setup()
              QOverload<>::of( &FilteredView::setFocus ) );
     connect( filteredView_, &FilteredView::exitView, logMainView_,
              QOverload<>::of( &LogMainView::setFocus ) );
+
+    connect( logMainView_, &AbstractLogView::clearColorLabels, this,
+             &CrawlerWidget::clearColorLabels );
+    connect( filteredView_, &AbstractLogView::clearColorLabels, this,
+             &CrawlerWidget::clearColorLabels );
+
+    connect( logMainView_, &AbstractLogView::addColorLabel, this,
+             &CrawlerWidget::addColorLabelToSelection );
+    connect( filteredView_, &AbstractLogView::addColorLabel, this,
+             &CrawlerWidget::addColorLabelToSelection );
 }
 
 void CrawlerWidget::registerShortcuts()
@@ -1285,59 +1296,27 @@ void CrawlerWidget::registerShortcuts()
                                           }
                                       } );
 
-    const auto addColorLabelToSelection = [ this ]( size_t label, bool clearHighlight = false ) {
-        auto selectedPattern = getSelectedText();
-        auto wasHighlightedAnyLabel = false;
-        auto wasHighlightedThisLabel = false;
-
-        for ( auto i = 0u; i < wordsHighlighters_.size(); ++i ) {
-            const auto wasHighlighted = wordsHighlighters_[ i ].removeAll( selectedPattern ) != 0;
-            wasHighlightedAnyLabel |= wasHighlighted;
-            wasHighlightedThisLabel |= (wasHighlighted && i == label);
-        }
-
-        if ( !( wasHighlightedAnyLabel && clearHighlight ) && !wasHighlightedThisLabel ) {
-            wordsHighlighters_[ label ].append( std::move( selectedPattern ) );
-        }
-
-        logMainView_->setWordsHighlighters( wordsHighlighters_ );
-        filteredView_->setWordsHighlighters( wordsHighlighters_ );
+    std::array<std::string, 9> colorLables = {
+        ShortcutAction::LogViewAddColorLabel1, ShortcutAction::LogViewAddColorLabel2,
+        ShortcutAction::LogViewAddColorLabel3, ShortcutAction::LogViewAddColorLabel4,
+        ShortcutAction::LogViewAddColorLabel5, ShortcutAction::LogViewAddColorLabel6,
+        ShortcutAction::LogViewAddColorLabel7, ShortcutAction::LogViewAddColorLabel8,
+        ShortcutAction::LogViewAddColorLabel9,
     };
 
-    ShortcutAction::registerShortcut(
-        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-        ShortcutAction::LogViewAddColorLabel1,
-        [ addColorLabelToSelection ]() { addColorLabelToSelection( 0u ); } );
+    for ( auto label = 0u; label < colorLables.size(); ++label ) {
+        ShortcutAction::registerShortcut(
+            configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+            colorLables[ label ], [ this, label ]() { addColorLabelToSelection( label ); } );
+    }
 
     ShortcutAction::registerShortcut(
         configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-        ShortcutAction::LogViewAddColorLabel2,
-        [ addColorLabelToSelection ]() { addColorLabelToSelection( 1u ); } );
+        ShortcutAction::LogViewAddNextColorLabel, [ this ]() { addNextColorLabelToSelection(); } );
 
     ShortcutAction::registerShortcut(
         configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-        ShortcutAction::LogViewAddColorLabel3,
-        [ addColorLabelToSelection ]() { addColorLabelToSelection( 2u ); } );
-
-    ShortcutAction::registerShortcut(
-        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-        ShortcutAction::LogViewAddNextColorLabel, [ this, addColorLabelToSelection ]() {
-            addColorLabelToSelection( nextWordsHighlighterIndex_, true );
-            nextWordsHighlighterIndex_++;
-            if ( nextWordsHighlighterIndex_ == wordsHighlighters_.size() ) {
-                nextWordsHighlighterIndex_ = 0;
-            }
-        } );
-
-    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this,
-                                      Qt::WidgetWithChildrenShortcut,
-                                      ShortcutAction::LogViewClearColorLabels, [ this ]() {
-                                          for ( auto& wordsHighlighters : wordsHighlighters_ ) {
-                                              wordsHighlighters.clear();
-                                          }
-                                          logMainView_->setWordsHighlighters( wordsHighlighters_ );
-                                          filteredView_->setWordsHighlighters( wordsHighlighters_ );
-                                      } );
+        ShortcutAction::LogViewClearColorLabels, [ this ]() { clearColorLabels(); } );
 
     logMainView_->registerShortcuts();
     filteredView_->registerShortcuts();
@@ -1516,6 +1495,28 @@ void CrawlerWidget::changeTopViewSize( int32_t delta )
     LOG_DEBUG << "CrawlerWidget::changeTopViewSize " << sizes().at( 0 ) << " " << min << " " << max;
     moveSplitter( closestLegalPosition( sizes().at( 0 ) + ( delta * 10 ), 1 ), 1 );
     LOG_DEBUG << "CrawlerWidget::changeTopViewSize " << sizes().at( 0 );
+}
+
+void CrawlerWidget::addColorLabelToSelection( size_t label )
+{
+    updateColorLabels( colorLabelsManager_.setColorLabel( label, getSelectedText() ) );
+}
+
+void CrawlerWidget::addNextColorLabelToSelection()
+{
+    updateColorLabels( colorLabelsManager_.setNextColorLabel( getSelectedText() ) );
+}
+
+void CrawlerWidget::clearColorLabels()
+{
+    updateColorLabels( colorLabelsManager_.clear() );
+}
+
+void CrawlerWidget::updateColorLabels(
+    const ColorLabelsManager::QuickHighlightersCollection& labels )
+{
+    logMainView_->setQuickHighlighters( labels );
+    filteredView_->setQuickHighlighters( labels );
 }
 
 //

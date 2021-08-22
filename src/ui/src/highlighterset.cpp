@@ -464,12 +464,18 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
                 quickHighlighters_.append( std::move( quickHighlighter ) );
             }
             settings.endArray();
-            if ( quickHighlighters_.size() != 3 ) {
+            if ( quickHighlighters_.size() != 9 ) {
                 LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
                 quickHighlighters_.clear();
                 quickHighlighters_.append( { QColor{}, Qt::red } );
                 quickHighlighters_.append( { QColor{}, Qt::green } );
                 quickHighlighters_.append( { QColor{}, Qt::cyan } );
+                quickHighlighters_.append( { QColor{}, Qt::darkRed } );
+                quickHighlighters_.append( { QColor{}, Qt::darkGreen } );
+                quickHighlighters_.append( { QColor{}, Qt::darkCyan } );
+                quickHighlighters_.append( { QColor{}, Qt::magenta } );
+                quickHighlighters_.append( { QColor{}, Qt::darkMagenta } );
+                quickHighlighters_.append( { QColor{}, Qt::gray } );
             }
         }
         else {

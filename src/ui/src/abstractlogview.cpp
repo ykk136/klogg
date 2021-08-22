@@ -54,6 +54,8 @@
 #include <limits>
 #include <memory>
 #include <numeric>
+#include <optional>
+#include <qwidget.h>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -440,15 +442,59 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
         auto highlightersActionGroup = new QActionGroup( this );
         connect( highlightersActionGroup, &QActionGroup::triggered, this,
                  &AbstractLogView::setHighlighterSet );
-
         highlightersMenu_->clear();
-
         populateHighlightersMenu( highlightersMenu_, highlightersActionGroup );
+
+        auto colorLablesActionGroup = new QActionGroup( this );
+        connect( colorLablesActionGroup, &QActionGroup::triggered, this,
+                 &AbstractLogView::setColorLabel );
+        colorLabelsMenu_->clear();
+        colorLabelsMenu_->setEnabled( selection_.isPortion() || selection_.isSingleLine() );
+        if ( colorLabelsMenu_->isEnabled() ) {
+            auto selectedText = selection_.getSelectedText( logData_ );
+            std::optional<size_t> currentLabel;
+            for ( auto i = 0u; i < quickHighlighters_.size(); ++i ) {
+                if ( quickHighlighters_[ i ].contains( selectedText ) ) {
+                    currentLabel = i;
+                    break;
+                }
+            }
+
+            auto noneAction = colorLabelsMenu_->addAction( "None" );
+            noneAction->setActionGroup( colorLablesActionGroup );
+            noneAction->setCheckable( true );
+            noneAction->setChecked( !currentLabel.has_value() );
+            if ( currentLabel ) {
+                noneAction->setData( static_cast<unsigned>( *currentLabel ) );
+            }
+
+            const auto& quickHighlightersConfiguration
+                = HighlighterSetCollection::get().quickHighlighters();
+
+            colorLabelsMenu_->addSeparator();
+            for ( auto i = 0u; i < quickHighlighters_.size(); ++i ) {
+                auto colorLabelAction
+                    = colorLabelsMenu_->addAction( QString( "Color label %1" ).arg( i + 1 ) );
+                colorLabelAction->setActionGroup( colorLablesActionGroup );
+                colorLabelAction->setCheckable( true );
+                colorLabelAction->setChecked( currentLabel == i );
+                colorLabelAction->setData( i );
+
+                QPixmap pixmap( 20, 10 );
+                pixmap.fill( quickHighlightersConfiguration.at( static_cast<int>( i ) ).backColor );
+                colorLabelAction->setIcon( QIcon( pixmap ) );
+            }
+            colorLabelsMenu_->addSeparator();
+            auto clearAllAction = colorLabelsMenu_->addAction( "Clear all" );
+            connect( clearAllAction, &QAction::triggered, this,
+                     &AbstractLogView::clearColorLabels );
+        }
 
         // Display the popup (blocking)
         popupMenu_->exec( QCursor::pos() );
 
         highlightersActionGroup->deleteLater();
+        colorLablesActionGroup->deleteLater();
     }
 
     emit activity();
@@ -1045,10 +1091,10 @@ void AbstractLogView::setSearchPattern( const RegularExpressionPattern& pattern 
     forceRefresh();
 }
 
-void AbstractLogView::setWordsHighlighters(
-    const std::vector<WordsHighlighters>& wordsHighlighters )
+void AbstractLogView::setQuickHighlighters(
+    const std::vector<QuickHighlighters>& quickHighlighters )
 {
-    wordsHighlighters_ = wordsHighlighters;
+    quickHighlighters_ = quickHighlighters;
     forceRefresh();
 }
 
@@ -1732,6 +1778,7 @@ void AbstractLogView::createMenu()
 
     popupMenu_ = new QMenu( this );
     highlightersMenu_ = popupMenu_->addMenu( "Highlighters" );
+    colorLabelsMenu_ = popupMenu_->addMenu( "Color labels" );
     popupMenu_->addSeparator();
     popupMenu_->addAction( markAction_ );
     popupMenu_->addSeparator();
@@ -1917,7 +1964,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     }
 
     std::vector<Highlighter> additionalHighlighters;
-    for ( auto i = 0u; i < wordsHighlighters_.size(); ++i ) {
+    for ( auto i = 0u; i < quickHighlighters_.size(); ++i ) {
         const auto quickHighlighterIndex = static_cast<int>( i );
         if ( quickHighlighterIndex >= quickHighlighters.size() ) {
             LOG_WARNING << "Not enough quickHighlighters configured";
@@ -1926,7 +1973,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
         const auto quickHighlighter = quickHighlighters.at( quickHighlighterIndex );
 
-        std::transform( wordsHighlighters_[ i ].begin(), wordsHighlighters_[ i ].end(),
+        std::transform( quickHighlighters_[ i ].begin(), quickHighlighters_[ i ].end(),
                         std::back_inserter( additionalHighlighters ),
                         [ quickHighlighter ]( const QString& word ) {
                             Highlighter h{ word, false, true, quickHighlighter.foreColor,
@@ -2173,6 +2220,16 @@ void AbstractLogView::setHighlighterSet( QAction* action )
 {
     saveCurrentHighlighterFromAction( action );
     forceRefresh();
+}
+
+void AbstractLogView::setColorLabel( QAction* action )
+{
+    if ( action->data().isValid() ) {
+        emit addColorLabel( static_cast<size_t>( action->data().toInt() ) );
+    }
+    else {
+        emit clearColorLabels();
+    }
 }
 
 namespace {

@@ -41,16 +41,16 @@
 #define ABSTRACTLOGVIEW_H
 
 #include <array>
+#include <cstddef>
 #include <functional>
-#include <vector>
 #include <string_view>
+#include <vector>
 
 #include <QAbstractScrollArea>
 #include <QBasicTimer>
-#include <QEvent>
 #include <QColor>
+#include <QEvent>
 #include <QFontMetrics>
-
 
 #ifdef GLOGG_PERF_MEASURE_FPS
 #include "perfcounter.h"
@@ -193,7 +193,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     AbstractLogView& operator=( const AbstractLogView& ) = delete;
     AbstractLogView& operator=( AbstractLogView&& ) = delete;
 
-    void updateFont(const QFont& font);
+    void updateFont( const QFont& font );
 
     // Refresh the widget when the data set has changed.
     void updateData();
@@ -218,8 +218,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     void setSearchPattern( const RegularExpressionPattern& pattern );
 
-    using WordsHighlighters = QStringList;
-    void setWordsHighlighters( const std::vector<WordsHighlighters>& wordHighlighters );
+    using QuickHighlighters = QStringList;
+    void setQuickHighlighters( const std::vector<QuickHighlighters>& wordHighlighters );
 
     void registerShortcuts();
 
@@ -299,7 +299,11 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void clearSearchLimits();
 
     void saveDefaultSplitterSizes();
-    void changeFontSize(bool increase);
+    void changeFontSize( bool increase );
+
+    void addColorLabel( size_t label );
+    void addNextColorLabel();
+    void clearColorLabels();
 
   public slots:
     // Makes the widget select and display the passed line.
@@ -356,6 +360,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void setSelectionEnd();
     void setQuickFindResult( bool hasMatch, Portion selection );
     void setHighlighterSet( QAction* action );
+    void setColorLabel( QAction* action );
 
   private:
     // Graphic parameters
@@ -415,8 +420,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     Selection selection_;
     RegularExpressionPattern searchPattern_;
 
-
-    std::vector<WordsHighlighters> wordsHighlighters_;
+    std::vector<QuickHighlighters> quickHighlighters_ = std::vector<QuickHighlighters>{9};
 
     // Position of the view, those are crucial to control drawing
     // firstLine gives the position of the view,
@@ -452,6 +456,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     QAction* setSelectionEndAction_;
     QAction* saveDefaultSplitterSizesAction_;
     QMenu* highlightersMenu_;
+    QMenu* colorLabelsMenu_;
 
     std::map<QString, QShortcut*> shortcuts_;
 

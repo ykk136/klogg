@@ -129,6 +129,12 @@ const std::map<std::string, QStringList>& ShortcutAction::defaultShortcuts()
         shortcuts.emplace( LogViewAddColorLabel1, QStringList() << "Ctrl+Shift+1" );
         shortcuts.emplace( LogViewAddColorLabel2, QStringList() << "Ctrl+Shift+2" );
         shortcuts.emplace( LogViewAddColorLabel3, QStringList() << "Ctrl+Shift+3" );
+        shortcuts.emplace( LogViewAddColorLabel4, QStringList() << "Ctrl+Shift+4" );
+        shortcuts.emplace( LogViewAddColorLabel5, QStringList() << "Ctrl+Shift+5" );
+        shortcuts.emplace( LogViewAddColorLabel6, QStringList() << "Ctrl+Shift+6" );
+        shortcuts.emplace( LogViewAddColorLabel7, QStringList() << "Ctrl+Shift+7" );
+        shortcuts.emplace( LogViewAddColorLabel8, QStringList() << "Ctrl+Shift+8" );
+        shortcuts.emplace( LogViewAddColorLabel9, QStringList() << "Ctrl+Shift+9" );
         shortcuts.emplace( LogViewClearColorLabels, QStringList() << "Ctrl+Shift+0" );
         shortcuts.emplace( LogViewAddNextColorLabel, QStringList() << "Ctrl+D" );
 
@@ -209,10 +215,17 @@ QString ShortcutAction::actionName( const std::string& action )
 
         shortcuts.emplace( LogViewExitView, "Release focus from view" );
 
-        shortcuts.emplace( LogViewAddColorLabel1, "Highlight selected text with color 1" );
-        shortcuts.emplace( LogViewAddColorLabel2, "Highlight selected text with color 2" );
-        shortcuts.emplace( LogViewAddColorLabel3, "Highlight selected text with color 3" );
-        shortcuts.emplace( LogViewAddNextColorLabel, "Highlight selected text with next color" );
+        shortcuts.emplace( LogViewAddColorLabel1, "Highlight text with color 1" );
+        shortcuts.emplace( LogViewAddColorLabel2, "Highlight text with color 2" );
+        shortcuts.emplace( LogViewAddColorLabel3, "Highlight text with color 3" );
+        shortcuts.emplace( LogViewAddColorLabel4, "Highlight text with color 4" );
+        shortcuts.emplace( LogViewAddColorLabel5, "Highlight text with color 5" );
+        shortcuts.emplace( LogViewAddColorLabel6, "Highlight text with color 6" );
+        shortcuts.emplace( LogViewAddColorLabel7, "Highlight text with color 7" );
+        shortcuts.emplace( LogViewAddColorLabel8, "Highlight text with color 8" );
+        shortcuts.emplace( LogViewAddColorLabel9, "Highlight text with color 9" );
+
+        shortcuts.emplace( LogViewAddNextColorLabel, "Highlight text with next color" );
 
         shortcuts.emplace( LogViewClearColorLabels, "Clear all color labels" );
 

@@ -53,6 +53,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+#include "colorlabelsmanager.h"
 #include "data/loadingstatus.h"
 #include "data/logdata.h"
 #include "data/logfiltereddata.h"
@@ -247,6 +248,10 @@ class CrawlerWidget : public QSplitter,
     void setSearchLimits( LineNumber startLine, LineNumber endLine );
     void clearSearchLimits();
 
+    void addColorLabelToSelection( size_t label );
+    void addNextColorLabelToSelection();
+    void clearColorLabels();
+
   private:
     // State machine holding the state of the search, used to allow/disallow
     // auto-refresh and inform the user via the info line.
@@ -319,6 +324,8 @@ class CrawlerWidget : public QSplitter,
 
     void resetStateOnSearchPatternChanges();
 
+    void updateColorLabels( const ColorLabelsManager::QuickHighlightersCollection& labels );
+
     // Palette for error notification (yellow background)
     static const QPalette ErrorPalette;
 
@@ -390,16 +397,11 @@ class CrawlerWidget : public QSplitter,
 
     std::vector<LineNumber> savedMarkedLines_;
 
-    std::vector<AbstractLogView::WordsHighlighters> wordsHighlighters_ = {
-        { {} },
-        { {} },
-        { {} },
-    };
-    size_t nextWordsHighlighterIndex_ = 0;
-
     // Current encoding setting;
     std::optional<int> encodingMib_;
     QString encodingText_;
+
+    ColorLabelsManager colorLabelsManager_;
 };
 
 #endif
