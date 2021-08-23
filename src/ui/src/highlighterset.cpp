@@ -38,6 +38,7 @@
 
 // This file implements classes Highlighter and HighlighterSet
 
+#include <iterator>
 #include <qcolor.h>
 #include <qnamespace.h>
 #include <random>
@@ -469,18 +470,28 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
                 quickHighlighters_.append( std::move( quickHighlighter ) );
             }
             settings.endArray();
-            if ( quickHighlighters_.size() != 9 ) {
+
+            QList<QuickHighlighter> defaultLabels;
+            defaultLabels.append( { { QColor{}, Qt::red }, true } );
+            defaultLabels.append( { { QColor{}, Qt::green }, true } );
+            defaultLabels.append( { { QColor{}, Qt::cyan }, true } );
+            defaultLabels.append( { { QColor{}, Qt::darkRed }, true } );
+            defaultLabels.append( { { QColor{}, Qt::darkGreen }, true } );
+            defaultLabels.append( { { QColor{}, Qt::darkCyan }, true } );
+            defaultLabels.append( { { QColor{}, Qt::magenta }, true } );
+            defaultLabels.append( { { QColor{}, Qt::darkMagenta }, true } );
+            defaultLabels.append( { { QColor{}, Qt::gray }, true } );
+
+            if ( quickHighlighters_.size() < defaultLabels.size() ) {
                 LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
-                quickHighlighters_.clear();
-                quickHighlighters_.append( { { QColor{}, Qt::red }, true } );
-                quickHighlighters_.append( { { QColor{}, Qt::green }, true } );
-                quickHighlighters_.append( { { QColor{}, Qt::cyan }, true } );
-                quickHighlighters_.append( { { QColor{}, Qt::darkRed }, true } );
-                quickHighlighters_.append( { { QColor{}, Qt::darkGreen }, true } );
-                quickHighlighters_.append( { { QColor{}, Qt::darkCyan }, true } );
-                quickHighlighters_.append( { { QColor{}, Qt::magenta }, true } );
-                quickHighlighters_.append( { { QColor{}, Qt::darkMagenta }, true } );
-                quickHighlighters_.append( { { QColor{}, Qt::gray }, true } );
+                std::copy( defaultLabels.begin() + quickHighlighters_.size(), defaultLabels.end(),
+                           std::back_inserter( quickHighlighters_ ) );
+            }
+            else if ( quickHighlighters_.size() > defaultLabels.size() ) {
+                LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
+
+                quickHighlighters_.erase( quickHighlighters_.begin() + defaultLabels.size(),
+                                          quickHighlighters_.end() );
             }
         }
         else {

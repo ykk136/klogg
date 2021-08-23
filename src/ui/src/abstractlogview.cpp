@@ -47,6 +47,7 @@
 #include <cassert>
 #include <cmath>
 #include <complex>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iostream>
@@ -473,7 +474,11 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                 = HighlighterSetCollection::get().quickHighlighters();
 
             colorLabelsMenu_->addSeparator();
-            for ( auto i = 0u; i < quickHighlighters_.size(); ++i ) {
+            const auto maxLabel
+                = std::min( quickHighlighters_.size(),
+                            static_cast<size_t>( quickHighlightersConfiguration.size() ) );
+            for ( auto i = 0u; i < maxLabel; ++i ) {
+
                 auto colorLabelAction
                     = colorLabelsMenu_->addAction( QString( "Color label %1" ).arg( i + 1 ) );
                 colorLabelAction->setActionGroup( colorLablesActionGroup );
@@ -482,8 +487,9 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                 colorLabelAction->setData( i );
 
                 QPixmap pixmap( 20, 10 );
-                pixmap.fill(
-                    quickHighlightersConfiguration.at( static_cast<int>( i ) ).color.backColor );
+                auto fillColor = quickHighlightersConfiguration.at( static_cast<int>( i ) ).color.backColor;
+                fillColor.setAlphaF( 1.0 );
+                pixmap.fill( fillColor );
                 colorLabelAction->setIcon( QIcon( pixmap ) );
             }
             colorLabelsMenu_->addSeparator();
