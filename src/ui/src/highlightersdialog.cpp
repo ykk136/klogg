@@ -42,6 +42,7 @@
 #include <qcheckbox.h>
 #include <qcolor.h>
 #include <qlabel.h>
+#include <qlineedit.h>
 #include <qnamespace.h>
 #include <qpushbutton.h>
 #include <utility>
@@ -120,7 +121,7 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
     const auto quickHighlighters = highlighterSetCollection_.quickHighlighters();
     for ( int i = 0; i < quickHighlighters.size(); ++i ) {
         const auto row = i + 1;
-        auto quickHighlightLabel = new QLabel( QString( "Color label %1" ).arg( row ) );
+        auto nameEdit = new QLineEdit( quickHighlighters[ i ].name );
         auto foreButton = new QPushButton;
         auto backButton = new QPushButton;
         auto cycleCheckbox = new QCheckBox;
@@ -128,6 +129,14 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
         HighlighterEdit::updateIcon( foreButton, quickHighlighters[ i ].color.foreColor );
         HighlighterEdit::updateIcon( backButton, quickHighlighters[ i ].color.backColor );
         cycleCheckbox->setChecked( quickHighlighters[ i ].useInCycle );
+
+        connect( nameEdit, &QLineEdit::textChanged, nameEdit, [ this, index = i ](const QString& newName) {
+            auto highlighters = highlighterSetCollection_.quickHighlighters();
+            if ( !newName.isEmpty() ) {
+                highlighters[ index ].name = newName;
+                highlighterSetCollection_.setQuickHighlighters( highlighters );
+            }
+        } );
 
         connect( foreButton, &QPushButton::clicked, foreButton, [ foreButton, this, index = i ]() {
             auto highlighters = highlighterSetCollection_.quickHighlighters();
@@ -158,7 +167,7 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
                      highlighterSetCollection_.setQuickHighlighters( highlighters );
                  } );
 
-        quickHighlightLayout->addWidget( quickHighlightLabel, row, 0 );
+        quickHighlightLayout->addWidget( nameEdit, row, 0 );
         quickHighlightLayout->addWidget( foreButton, row, 1 );
         quickHighlightLayout->addWidget( backButton, row, 2 );
         quickHighlightLayout->addWidget( cycleCheckbox, row, 3, Qt::AlignCenter );

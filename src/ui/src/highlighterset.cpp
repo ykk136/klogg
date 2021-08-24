@@ -426,6 +426,7 @@ void HighlighterSetCollection::saveToStorage( QSettings& settings ) const
     settings.beginWriteArray( "quick" );
     for ( int i = 0; i < quickHighlighters_.size(); ++i ) {
         settings.setArrayIndex( i );
+        settings.setValue( "name", quickHighlighters_[ i ].name );
         settings.setValue( "fore_colour",
                            quickHighlighters_[ i ].color.foreColor.name( QColor::HexArgb ) );
         settings.setValue( "back_colour",
@@ -467,20 +468,23 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
                     = QColor( settings.value( "back_colour" ).toString() );
                 quickHighlighter.useInCycle = settings.value( "cycle", true ).toBool();
 
+                quickHighlighter.name
+                    = settings.value( "name", QString( "Color label %1" ).arg( i + 1 ) ).toString();
+
                 quickHighlighters_.append( std::move( quickHighlighter ) );
             }
             settings.endArray();
 
             QList<QuickHighlighter> defaultLabels;
-            defaultLabels.append( { { QColor{}, Qt::red }, true } );
-            defaultLabels.append( { { QColor{}, Qt::green }, true } );
-            defaultLabels.append( { { QColor{}, Qt::cyan }, true } );
-            defaultLabels.append( { { QColor{}, Qt::darkRed }, true } );
-            defaultLabels.append( { { QColor{}, Qt::darkGreen }, true } );
-            defaultLabels.append( { { QColor{}, Qt::darkCyan }, true } );
-            defaultLabels.append( { { QColor{}, Qt::magenta }, true } );
-            defaultLabels.append( { { QColor{}, Qt::darkMagenta }, true } );
-            defaultLabels.append( { { QColor{}, Qt::gray }, true } );
+            defaultLabels.append( { "Color label 1", { QColor{}, Qt::red }, true } );
+            defaultLabels.append( { "Color label 2",{ QColor{}, Qt::green }, true } );
+            defaultLabels.append( { "Color label 3",{ QColor{}, Qt::cyan }, true } );
+            defaultLabels.append( { "Color label 4",{ QColor{}, Qt::darkRed }, true } );
+            defaultLabels.append( { "Color label 5",{ QColor{}, Qt::darkGreen }, true } );
+            defaultLabels.append( { "Color label 6",{ QColor{}, Qt::darkCyan }, true } );
+            defaultLabels.append( { "Color label 7",{ QColor{}, Qt::magenta }, true } );
+            defaultLabels.append( { "Color label 8",{ QColor{}, Qt::darkMagenta }, true } );
+            defaultLabels.append( { "Color label 9",{ QColor{}, Qt::gray }, true } );
 
             if ( quickHighlighters_.size() < defaultLabels.size() ) {
                 LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";

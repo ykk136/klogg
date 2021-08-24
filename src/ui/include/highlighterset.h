@@ -149,6 +149,7 @@ class HighlighterSet {
 };
 
 struct QuickHighlighter {
+  QString name;
   HighlightColor color;
   bool useInCycle;
 };

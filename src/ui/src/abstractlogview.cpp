@@ -479,15 +479,17 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                             static_cast<size_t>( quickHighlightersConfiguration.size() ) );
             for ( auto i = 0u; i < maxLabel; ++i ) {
 
+                const auto& currentLabelConfiguration
+                    = quickHighlightersConfiguration.at( static_cast<int>( i ) );
                 auto colorLabelAction
-                    = colorLabelsMenu_->addAction( QString( "Color label %1" ).arg( i + 1 ) );
+                    = colorLabelsMenu_->addAction( currentLabelConfiguration.name );
                 colorLabelAction->setActionGroup( colorLablesActionGroup );
                 colorLabelAction->setCheckable( true );
                 colorLabelAction->setChecked( currentLabel == i );
                 colorLabelAction->setData( i );
 
                 QPixmap pixmap( 20, 10 );
-                auto fillColor = quickHighlightersConfiguration.at( static_cast<int>( i ) ).color.backColor;
+                auto fillColor = currentLabelConfiguration.color.backColor;
                 fillColor.setAlphaF( 1.0 );
                 pixmap.fill( fillColor );
                 colorLabelAction->setIcon( QIcon( pixmap ) );
