@@ -504,7 +504,7 @@ class Configuration final : public Persistable<Configuration> {
     unsigned searchResultsCacheLines_ = 1000000;
     bool useParallelSearch_ = true;
     int indexReadBufferSizeMb_ = 16;
-    int searchReadBufferSizeLines_ = 5000;
+    int searchReadBufferSizeLines_ = 10000;
     int searchThreadPoolSize_ = 0;
     bool keepFileClosed_ = false;
 
