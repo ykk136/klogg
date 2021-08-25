@@ -51,7 +51,9 @@
 
 #include "configuration.h"
 #include "dispatch_to.h"
+#include "encodingdetector.h"
 #include "issuereporter.h"
+#include "linetypes.h"
 #include "log.h"
 #include "logdata.h"
 #include "progress.h"
@@ -259,6 +261,7 @@ void LogDataWorker::onCheckFileFinished( const MonitoredFileStatus result )
 //
 // Operations implementation
 //
+namespace parse_data_block {
 
 std::string_view::size_type findNextMultiByteDelimeter( EncodingParameters encodingParams,
                                                         std::string_view data, char delimeter )
@@ -299,62 +302,100 @@ std::string_view::size_type findNextMultiByteDelimeter( EncodingParameters encod
     return nextDelimeter;
 }
 
+std::string_view::size_type findNextSingleByteDelimeter( EncodingParameters, std::string_view data,
+                                                         char delimeter )
+{
+    return data.find( delimeter );
+}
+
+int charOffsetWithinBlock( const char* blockStart, const char* pointer,
+                           const EncodingParameters& encodingParams )
+{
+    return static_cast<int>( std::distance( blockStart, pointer ) )
+           - encodingParams.getBeforeCrOffset();
+}
+
+using FindDelimeter = std::string_view::size_type ( * )( EncodingParameters encodingParams,
+                                                         std::string_view, char );
+
+LineLength::UnderlyingType
+expandTabsInLine( const QByteArray& block, std::string_view blockToExpand, int posWithinBlock,
+                  EncodingParameters encodingParams, FindDelimeter findNextDelimeter,
+                  LineLength::UnderlyingType initialAdditionalSpaces = 0 )
+{
+    auto additionalSpaces = initialAdditionalSpaces;
+    while ( !blockToExpand.empty() ) {
+        const auto nextTab = findNextDelimeter( encodingParams, blockToExpand, '\t' );
+        if ( nextTab == std::string_view::npos ) {
+            break;
+        }
+
+        const auto tabPosWithinBlock
+            = charOffsetWithinBlock( block.data(), blockToExpand.data() + nextTab, encodingParams );
+
+        LOG_DEBUG << "Tab at " << tabPosWithinBlock;
+
+        const auto currentExpandedSize = tabPosWithinBlock - posWithinBlock + additionalSpaces;
+
+        additionalSpaces += TabStop - ( currentExpandedSize % TabStop ) - 1;
+        if ( nextTab >= blockToExpand.size() ) {
+            break;
+        }
+
+        blockToExpand.remove_prefix( nextTab + 1 );
+    }
+
+    return additionalSpaces;
+}
+
+std::tuple<bool, int, LineLength::UnderlyingType>
+findNextLineFeed( const QByteArray& block, int posWithinBlock, const IndexingState& state,
+                  FindDelimeter findNextDelimeter )
+{
+    const auto searchStart = block.data() + posWithinBlock;
+    const auto searchLineSize = static_cast<size_t>( block.size() - posWithinBlock );
+
+    const auto blockView = std::string_view( searchStart, searchLineSize );
+    const auto nextLineFeed = findNextDelimeter( state.encodingParams, blockView, '\n' );
+
+    const auto isEndOfBlock = nextLineFeed == std::string_view::npos;
+
+    const auto nextLineSize = !isEndOfBlock ? nextLineFeed : searchLineSize;
+    const auto additionalSpaces
+        = expandTabsInLine( block, blockView.substr( 0, nextLineSize ), posWithinBlock,
+                            state.encodingParams, findNextDelimeter, state.additional_spaces );
+
+    posWithinBlock
+        = charOffsetWithinBlock( block.data(), searchStart + nextLineSize, state.encodingParams );
+
+    return std::make_tuple( isEndOfBlock, posWithinBlock, additionalSpaces );
+}
+} // namespace parse_data_block
+
 FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType blockBeginning,
                                                       const QByteArray& block,
                                                       IndexingState& state ) const
 {
-    state.max_length = 0;
-    FastLinePositionArray linePositions;
+    using namespace parse_data_block;
 
-    int posWithinBlock = 0;
-
-    const auto charOffsetWithinBlock
-        = [ &state, blockStart = block.data() ]( const char* pointer ) {
-              return static_cast<int>( std::distance( blockStart, pointer ) )
-                     - state.encodingParams.getBeforeCrOffset();
-          };
-
-    std::function<std::string_view::size_type( std::string_view, char )> findNext;
+    FindDelimeter findNextDelimeter;
     if ( state.encodingParams.lineFeedWidth == 1 ) {
-        findNext = []( std::string_view data, char delimeter ) { return data.find( delimeter ); };
+        findNextDelimeter = findNextSingleByteDelimeter;
     }
     else {
-        findNext = [ &state ]( std::string_view data, char delimeter ) {
-            return findNextMultiByteDelimeter( state.encodingParams, data, delimeter );
-        };
+        findNextDelimeter = findNextMultiByteDelimeter;
     }
 
-    const auto expandTabs = [ &state, &charOffsetWithinBlock, &findNext,
-                              posWithinBlock ]( std::string_view blockToExpand ) {
-        while ( !blockToExpand.empty() ) {
-            const auto nextTab = findNext( blockToExpand, '\t' );
-            if ( nextTab == std::string_view::npos ) {
-                break;
-            }
+    bool isEndOfBlock = false;
+    int posWithinBlock = 0;
+    FastLinePositionArray linePositions;
 
-            const auto tabPosWithinBlock = charOffsetWithinBlock( blockToExpand.data() + nextTab );
-
-            LOG_DEBUG << "Tab at " << tabPosWithinBlock;
-
-            const auto currentExpandedSize
-                = tabPosWithinBlock - posWithinBlock + state.additional_spaces;
-
-            state.additional_spaces += TabStop - ( currentExpandedSize % TabStop ) - 1;
-            if ( nextTab >= blockToExpand.size() ) {
-                break;
-            }
-
-            blockToExpand.remove_prefix( nextTab + 1 );
-        }
-    };
-
-    bool hasMoreData = true;
-    while ( hasMoreData ) {
-        if ( state.pos < blockBeginning ) {
-            posWithinBlock = 0;
+    while ( !isEndOfBlock ) {
+        if ( state.pos >= blockBeginning ) {
+            posWithinBlock = static_cast<int>( state.pos - blockBeginning );
         }
         else {
-            posWithinBlock = static_cast<int>( state.pos - blockBeginning );
+            posWithinBlock = 0;
         }
 
         if ( posWithinBlock > block.size() ) {
@@ -363,40 +404,20 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
             break;
         }
 
-        // Looking for the next \n, expanding tabs in the process
+        isEndOfBlock = posWithinBlock == block.size();
 
-        const auto searchStart = block.data() + posWithinBlock;
-        const auto searchLineSize = static_cast<size_t>( block.size() - posWithinBlock );
-
-        if ( searchLineSize > 0 ) {
-            const auto blockView = std::string_view( searchStart, searchLineSize );
-            const auto nextLineFeed = findNext( blockView, '\n' );
-
-            if ( nextLineFeed != std::string_view::npos ) {
-                expandTabs( blockView.substr( 0, nextLineFeed ) );
-                posWithinBlock = charOffsetWithinBlock( searchStart + nextLineFeed );
-                //LOG_DEBUG << "LF at " << posWithinBlock;
-            }
-            else {
-                expandTabs( blockView );
-                posWithinBlock = charOffsetWithinBlock( searchStart + searchLineSize );
-                hasMoreData = false;
-            }
-        }
-        else {
-            hasMoreData = false;
+        if ( !isEndOfBlock ) {
+            std::tie( isEndOfBlock, posWithinBlock, state.additional_spaces )
+                = findNextLineFeed( block, posWithinBlock, state, findNextDelimeter );
         }
 
         const auto currentDataEnd = posWithinBlock + blockBeginning;
         const auto length = ( currentDataEnd - state.pos ) / state.encodingParams.lineFeedWidth
                             + state.additional_spaces;
 
-        if ( length > state.max_length ) {
-            state.max_length = length;
-        }
+        state.max_length = std::max( state.max_length, length );
 
-        // When a end of line has been found...
-        if ( hasMoreData ) {
+        if ( !isEndOfBlock ) {
             state.end = currentDataEnd;
             state.pos = state.end + state.encodingParams.lineFeedWidth;
             state.additional_spaces = 0;
