@@ -84,16 +84,16 @@
 #include <tbb/flow_graph.h>
 
 #include "data/linetypes.h"
-#include "data/regularexpressionpattern.h"
-#include "log.h"
 
 #include "configuration.h"
 #include "highlighterset.h"
 #include "highlightersmenu.h"
+#include "log.h"
 #include "logmainview.h"
 #include "overview.h"
 #include "quickfind.h"
 #include "quickfindpattern.h"
+#include "regularexpressionpattern.h"
 #include "shortcuts.h"
 
 #ifdef Q_OS_WIN
@@ -2148,11 +2148,11 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             auto selectionPen = QPen( palette.color( QPalette::Highlight ) );
             selectionPen.setWidth( 3 );
             painter->setPen( selectionPen );
-            painter->drawLine( xPos - ContentMarginWidth+1, yPos, viewport()->width(), yPos );
+            painter->drawLine( xPos - ContentMarginWidth + 1, yPos, viewport()->width(), yPos );
             selectionPen.setWidth( 5 );
             painter->setPen( selectionPen );
-            painter->drawLine( xPos - ContentMarginWidth+2, yPos + fontHeight, viewport()->width(),
-                               yPos + fontHeight );
+            painter->drawLine( xPos - ContentMarginWidth + 2, yPos + fontHeight,
+                               viewport()->width(), yPos + fontHeight );
         }
 
         // Then draw the bullet

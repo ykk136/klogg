@@ -58,10 +58,10 @@
 
 #include "data/abstractlogdata.h"
 #include "data/linetypes.h"
-#include "data/regularexpressionpattern.h"
 #include "overviewwidget.h"
 #include "quickfind.h"
 #include "quickfindmux.h"
+#include "regularexpressionpattern.h"
 #include "selection.h"
 #include "viewtools.h"
 
@@ -420,7 +420,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     Selection selection_;
     RegularExpressionPattern searchPattern_;
 
-    std::vector<QuickHighlighters> quickHighlighters_ = std::vector<QuickHighlighters>{9};
+    std::vector<QuickHighlighters> quickHighlighters_ = std::vector<QuickHighlighters>{ 9 };
 
     // Position of the view, those are crucial to control drawing
     // firstLine gives the position of the view,

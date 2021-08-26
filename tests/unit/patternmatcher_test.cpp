@@ -19,7 +19,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "data/regularexpression.h"
+#include "regularexpression.h"
 
 SCENARIO( "Pattern matcher in boolean mode", "[patternmatcher]" )
 {

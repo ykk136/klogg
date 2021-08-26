@@ -13,10 +13,6 @@ add_library(logdata STATIC
          ${CMAKE_CURRENT_SOURCE_DIR}/include/data/linetypes.h
          ${CMAKE_CURRENT_SOURCE_DIR}/include/data/fileholder.h
          ${CMAKE_CURRENT_SOURCE_DIR}/include/data/filedigest.h
-         ${CMAKE_CURRENT_SOURCE_DIR}/include/data/hsregularexpression.h
-         ${CMAKE_CURRENT_SOURCE_DIR}/include/data/regularexpression.h
-         ${CMAKE_CURRENT_SOURCE_DIR}/include/data/regularexpressionpattern.h
-         ${CMAKE_CURRENT_SOURCE_DIR}/include/data/booleanevaluator.h
          ${CMAKE_CURRENT_SOURCE_DIR}/include/data/readablesize.h
 
         ${CMAKE_CURRENT_SOURCE_DIR}/src/abstractlogdata.cpp
@@ -30,9 +26,6 @@ add_library(logdata STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/logfiltereddataworker.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/fileholder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/filedigest.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/hsregularexpression.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/regularexpression.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/booleanevaluator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/readablesize.cpp
 
         src/filedigest.cpp)
@@ -50,20 +43,14 @@ target_link_libraries(logdata PUBLIC
         crash_handler
         settings
         utils
+        klogg_regex
         filewatch
         uchardet_wrapper
         kdtoolbox
         robin_hood
-        exprtk
         simdutf)
 
 target_link_libraries(logdata PRIVATE xxhash_wrapper)
-
-if(KLOGG_USE_HYPERSCAN)
-target_link_libraries(logdata PUBLIC hypersan_wrapper)
-target_compile_definitions(logdata PUBLIC KLOGG_HAS_HS)
-endif()
-
 
 
 if (${KLOGG_USE_LTO})

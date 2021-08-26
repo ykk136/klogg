@@ -65,7 +65,7 @@
 #include <qglobal.h>
 #include <string>
 
-#include "data/regularexpression.h"
+#include "regularexpression.h"
 
 #include "crawlerwidget.h"
 
