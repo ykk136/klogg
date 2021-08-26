@@ -54,9 +54,9 @@
 #include <QVBoxLayout>
 
 #include "colorlabelsmanager.h"
-#include "data/loadingstatus.h"
-#include "data/logdata.h"
-#include "data/logfiltereddata.h"
+#include "loadingstatus.h"
+#include "logdata.h"
+#include "logfiltereddata.h"
 #include "filteredview.h"
 #include "iconloader.h"
 #include "logmainview.h"

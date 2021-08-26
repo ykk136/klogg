@@ -25,7 +25,7 @@
 
 #include <numeric>
 
-#include "data/abstractlogdata.h"
+#include "abstractlogdata.h"
 #include "log.h"
 #include "selection.h"
 

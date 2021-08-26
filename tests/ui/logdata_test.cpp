@@ -32,7 +32,7 @@
 #include "log.h"
 #include "test_utils.h"
 
-#include "data/logdata.h"
+#include "logdata.h"
 
 static const qint64 SL_NB_LINES = 500LL;
 static const qint64 VBL_NB_LINES = 50000LL;

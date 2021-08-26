@@ -56,8 +56,8 @@
 #include "perfcounter.h"
 #endif
 
-#include "data/abstractlogdata.h"
-#include "data/linetypes.h"
+#include "abstractlogdata.h"
+#include "linetypes.h"
 #include "overviewwidget.h"
 #include "quickfind.h"
 #include "quickfindmux.h"

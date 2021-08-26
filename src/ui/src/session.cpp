@@ -26,8 +26,8 @@
 #include <cassert>
 #include <cstdint>
 
-#include "data/logdata.h"
-#include "data/logfiltereddata.h"
+#include "logdata.h"
+#include "logfiltereddata.h"
 #include "savedsearches.h"
 #include "sessioninfo.h"
 #include "viewinterface.h"

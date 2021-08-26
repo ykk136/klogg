@@ -21,10 +21,10 @@
 // It provides support for drawing the match overview sidebar but
 // the actual drawing is done in AbstractLogView which uses this class.
 
-#include "data/linetypes.h"
+#include "linetypes.h"
 #include "log.h"
 
-#include "data/logfiltereddata.h"
+#include "logfiltereddata.h"
 
 #include "overview.h"
 

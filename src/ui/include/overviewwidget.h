@@ -22,7 +22,8 @@
 
 #include <QBasicTimer>
 #include <QWidget>
-#include <data/linetypes.h>
+
+#include "linetypes.h"
 
 class Overview;
 

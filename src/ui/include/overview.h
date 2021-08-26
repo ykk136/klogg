@@ -20,7 +20,7 @@
 #ifndef OVERVIEW_H
 #define OVERVIEW_H
 
-#include "data/linetypes.h"
+#include "linetypes.h"
 #include <QList>
 #include <QVector>
 

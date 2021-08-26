@@ -21,7 +21,7 @@
 
 #include "log.h"
 
-#include "data/linepositionarray.h"
+#include "linepositionarray.h"
 
 #include <algorithm>
 #include <random>

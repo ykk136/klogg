@@ -24,7 +24,7 @@
 #include <QString>
 #include <cstddef>
 
-#include "data/linetypes.h"
+#include "linetypes.h"
 
 class AbstractLogData;
 

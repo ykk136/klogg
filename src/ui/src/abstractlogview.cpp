@@ -83,7 +83,7 @@
 
 #include <tbb/flow_graph.h>
 
-#include "data/linetypes.h"
+#include "linetypes.h"
 
 #include "configuration.h"
 #include "highlighterset.h"

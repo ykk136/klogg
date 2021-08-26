@@ -23,7 +23,7 @@
 #include <QTabBar>
 #include <QTabWidget>
 
-#include "data/loadingstatus.h"
+#include "loadingstatus.h"
 
 // This class represents glogg's main widget, a tabbed
 // group of CrawlerWidgets.

@@ -28,8 +28,8 @@
 #include "log.h"
 #include "test_utils.h"
 
-#include "data/logdata.h"
-#include "data/logfiltereddata.h"
+#include "logdata.h"
+#include "logfiltereddata.h"
 
 static const qint64 SL_NB_LINES = 500LL;
 

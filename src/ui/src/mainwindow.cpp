@@ -81,7 +81,7 @@
 #include "mainwindow.h"
 
 #include "crawlerwidget.h"
-#include "data/readablesize.h"
+#include "readablesize.h"
 #include "decompressor.h"
 #include "dispatch_to.h"
 #include "downloader.h"

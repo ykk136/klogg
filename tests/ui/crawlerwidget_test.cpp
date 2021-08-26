@@ -28,8 +28,8 @@
 #include "session.h"
 #include "test_utils.h"
 
-#include "data/logdata.h"
-#include "data/logfiltereddata.h"
+#include "logdata.h"
+#include "logfiltereddata.h"
 
 #include "crawlerwidget.h"
 

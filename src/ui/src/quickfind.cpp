@@ -45,7 +45,7 @@
 #include <QApplication>
 #include <QtConcurrent>
 
-#include "data/abstractlogdata.h"
+#include "abstractlogdata.h"
 #include "dispatch_to.h"
 #include "log.h"
 #include "quickfindpattern.h"

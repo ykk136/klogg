@@ -43,8 +43,8 @@
 
 #include "logmainview.h"
 
-#include "data/abstractlogdata.h"
-#include "data/logfiltereddata.h"
+#include "abstractlogdata.h"
+#include "logfiltereddata.h"
 #include "overview.h"
 
 #include "shortcuts.h"
