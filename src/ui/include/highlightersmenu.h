@@ -31,19 +31,18 @@ inline void populateHighlightersMenu( QMenu* highlightersMenu,
 {
     const auto& highlightersCollection = HighlighterSetCollection::get();
     const auto& highlighterSets = highlightersCollection.highlighterSets();
-    const auto currentSetId = highlightersCollection.currentSetId();
+    const auto& activeSetIds = highlightersCollection.activeSetIds();
 
     auto noneAction = highlightersMenu->addAction( "None" );
     noneAction->setActionGroup( highlightersActionGroup );
-    noneAction->setCheckable( true );
-    noneAction->setChecked( !highlightersCollection.hasSet( currentSetId ) );
+    noneAction->setEnabled( !activeSetIds.isEmpty() );
 
     highlightersMenu->addSeparator();
     for ( const auto& highlighter : qAsConst( highlighterSets ) ) {
         auto setAction = highlightersMenu->addAction( highlighter.name() );
         setAction->setActionGroup( highlightersActionGroup );
         setAction->setCheckable( true );
-        setAction->setChecked( currentSetId == highlighter.id() );
+        setAction->setChecked( activeSetIds.contains( highlighter.id() ) );
         setAction->setData( highlighter.id() );
     }
 }
@@ -51,13 +50,14 @@ inline void populateHighlightersMenu( QMenu* highlightersMenu,
 inline void setCurrentHighlighterAction( QActionGroup* highlightersActionGroup )
 {
     const auto& highlightersCollection = HighlighterSetCollection::get();
-    const auto currentSetId = highlightersCollection.currentSetId();
+    const auto activeSets = highlightersCollection.activeSetIds();
 
-    const auto selectNone = !highlightersCollection.hasSet( currentSetId );
+    const auto selectNone = activeSets.isEmpty();
 
     for ( auto* action : highlightersActionGroup->actions() ) {
         const auto actionSet = action->data().toString();
-        action->setChecked( currentSetId == actionSet || ( actionSet.isEmpty() && selectNone ) );
+        action->setChecked( activeSets.contains( actionSet )
+                            || ( actionSet.isEmpty() && selectNone ) );
     }
 }
 
@@ -65,7 +65,17 @@ inline void saveCurrentHighlighterFromAction( const QAction* action )
 {
     auto setId = action->data().toString();
     auto& highlighterSets = HighlighterSetCollection::get();
-    highlighterSets.setCurrentSet( setId );
+
+    if ( setId.isEmpty() ) {
+        highlighterSets.deactivateAll();
+    }
+    else if ( action->isChecked() ) {
+        highlighterSets.activateSet( setId );
+    }
+    else {
+        highlighterSets.deactivateSet( setId );
+    }
+
     highlighterSets.save();
 }
 

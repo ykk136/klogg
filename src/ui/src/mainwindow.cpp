@@ -81,7 +81,6 @@
 #include "mainwindow.h"
 
 #include "crawlerwidget.h"
-#include "readablesize.h"
 #include "decompressor.h"
 #include "dispatch_to.h"
 #include "downloader.h"
@@ -97,6 +96,7 @@
 #include "predefinedfilters.h"
 #include "predefinedfiltersdialog.h"
 #include "progress.h"
+#include "readablesize.h"
 #include "recentfiles.h"
 #include "sessioninfo.h"
 #include "shortcuts.h"
@@ -580,7 +580,7 @@ void MainWindow::createMenus()
 
     toolsMenu = menuBar()->addMenu( tr( "&Tools" ) );
 
-    highlightersMenu = toolsMenu->addMenu( "Highlighters" );
+    highlightersMenu = menuBar()->addMenu( "Highlighters" );
     connect( highlightersMenu, &QMenu::aboutToShow,
              [ this ]() { setCurrentHighlighterAction( highlightersActionGroup ); } );
 
@@ -1696,6 +1696,7 @@ void MainWindow::updateHighlightersMenu()
     }
 
     highlightersActionGroup = new QActionGroup( this );
+    highlightersActionGroup->setExclusive( false );
     connect( highlightersActionGroup, &QActionGroup::triggered, this,
              &MainWindow::setCurrentHighlighter );
 

@@ -442,6 +442,7 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
         }
 
         auto highlightersActionGroup = new QActionGroup( this );
+        highlightersActionGroup->setExclusive( false );
         connect( highlightersActionGroup, &QActionGroup::triggered, this,
                  &AbstractLogView::setHighlighterSet );
         highlightersMenu_->clear();
@@ -1868,7 +1869,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     const int paintDeviceHeight = paintDevice->height() / viewport()->devicePixelRatio();
     const int paintDeviceWidth = paintDevice->width() / viewport()->devicePixelRatio();
     const QPalette& palette = viewport()->palette();
-    const auto& highlighterSet = HighlighterSetCollection::get().currentSet();
+    const auto& highlighterSet = HighlighterSetCollection::get().currentActiveSet();
     const auto& quickHighlighters = HighlighterSetCollection::get().quickHighlighters();
     QColor foreColor, backColor;
 

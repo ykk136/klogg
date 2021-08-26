@@ -367,29 +367,53 @@ QList<HighlighterSet> HighlighterSetCollection::highlighterSets() const
 void HighlighterSetCollection::setHighlighterSets( const QList<HighlighterSet>& highlighters )
 {
     highlighters_ = highlighters;
+
+    activeSets_.erase( std::remove_if( activeSets_.begin(), activeSets_.end(),
+                                       [ this ]( const auto& setId ) { return !hasSet( setId ); } ),
+                       activeSets_.end() );
 }
 
-HighlighterSet HighlighterSetCollection::currentSet() const
+HighlighterSet HighlighterSetCollection::currentActiveSet() const
 {
-    auto set = std::find_if( highlighters_.begin(), highlighters_.end(),
-                             [ this ]( const auto& s ) { return s.id() == currentSet_; } );
+    HighlighterSet combinedSet;
 
-    if ( set != highlighters_.end() ) {
-        return *set;
+    std::vector<HighlighterSet> activeSetsInOrder{ static_cast<size_t>( activeSets_.size() ) };
+    std::copy_if( highlighters_.begin(), highlighters_.end(), activeSetsInOrder.begin(),
+                  [ this ]( const auto& set ) { return activeSets_.contains( set.id() ); } );
+
+    for ( auto& set : activeSetsInOrder ) {
+        combinedSet.highlighterList_.append( set.highlighterList_ );
     }
-    else {
-        return {};
+
+    return combinedSet;
+}
+
+QStringList HighlighterSetCollection::activeSetIds() const
+{
+    return activeSets_;
+}
+
+void HighlighterSetCollection::activateSet( const QString& setId )
+{
+    LOG_INFO << "activating set " << setId;
+    if ( !hasSet( setId ) || activeSets_.contains( setId ) ) {
+        LOG_WARNING << "Set not found or already active";
+        return;
     }
+
+    activeSets_.append( setId );
 }
 
-QString HighlighterSetCollection::currentSetId() const
+void HighlighterSetCollection::deactivateSet( const QString& setId )
 {
-    return currentSet_;
+    LOG_INFO << "deactivating set " << setId;
+    activeSets_.removeAll( setId );
 }
 
-void HighlighterSetCollection::setCurrentSet( const QString& current )
+void HighlighterSetCollection::deactivateAll()
 {
-    currentSet_ = current;
+    LOG_INFO << "deactivating all sets";
+    activeSets_.clear();
 }
 
 bool HighlighterSetCollection::hasSet( const QString& setId ) const
@@ -411,11 +435,14 @@ void HighlighterSetCollection::setQuickHighlighters(
 
 void HighlighterSetCollection::saveToStorage( QSettings& settings ) const
 {
-    LOG_INFO << "HighlighterSetCollection::saveToStorage";
+    LOG_INFO << "HighlighterSetCollection::saveToStorage, v" << HighlighterSetCollection_VERSION;
 
     settings.beginGroup( "HighlighterSetCollection" );
     settings.setValue( "version", HighlighterSetCollection_VERSION );
-    settings.setValue( "current", currentSet_ );
+    settings.setValue( "active_sets", activeSets_ );
+
+    LOG_INFO << activeSets_;
+
     settings.remove( "sets" );
     settings.beginWriteArray( "sets" );
     for ( int i = 0; i < highlighters_.size(); ++i ) {
@@ -423,6 +450,7 @@ void HighlighterSetCollection::saveToStorage( QSettings& settings ) const
         highlighters_[ i ].saveToStorage( settings );
     }
     settings.endArray();
+    settings.remove( "quick" );
     settings.beginWriteArray( "quick" );
     for ( int i = 0; i < quickHighlighters_.size(); ++i ) {
         settings.setArrayIndex( i );
@@ -455,8 +483,15 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
                 highlighters_.append( std::move( highlighterSet ) );
             }
             settings.endArray();
+
+            activeSets_ = settings.value( "active_sets" ).toStringList();
+
             auto currentSet = settings.value( "current" ).toString();
-            setCurrentSet( currentSet );
+            settings.remove( "current" );
+            if ( !currentSet.isEmpty() ) {
+                activateSet( currentSet );
+                settings.setValue("active_sets", activeSets_);
+            }
 
             size = settings.beginReadArray( "quick" );
             for ( int i = 0; i < size; ++i ) {
@@ -477,14 +512,14 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
 
             QList<QuickHighlighter> defaultLabels;
             defaultLabels.append( { "Color label 1", { QColor{}, Qt::red }, true } );
-            defaultLabels.append( { "Color label 2",{ QColor{}, Qt::green }, true } );
-            defaultLabels.append( { "Color label 3",{ QColor{}, Qt::cyan }, true } );
-            defaultLabels.append( { "Color label 4",{ QColor{}, Qt::darkRed }, true } );
-            defaultLabels.append( { "Color label 5",{ QColor{}, Qt::darkGreen }, true } );
-            defaultLabels.append( { "Color label 6",{ QColor{}, Qt::darkCyan }, true } );
-            defaultLabels.append( { "Color label 7",{ QColor{}, Qt::magenta }, true } );
-            defaultLabels.append( { "Color label 8",{ QColor{}, Qt::darkMagenta }, true } );
-            defaultLabels.append( { "Color label 9",{ QColor{}, Qt::gray }, true } );
+            defaultLabels.append( { "Color label 2", { QColor{}, Qt::green }, true } );
+            defaultLabels.append( { "Color label 3", { QColor{}, Qt::cyan }, true } );
+            defaultLabels.append( { "Color label 4", { QColor{}, Qt::darkRed }, true } );
+            defaultLabels.append( { "Color label 5", { QColor{}, Qt::darkGreen }, true } );
+            defaultLabels.append( { "Color label 6", { QColor{}, Qt::darkCyan }, true } );
+            defaultLabels.append( { "Color label 7", { QColor{}, Qt::magenta }, true } );
+            defaultLabels.append( { "Color label 8", { QColor{}, Qt::darkMagenta }, true } );
+            defaultLabels.append( { "Color label 9", { QColor{}, Qt::gray }, true } );
 
             if ( quickHighlighters_.size() < defaultLabels.size() ) {
                 LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
@@ -508,7 +543,7 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
     oldHighlighterSet.retrieveFromStorage( settings );
     if ( !oldHighlighterSet.isEmpty() ) {
         LOG_INFO << "Importing old HighlighterSet";
-        setCurrentSet( oldHighlighterSet.id() );
+        activateSet( oldHighlighterSet.id() );
         highlighters_.append( std::move( oldHighlighterSet ) );
         settings.remove( "HighlighterSet" );
         saveToStorage( settings );

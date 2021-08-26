@@ -130,13 +130,14 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
         HighlighterEdit::updateIcon( backButton, quickHighlighters[ i ].color.backColor );
         cycleCheckbox->setChecked( quickHighlighters[ i ].useInCycle );
 
-        connect( nameEdit, &QLineEdit::textChanged, nameEdit, [ this, index = i ](const QString& newName) {
-            auto highlighters = highlighterSetCollection_.quickHighlighters();
-            if ( !newName.isEmpty() ) {
-                highlighters[ index ].name = newName;
-                highlighterSetCollection_.setQuickHighlighters( highlighters );
-            }
-        } );
+        connect( nameEdit, &QLineEdit::textChanged, nameEdit,
+                 [ this, index = i ]( const QString& newName ) {
+                     auto highlighters = highlighterSetCollection_.quickHighlighters();
+                     if ( !newName.isEmpty() ) {
+                         highlighters[ index ].name = newName;
+                         highlighterSetCollection_.setQuickHighlighters( highlighters );
+                     }
+                 } );
 
         connect( foreButton, &QPushButton::clicked, foreButton, [ foreButton, this, index = i ]() {
             auto highlighters = highlighterSetCollection_.quickHighlighters();
@@ -243,9 +244,7 @@ void HighlightersDialog::removeHighlighterSet()
         dispatchToMainThread( [ this, index ] {
             {
                 const auto& set = highlighterSetCollection_.highlighters_.at( index );
-                if ( set.id() == highlighterSetCollection_.currentSetId() ) {
-                    highlighterSetCollection_.setCurrentSet( {} );
-                }
+                highlighterSetCollection_.deactivateSet( set.id() );
             }
 
             highlighterSetCollection_.highlighters_.removeAt( index );
