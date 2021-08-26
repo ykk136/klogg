@@ -387,22 +387,17 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
     }
 
     bool isEndOfBlock = false;
-    int posWithinBlock = 0;
     FastLinePositionArray linePositions;
 
     while ( !isEndOfBlock ) {
-        if ( state.pos >= blockBeginning ) {
-            posWithinBlock = static_cast<int>( state.pos - blockBeginning );
-        }
-        else {
-            posWithinBlock = 0;
-        }
-
-        if ( posWithinBlock > block.size() ) {
-            LOG_ERROR << "Trying to parse out of block: " << state.pos << " " << posWithinBlock
+        if ( state.pos > blockBeginning + block.size() ) {
+            LOG_ERROR << "Trying to parse out of block: " << state.pos << " " << blockBeginning
                       << " " << block.size();
             break;
         }
+
+        auto posWithinBlock
+            = static_cast<int>( state.pos >= blockBeginning ? ( state.pos - blockBeginning ) : 0u );
 
         isEndOfBlock = posWithinBlock == block.size();
 
@@ -412,6 +407,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
         }
 
         const auto currentDataEnd = posWithinBlock + blockBeginning;
+        
         const auto length = ( currentDataEnd - state.pos ) / state.encodingParams.lineFeedWidth
                             + state.additional_spaces;
 
