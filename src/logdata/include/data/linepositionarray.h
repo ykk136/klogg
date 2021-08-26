@@ -47,7 +47,10 @@
 
 class SimpleLinePositionStorage {
   public:
-    SimpleLinePositionStorage() = default;
+    SimpleLinePositionStorage()
+    {
+        storage_.reserve(10000);
+    }
 
     SimpleLinePositionStorage( const SimpleLinePositionStorage& ) = delete;
     SimpleLinePositionStorage& operator=( const SimpleLinePositionStorage& ) = delete;
