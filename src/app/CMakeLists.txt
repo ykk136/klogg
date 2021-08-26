@@ -29,7 +29,7 @@ set(KLOGG_UI_SOURCES
 set(KLOGG_GREP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/klogg_grep.cpp)
 
-set(MAIN_LIBS logdata singleapp crash_handler)
+set(MAIN_LIBS klogg_logdata singleapp klogg_crash_handler)
 if(KLOGG_OVERRIDE_MALLOC)
     LIST(PREPEND MAIN_LIBS klogg_malloc_proxy)
     if(KLOGG_USE_MIMALLOC AND NOT WIN32)
@@ -53,15 +53,14 @@ set_target_properties(klogg_portable PROPERTIES AUTOMOC ON)
 set_target_properties(klogg_grep PROPERTIES AUTORCC ON)
 set_target_properties(klogg_grep PROPERTIES AUTOMOC ON)
 
-if (${KLOGG_USE_LTO})
+if (KLOGG_USE_LTO)
 set_property(TARGET klogg PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 set_property(TARGET klogg_portable PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 set_property(TARGET klogg_grep PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-
 endif()
 
-target_link_libraries(klogg PUBLIC ${MAIN_LIBS} ui)
-target_link_libraries(klogg_portable PUBLIC ${MAIN_LIBS} ui)
+target_link_libraries(klogg PUBLIC ${MAIN_LIBS} klogg_ui)
+target_link_libraries(klogg_portable PUBLIC ${MAIN_LIBS} klogg_ui)
 target_link_libraries(klogg_grep PUBLIC ${MAIN_LIBS})
 
 target_compile_definitions(klogg_portable PUBLIC -DKLOGG_PORTABLE)

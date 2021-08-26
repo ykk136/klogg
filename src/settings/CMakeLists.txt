@@ -1,4 +1,4 @@
-add_library(settings STATIC
+add_library(klogg_settings STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/persistentinfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/configuration.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/shortcuts.cpp
@@ -10,11 +10,16 @@ add_library(settings STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include/shortcuts.h
 )
 
-target_include_directories(settings PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(settings PUBLIC 
+target_include_directories(klogg_settings PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(klogg_settings PUBLIC 
     project_options
     project_warnings
-    utils
+    klogg_utils
+    
     Qt5::Core
     Qt5::Gui
 )
+
+if (KLOGG_USE_LTO)
+set_property(TARGET klogg_settings PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()

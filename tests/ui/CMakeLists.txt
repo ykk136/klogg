@@ -11,7 +11,7 @@ endif()
 
 add_executable(klogg_itests ${UI_TEST_SOURCES})
 
-target_link_libraries(klogg_itests ui catch2_wrapper Qt5::Test test_utils)
+target_link_libraries(klogg_itests klogg_ui klogg_utils catch2_wrapper Qt5::Test test_utils)
 set_target_properties(klogg_itests PROPERTIES AUTOMOC ON)
 
 if (${USE_LTO})

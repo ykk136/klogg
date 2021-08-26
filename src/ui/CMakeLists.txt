@@ -1,4 +1,4 @@
-add_library(ui STATIC
+add_library(klogg_ui STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/abstractlogview.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/crawlerwidget.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/filteredview.h
@@ -93,17 +93,27 @@ add_library(ui STATIC
 
 )
 
-set_target_properties(ui PROPERTIES AUTOUIC ON)
-set_target_properties(ui PROPERTIES AUTOMOC ON)
+set_target_properties(klogg_ui PROPERTIES AUTOUIC ON)
+set_target_properties(klogg_ui PROPERTIES AUTOMOC ON)
 
-set_property(TARGET ui APPEND PROPERTY AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
-if (${KLOGG_USE_LTO})
-set_property(TARGET ui PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+set_property(TARGET klogg_ui APPEND PROPERTY AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
+if (KLOGG_USE_LTO)
+set_property(TARGET klogg_ui PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-target_include_directories(ui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(ui PUBLIC Qt5::Widgets Qt5::Xml logdata versioncheck klogg_karchive)
+target_include_directories(klogg_ui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(klogg_ui PUBLIC 
+    project_options
+    project_warnings
+
+    klogg_logdata 
+    klogg_versioncheck 
+    klogg_karchive
+
+    Qt5::Widgets 
+    Qt5::Xml 
+)
 
 if (WIN32)
-    target_link_libraries(ui PUBLIC user32)
+    target_link_libraries(klogg_ui PUBLIC user32)
 endif()

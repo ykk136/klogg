@@ -1,4 +1,4 @@
-add_library(logdata STATIC
+add_library(klogg_logdata STATIC
          ${CMAKE_CURRENT_SOURCE_DIR}/include/abstractlogdata.h
          ${CMAKE_CURRENT_SOURCE_DIR}/include/blockpool.h
          ${CMAKE_CURRENT_SOURCE_DIR}/include/compressedlinestorage.h
@@ -30,28 +30,33 @@ add_library(logdata STATIC
 
         src/filedigest.cpp)
 
-set_target_properties(logdata PROPERTIES AUTOMOC ON)
+set_target_properties(klogg_logdata PROPERTIES AUTOMOC ON)
 
-target_include_directories(logdata PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(klogg_logdata PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-target_link_libraries(logdata PUBLIC
+target_link_libraries(klogg_logdata PUBLIC
+        project_options
+        project_warnings
+        
+        klogg_crash_handler
+        klogg_settings
+        klogg_utils
+        klogg_regex
+        klogg_filewatch
+
         Qt5::Core
+
         roaring
         tbb_wrapper
         named_type
-        crash_handler
-        settings
-        utils
-        klogg_regex
-        filewatch
         uchardet_wrapper
         kdtoolbox
         robin_hood
         simdutf)
 
-target_link_libraries(logdata PRIVATE xxhash_wrapper)
+target_link_libraries(klogg_logdata PRIVATE xxhash_wrapper)
 
 
-if (${KLOGG_USE_LTO})
-set_property(TARGET logdata PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+if (KLOGG_USE_LTO)
+set_property(TARGET klogg_logdata PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()

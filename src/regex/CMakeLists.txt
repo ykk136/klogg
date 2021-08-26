@@ -11,11 +11,13 @@ target_include_directories(klogg_regex PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/inclu
 target_link_libraries(klogg_regex PUBLIC 
     project_options
     project_warnings
+
+    klogg_logging
+    klogg_settings
+
     Qt5::Core
+    
     exprtk
-    logging
-    utils
-    settings
 )
 
 if(KLOGG_USE_HYPERSCAN)
@@ -23,6 +25,6 @@ target_link_libraries(klogg_regex PUBLIC hypersan_wrapper)
 target_compile_definitions(klogg_regex PUBLIC KLOGG_HAS_HS)
 endif()
 
-if (${KLOGG_USE_LTO})
+if (KLOGG_USE_LTO)
 set_property(TARGET klogg_regex PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()

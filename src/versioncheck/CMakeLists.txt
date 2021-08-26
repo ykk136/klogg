@@ -1,9 +1,17 @@
-add_library(versioncheck STATIC
+add_library(klogg_versioncheck STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/versionchecker.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/versionchecker.cpp
 )
 
-set_target_properties(versioncheck PROPERTIES AUTOMOC ON)
+set_target_properties(klogg_versioncheck PROPERTIES AUTOMOC ON)
 
-target_include_directories(versioncheck PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(versioncheck PUBLIC Qt5::Network settings utils)
+target_include_directories(klogg_versioncheck PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(klogg_versioncheck PUBLIC 
+        project_options
+        project_warnings
+
+        klogg_settings 
+        klogg_utils
+
+        Qt5::Network
+)
