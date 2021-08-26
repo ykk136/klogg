@@ -2148,10 +2148,10 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             auto selectionPen = QPen( palette.color( QPalette::Highlight ) );
             selectionPen.setWidth( 3 );
             painter->setPen( selectionPen );
-            painter->drawLine( xPos - ContentMarginWidth, yPos, viewport()->width(), yPos );
+            painter->drawLine( xPos - ContentMarginWidth+1, yPos, viewport()->width(), yPos );
             selectionPen.setWidth( 5 );
             painter->setPen( selectionPen );
-            painter->drawLine( xPos - ContentMarginWidth, yPos + fontHeight, viewport()->width(),
+            painter->drawLine( xPos - ContentMarginWidth+2, yPos + fontHeight, viewport()->width(),
                                yPos + fontHeight );
         }
 
