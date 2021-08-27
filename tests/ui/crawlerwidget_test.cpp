@@ -126,7 +126,7 @@ using CrawlerWidgetVisitor = CrawlerWidget::access_by<CrawlerWidgetPrivate>;
 
 SCENARIO( "Crawler widget search", "[ui]" )
 {
-    QTemporaryFile file;
+    QTemporaryFile file{"crawler_test_XXXXXX"};
     REQUIRE( generateDataFiles( file ) );
 
     Session session;

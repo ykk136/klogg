@@ -50,6 +50,11 @@ class WriteFileThread : public QThread {
     {
     }
 
+    bool isSucceeded() const
+    {
+        return result_ == 0;
+    }
+
   protected:
     void run() override
     {
@@ -59,14 +64,16 @@ class WriteFileThread : public QThread {
         arguments << file_->fileName() << QString::number( numberOfLines_ )
                   << QString::number( static_cast<uint8_t>( flag_ ) );
 
-        const auto result = QProcess::execute( writeHelper, arguments );
-        LOG_INFO << "Write helper result " << result;
+        result_ = QProcess::execute( writeHelper, arguments );
+        LOG_INFO << "Write helper result " << result_;
     }
 
   private:
     QFile* file_;
     int numberOfLines_;
     WriteFileModification flag_;
+
+    int result_{};
 };
 
 #include "logdata_test.moc"
@@ -86,13 +93,14 @@ void writeDataToFile( QFile& file, int numberOfLines = 200,
     auto thread = new WriteFileThread( &file, numberOfLines, flag );
     thread->start();
     thread->wait();
+    REQUIRE(thread->isSucceeded());
     thread->deleteLater();
 }
 } // namespace
 
 TEST_CASE( "Logdata decoding lines", "[logdata]" )
 {
-    QTemporaryDir tempDir;
+    QTemporaryDir tempDir{"logdata_test_XXXXXX"};
 
     QFile file{ tempDir.path() + QDir::separator() + QLatin1String( "testdecode.txt" ) };
     if ( file.open( QIODevice::ReadWrite | QIODevice::Truncate ) ) {
@@ -124,7 +132,7 @@ TEST_CASE( "Logdata decoding lines", "[logdata]" )
 TEST_CASE( "Logdata reading changing file", "[logdata]" )
 {
 
-    QTemporaryDir tempDir;
+    QTemporaryDir tempDir{"logdata_test_XXXXXX"};
 
     LogData logData;
 
@@ -204,8 +212,8 @@ SCENARIO( "Attaching log data to files", "[logdata]" )
 
     GIVEN( "Small and big files" )
     {
-        QTemporaryFile smallFile;
-        QTemporaryFile bigFile;
+        QTemporaryFile smallFile{"logdata_test_small_XXXXXX"};
+        QTemporaryFile bigFile{"logdata_test_big_XXXXXX"};
 
         if ( smallFile.open() ) {
             writeDataToFile( smallFile, SL_NB_LINES );

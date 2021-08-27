@@ -93,7 +93,7 @@ struct LogDataLoader {
         REQUIRE( loadEndSpy.safeWait( 10000 ) );
     }
 
-    QTemporaryFile file;
+    QTemporaryFile file {"filtered_test_XXXXXX"};
     LogData log_data;
 };
 
