@@ -63,7 +63,8 @@ jobs:
 #Build and test
       - uses: ./.github/actions/klogg-version
       - uses: ./.github/actions/prepare-workspace-env
-      - uses: ./.github/actions/build-and-test
+      - uses: ./.github/actions/agent-build
+      - uses: ./.github/actions/agent-run-tests
 
 #Package
       - name: Linux package 
@@ -132,6 +133,7 @@ jobs:
       - uses: ./.github/actions/klogg-version
       - uses: ./.github/actions/prepare-workspace-env
       - uses: ./.github/actions/docker-build
+      - uses: ./.github/actions/docker-run-tests
 
       - name: package 
         run: |
@@ -206,7 +208,8 @@ jobs:
 #Build and test
       - uses: ./.github/actions/klogg-version
       - uses: ./.github/actions/prepare-workspace-env
-      - uses: ./.github/actions/build-and-test
+      - uses: ./.github/actions/agent-build
+      - uses: ./.github/actions/agent-run-tests
 
 #Package
       - name: Mac prepare codesign
@@ -348,7 +351,8 @@ jobs:
 
       - uses: ./.github/actions/klogg-version
       - uses: ./.github/actions/prepare-workspace-env
-      - uses: ./.github/actions/build-and-test
+      - uses: ./.github/actions/agent-build
+      - uses: ./.github/actions/agent-run-tests
 
 #Package
       - name: Win codesign executables

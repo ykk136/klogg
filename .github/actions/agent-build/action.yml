@@ -1,5 +1,5 @@
-name: "Build and test one configuration"
-description: "Generate the build files, build the code and run the tests"
+name: "Configure and build"
+description: "Generate the build files and build the code"
 runs:
   using: "composite"
   steps:
