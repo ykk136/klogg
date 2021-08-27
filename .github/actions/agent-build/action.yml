@@ -21,9 +21,3 @@ runs:
       shell: sh
       run: |
         cmake --build $KLOGG_BUILD_ROOT -t ci_build
-
-    - name: test
-      shell: sh
-      run: |
-        cd $KLOGG_BUILD_ROOT
-        ctest --verbose
