@@ -11,3 +11,5 @@ RUN dnf install -y epel-release && \
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.20.2-linux-x86_64.sh && \
     chmod 755 cmake-3.20.2-linux-x86_64.sh && \
     ./cmake-3.20.2-linux-x86_64.sh --prefix=/opt/ --exclude-subdir --skip-license
+
+ENV PATH=/opt/rh/gcc-toolset-9/root/usr/bin:/opt/bin:$PATH
