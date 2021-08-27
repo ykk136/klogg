@@ -64,8 +64,12 @@ class WriteFileThread : public QThread {
         arguments << file_->fileName() << QString::number( numberOfLines_ )
                   << QString::number( static_cast<uint8_t>( flag_ ) );
 
-        result_ = QProcess::execute( writeHelper, arguments );
-        LOG_INFO << "Write helper result " << result_;
+        LOG_INFO << "Executing write helper " << writeHelper << " " << arguments;
+        QProcess writeHelperProcess;
+        writeHelperProcess.start(writeHelper, arguments);
+        writeHelperProcess.waitForFinished(-1);
+        result_ = writeHelperProcess.exitCode();
+        LOG_INFO << "Write helper result " << result_ << ", exit status " << writeHelperProcess.exitStatus();
     }
 
   private:

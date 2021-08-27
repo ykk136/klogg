@@ -31,7 +31,7 @@
 
 int main( int argc, const char** argv )
 {
-    logging::enableLogging();
+    //logging::enableLogging();
 
     if ( argc < 4 ) {
         LOG_ERROR << "Expected 3 arguments";
