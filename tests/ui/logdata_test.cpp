@@ -93,17 +93,15 @@ void writeDataToFile( QFile& file, int numberOfLines = 200,
     auto thread = new WriteFileThread( &file, numberOfLines, flag );
     thread->start();
     thread->wait();
-    REQUIRE(thread->isSucceeded());
+    REQUIRE( thread->isSucceeded() );
     thread->deleteLater();
 }
 } // namespace
 
 TEST_CASE( "Logdata decoding lines", "[logdata]" )
 {
-    QTemporaryDir tempDir{"logdata_test_XXXXXX"};
-
-    QFile file{ tempDir.path() + QDir::separator() + QLatin1String( "testdecode.txt" ) };
-    if ( file.open( QIODevice::ReadWrite | QIODevice::Truncate ) ) {
+    QTemporaryFile file{ "testdecode_XXXXXX" };
+    if ( file.open() ) {
         writeDataToFile( file );
     }
 
@@ -132,15 +130,13 @@ TEST_CASE( "Logdata decoding lines", "[logdata]" )
 TEST_CASE( "Logdata reading changing file", "[logdata]" )
 {
 
-    QTemporaryDir tempDir{"logdata_test_XXXXXX"};
-
     LogData logData;
 
     SafeQSignalSpy changedSpy( &logData, SIGNAL( fileChanged( MonitoredFileStatus ) ) );
 
     // Generate a small file
-    QFile file{ tempDir.path() + QDir::separator() + QLatin1String( "testlog.txt" ) };
-    if ( file.open( QIODevice::ReadWrite | QIODevice::Truncate ) ) {
+    QTemporaryFile file{ "testdecode_XXXXXX" };
+    if ( file.open() ) {
         writeDataToFile( file );
     }
 
@@ -195,7 +191,7 @@ TEST_CASE( "Logdata reading changing file", "[logdata]" )
 
     {
         // Truncate the file
-        QVERIFY( file.resize( 0 ) );
+        writeDataToFile(file, 100, WriteFileModification::Truncate);
 
         waitUiState( [ &logData ] { return logData.getNbLine() == 0_lcount; } );
 
@@ -212,8 +208,9 @@ SCENARIO( "Attaching log data to files", "[logdata]" )
 
     GIVEN( "Small and big files" )
     {
-        QTemporaryFile smallFile{"logdata_test_small_XXXXXX"};
-        QTemporaryFile bigFile{"logdata_test_big_XXXXXX"};
+
+        QTemporaryFile smallFile{ "logdata_test_small_XXXXXX" };
+        QTemporaryFile bigFile{ "logdata_test_big_XXXXXX" };
 
         if ( smallFile.open() ) {
             writeDataToFile( smallFile, SL_NB_LINES );

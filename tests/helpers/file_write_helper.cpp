@@ -25,8 +25,8 @@
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include <io.h>
+#include <windows.h>
 #endif // _WIN32
 
 int main( int argc, const char** argv )
@@ -37,8 +37,7 @@ int main( int argc, const char** argv )
         LOG_ERROR << "Expected 3 arguments";
     }
 
-    LOG_INFO << "Will write to " << argv[ 1 ] << " lines " << argv[ 2 ] << ", flag "
-                   << argv[ 3 ];
+    LOG_INFO << "Will write to " << argv[ 1 ] << " lines " << argv[ 2 ] << ", flag " << argv[ 3 ];
 
     QFile file{ argv[ 1 ] };
 
@@ -51,25 +50,31 @@ int main( int argc, const char** argv )
     const int numberOfLines = atoi( argv[ 2 ] );
     const auto flag = static_cast<WriteFileModification>( atoi( argv[ 3 ] ) );
 
-    if ( flag == WriteFileModification::StartWithPartialLineEnd ) {
-        file.write( partial_line_end, qstrlen( partial_line_end ) );
+    if ( flag == WriteFileModification::Truncate ) {
+        LOG_INFO << "Truncating file";
+        file.resize( 0 );
     }
-
-    char newLine[ 90 ];
-    for ( int i = 0; i < numberOfLines; i++ ) {
-        snprintf(
-            newLine, 89,
-            "LOGDATA is a part of glogg, we are going to test it thoroughly, this is line %06d\n",
-            i );
-        file.write( newLine, qstrlen( newLine ) );
-
-        if ( flag == WriteFileModification::DelayClosingFile ) {
-            QThread::sleep( 2 );
+    else {
+        if ( flag == WriteFileModification::StartWithPartialLineEnd ) {
+            file.write( partial_line_end, qstrlen( partial_line_end ) );
         }
-    }
 
-    if ( flag == WriteFileModification::EndWithPartialLineBegin ) {
-        file.write( partial_line_begin, qstrlen( partial_line_begin ) );
+        char newLine[ 90 ];
+        for ( int i = 0; i < numberOfLines; i++ ) {
+            snprintf( newLine, 89,
+                      "LOGDATA is a part of glogg, we are going to test it thoroughly, this is "
+                      "line %06d\n",
+                      i );
+            file.write( newLine, qstrlen( newLine ) );
+
+            if ( flag == WriteFileModification::DelayClosingFile ) {
+                QThread::sleep( 2 );
+            }
+        }
+
+        if ( flag == WriteFileModification::EndWithPartialLineBegin ) {
+            file.write( partial_line_begin, qstrlen( partial_line_begin ) );
+        }
     }
 
 #ifdef _WIN32
