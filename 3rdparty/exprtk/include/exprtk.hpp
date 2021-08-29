@@ -20277,7 +20277,7 @@ namespace exprtk
       {
       private:
 
-         typedef std::unordered_set<std::string/*,details::ilesscompare*/> disabled_entity_set_t;
+         typedef robin_hood::unordered_set<std::string/*,details::ilesscompare*/> disabled_entity_set_t;
          typedef disabled_entity_set_t::iterator des_itr_t;
 
       public:
