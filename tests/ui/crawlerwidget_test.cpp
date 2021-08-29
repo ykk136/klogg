@@ -23,6 +23,8 @@
 #include <QTemporaryFile>
 #include <QTest>
 #include <QTimer>
+#include <qnamespace.h>
+#include <qtestmouse.h>
 
 #include "savedsearches.h"
 #include "session.h"
@@ -104,11 +106,32 @@ struct CrawlerWidget::access_by<CrawlerWidgetPrivate> {
         QTest::keyClick( crawler->searchLineEdit_, Qt::Key_Enter );
     }
 
+    void enableCaseSensitiveSearch()
+    {
+        if ( !crawler->matchCaseButton_->isChecked() ) {
+            QTest::mouseClick( crawler->matchCaseButton_, Qt::LeftButton );
+            QTest::qWait( 100 );
+        }
+    }
+
+    void enableInverseMatch()
+    {
+        if ( !crawler->inverseButton_->isChecked() ) {
+            QTest::mouseClick( crawler->inverseButton_, Qt::LeftButton );
+            QTest::qWait( 100 );
+        }
+    }
+
+    void enableBooleanCombinationMode()
+    {
+        if ( !crawler->booleanButton_->isChecked() ) {
+            QTest::mouseClick( crawler->booleanButton_, Qt::LeftButton );
+            QTest::qWait( 100 );
+        }
+    }
+
     void runSearch()
     {
-        SafeQSignalSpy searchProgressSpy{ crawler->logFilteredData_.get(),
-                                          &LogFilteredData::searchProgressed };
-
         QTest::mouseClick( crawler->searchButton_, Qt::LeftButton );
 
         QTest::qWait( 100 );
@@ -126,7 +149,7 @@ using CrawlerWidgetVisitor = CrawlerWidget::access_by<CrawlerWidgetPrivate>;
 
 SCENARIO( "Crawler widget search", "[ui]" )
 {
-    QTemporaryFile file{"crawler_test_XXXXXX"};
+    QTemporaryFile file{ "crawler_test_XXXXXX" };
     REQUIRE( generateDataFiles( file ) );
 
     Session session;
@@ -201,6 +224,42 @@ SCENARIO( "Crawler widget search", "[ui]" )
             THEN( "single line match" )
             {
                 REQUIRE( crawlerVisitor.getLogFilteredNbLines().get() == 1 );
+            }
+        }
+
+        WHEN( "case sensitive search" )
+        {
+            crawlerVisitor.setSearchPattern( "THIS" );
+            crawlerVisitor.enableCaseSensitiveSearch();
+            crawlerVisitor.runSearch();
+
+            THEN( "no lines matched" )
+            {
+                REQUIRE( crawlerVisitor.getLogFilteredNbLines().get() == 0 );
+            }
+        }
+
+        WHEN( "inverse match search" )
+        {
+            crawlerVisitor.setSearchPattern( "not match" );
+            crawlerVisitor.enableInverseMatch();
+            crawlerVisitor.runSearch();
+
+            THEN( "all lines matched" )
+            {
+                REQUIRE( crawlerVisitor.getLogFilteredNbLines().get() == SL_NB_LINES );
+            }
+        }
+
+        WHEN( "boolean search" )
+        {
+            crawlerVisitor.setSearchPattern( "\"glogg\" or \"klogg\"" );
+            crawlerVisitor.enableBooleanCombinationMode();
+            crawlerVisitor.runSearch();
+
+            THEN( "has lines matched" )
+            {
+                REQUIRE( crawlerVisitor.getLogFilteredNbLines().get() >= 2 );
             }
         }
     }
