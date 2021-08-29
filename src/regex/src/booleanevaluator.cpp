@@ -21,9 +21,16 @@
 
 #include "log.h"
 #include <algorithm>
+#include <string>
 
 BooleanExpressionEvaluator::BooleanExpressionEvaluator(
     const std::string& expression, const std::vector<RegularExpressionPattern>& patterns )
+    : parser_( decltype( parser_ )::settings_t{}
+                   .disable_all_arithmetic_ops()
+                   .disable_all_assignment_ops()
+                   .disable_all_base_functions()
+                   .disable_all_control_structures()
+                   .disable_all_inequality_ops() )
 {
     variables_.reserve( patterns.size() );
 
@@ -35,8 +42,10 @@ BooleanExpressionEvaluator::BooleanExpressionEvaluator(
 
     expression_.register_symbol_table( symbols_ );
     isValid_ = parser_.compile( expression, expression_ );
-    if ( !isValid_ ) {
-        errorString_ = parser_.error();
+    if ( !isValid_ && parser_.error_count() > 0 ) {
+        auto error = parser_.get_error( 0 );
+        exprtk::parser_error::update_error(error, expression);
+        errorString_ = error.diagnostic + " at " + std::to_string( error.column_no );
     }
 }
 

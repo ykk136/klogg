@@ -19,6 +19,7 @@
 
 #include <exception>
 #include <memory>
+#include <qregularexpression.h>
 #include <string>
 #include <variant>
 
@@ -34,6 +35,10 @@ namespace {
 std::vector<RegularExpressionPattern>
 parseBooleanExpressions( QString& pattern, bool isCaseSensitive, bool isPlainText )
 {
+    if ( !pattern.contains( '"' ) ) {
+        throw std::runtime_error( "Patterns must be enclosed in quotes" );
+    }
+
     std::vector<RegularExpressionPattern> subPatterns;
 
     auto currentIndex = 0;
@@ -87,6 +92,12 @@ parseBooleanExpressions( QString& pattern, bool isCaseSensitive, bool isPlainTex
 
     if ( pattern.contains( '"' ) ) {
         throw std::runtime_error( "Pattern has unmatched quotes" );
+    }
+
+    LOG_INFO << "Parsed pattern: " << pattern;
+    QRegularExpression finalPatternCheck("^(and|or|not|[ ()]|p_[0-9]+)+$");
+    if (!finalPatternCheck.match(pattern).hasMatch()) {
+        throw std::runtime_error( "Patterns must be enclosed in quotes" );
     }
 
     return subPatterns;
