@@ -494,7 +494,7 @@ void CrawlerWidget::updateFilteredView( LinesCount nbMatches, int progress,
 
     // Try to restore the filtered window selection close to where it was
     // only for full searches to avoid disconnecting follow mode!
-    if ( ( progress == 100 ) && ( initialPosition == 0_lnum ) && ( !isFollowEnabled() ) ) {
+    if ( ( progress == 100 ) && ( initialPosition == searchStartLine_ ) && ( !isFollowEnabled() ) ) {
         const auto currenLineIndex = logFilteredData_->getLineIndexNumber( currentLineNumber_ );
         LOG_DEBUG << "updateFilteredView: restoring selection: "
                   << " absolute line number (0based) " << currentLineNumber_ << " index "
