@@ -359,7 +359,15 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
         regexMatchers.emplace_back(
             regularExpression.createMatcher(), microseconds{ 0 },
             RegexMatcherNode(
-                searchGraph, 1, [ &regexMatchers, index ]( const BlockDataType& blockData ) {
+                searchGraph, 1, [ &regexMatchers, index, this ]( const BlockDataType& blockData ) {
+                    if ( interruptRequested_ ) {
+                        LOG_INFO << "Matcher " << index << " interrupted";
+                        auto results = std::make_shared<PartialSearchResults>();
+                        results->chunkStart = blockData->chunkStart;
+                        results->processedLines =  blockData->lines.numberOfLines;
+                        return results;
+                    }
+
                     const auto& matcher = std::get<PatternMatcherPtr>( regexMatchers.at( index ) );
                     const auto matchStartTime = high_resolution_clock::now();
 

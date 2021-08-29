@@ -397,9 +397,6 @@ void LogFilteredData::updateSearchResultsCache()
 void LogFilteredData::handleSearchProgressed( LinesCount nbMatches, int progress,
                                               LineNumber initialLine )
 {
-    LOG_DEBUG << "LogFilteredData::handleSearchProgressed matches=" << nbMatches
-              << " progress=" << progress;
-
     assert( nbMatches >= 0_lcount );
 
     const auto searchResults = workerThread_.getSearchResults();

@@ -66,6 +66,7 @@ HsMatcher::HsMatcher( HsDatabase db, HsScratch scratch, const std::vector<std::s
     , scratch_{ std::move( scratch ) }
     , patternIds_{ patternIds }
 {
+    LOG_INFO << "Created matcher, patterns in db: " << patternIds_.size();
 }
 
 MatchingResult HsMatcher::match( const std::string_view& utf8Data ) const
@@ -176,6 +177,9 @@ HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPat
         isValid_ = validationResult.first;
         errorMessage_ = validationResult.second;
     }
+
+    LOG_INFO << "Finished creating pattern database, patterns: " << patternIds_.size()
+             << ", is db valid: " << isValid_;
 }
 
 bool HsRegularExpression::isValid() const
