@@ -46,6 +46,10 @@ QStringList StyleManager::availableStyles()
 
     styles << DarkStyleKey;
 
+#ifndef Q_OS_MACOS
+    styles << DarkWindowsStyleKey;
+#endif
+
     std::sort( styles.begin(), styles.end(), []( const auto& lhs, const auto& rhs ) {
         return lhs.compare( rhs, Qt::CaseInsensitive ) < 0;
     } );
@@ -68,10 +72,9 @@ void StyleManager::applyStyle( const QString& style )
 {
     LOG_INFO << "Setting style to " << style;
 
-    if ( style == DarkStyleKey ) {
+    if ( style == DarkStyleKey || style == DarkWindowsStyleKey ) {
 
         // based on https://gist.github.com/QuantumCD/6245215
-
         QColor darkGray( 53, 53, 53 );
         QColor gray( 128, 128, 128 );
         QColor black( 40, 40, 40 );
@@ -98,7 +101,13 @@ void StyleManager::applyStyle( const QString& style )
         darkPalette.setColor( QPalette::Disabled, QPalette::Text, gray );
         darkPalette.setColor( QPalette::Disabled, QPalette::Light, darkGray );
 
-        qApp->setStyle( QStyleFactory::create( FusionKey ) );
+        if ( style == DarkWindowsStyleKey ) {
+            qApp->setStyle( QStyleFactory::create( WindowsKey ) );
+        }
+        else {
+            qApp->setStyle( QStyleFactory::create( FusionKey ) );
+        }
+
         qApp->setPalette( darkPalette );
     }
     else {
