@@ -494,7 +494,8 @@ void CrawlerWidget::updateFilteredView( LinesCount nbMatches, int progress,
 
     // Try to restore the filtered window selection close to where it was
     // only for full searches to avoid disconnecting follow mode!
-    if ( ( progress == 100 ) && ( initialPosition == searchStartLine_ ) && ( !isFollowEnabled() ) ) {
+    if ( ( progress == 100 ) && ( initialPosition == searchStartLine_ )
+         && ( !isFollowEnabled() ) ) {
         const auto currenLineIndex = logFilteredData_->getLineIndexNumber( currentLineNumber_ );
         LOG_DEBUG << "updateFilteredView: restoring selection: "
                   << " absolute line number (0based) " << currentLineNumber_ << " index "
@@ -642,7 +643,7 @@ void CrawlerWidget::exitingQuickFind()
 
 void CrawlerWidget::loadingFinishedHandler( LoadingStatus status )
 {
-    loadingInProgress_ = false;
+    LOG_INFO << "file loading finished, status " << static_cast<int>( status );
 
     // We need to refresh the main window because the view lines on the
     // overview have probably changed.
@@ -672,8 +673,6 @@ void CrawlerWidget::loadingFinishedHandler( LoadingStatus status )
 
     clearSearchLimits();
 
-    emit loadingFinished( status );
-
     // Also change the data available icon
     if ( firstLoadDone_ ) {
         changeDataStatus( DataStatus::NEW_DATA );
@@ -684,6 +683,9 @@ void CrawlerWidget::loadingFinishedHandler( LoadingStatus status )
             logFilteredData_->addMark( m );
         }
     }
+
+    loadingInProgress_ = false;
+    emit loadingFinished( status );
 }
 
 void CrawlerWidget::fileChangedHandler( MonitoredFileStatus status )
@@ -1337,6 +1339,7 @@ void CrawlerWidget::loadIcons()
 // used one and destroy the old one.
 void CrawlerWidget::replaceCurrentSearch( const QString& searchText )
 {
+    LOG_INFO << "replacing current search with " << searchText;
     // Interrupt the search if it's ongoing
     logFilteredData_->interruptSearch();
 

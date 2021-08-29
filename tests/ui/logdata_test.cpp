@@ -66,10 +66,11 @@ class WriteFileThread : public QThread {
 
         LOG_INFO << "Executing write helper " << writeHelper << " " << arguments;
         QProcess writeHelperProcess;
-        writeHelperProcess.start(writeHelper, arguments);
-        writeHelperProcess.waitForFinished(-1);
+        writeHelperProcess.start( writeHelper, arguments );
+        writeHelperProcess.waitForFinished( -1 );
         result_ = writeHelperProcess.exitCode();
-        LOG_INFO << "Write helper result " << result_ << ", exit status " << writeHelperProcess.exitStatus();
+        LOG_INFO << "Write helper result " << result_ << ", exit status "
+                 << writeHelperProcess.exitStatus();
     }
 
   private:
@@ -144,9 +145,12 @@ TEST_CASE( "Logdata reading changing file", "[logdata]" )
         writeDataToFile( file );
     }
 
+    SafeQSignalSpy finishedSpy( &logData, SIGNAL( loadingFinished( LoadingStatus ) ) );
     // Start loading it
     logData.attachFile( file.fileName() );
     waitUiState( [ &logData ] { return logData.getNbLine() == 200_lcount; } );
+    REQUIRE( finishedSpy.safeWait() );
+    REQUIRE( finishedSpy.count() == 1 );
 
     // Check we have the small file
     REQUIRE( logData.getNbLine() == 200_lcount );
@@ -195,7 +199,7 @@ TEST_CASE( "Logdata reading changing file", "[logdata]" )
 
     {
         // Truncate the file
-        writeDataToFile(file, 100, WriteFileModification::Truncate);
+        writeDataToFile( file, 100, WriteFileModification::Truncate );
 
         waitUiState( [ &logData ] { return logData.getNbLine() == 0_lcount; } );
 

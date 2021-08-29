@@ -70,6 +70,11 @@ template <>
 struct CrawlerWidget::access_by<CrawlerWidgetPrivate> {
     std::unique_ptr<CrawlerWidget> crawler;
 
+    bool isLoadingFinished()
+    {
+        return !crawler->loadingInProgress_;
+    }
+
     LinesCount getLogNbLines()
     {
         return crawler->logData_->getNbLine();
@@ -103,7 +108,6 @@ struct CrawlerWidget::access_by<CrawlerWidgetPrivate> {
     void setSearchPattern( const QString& pattern )
     {
         QTest::keyClicks( crawler->searchLineEdit_, pattern );
-        QTest::keyClick( crawler->searchLineEdit_, Qt::Key_Enter );
     }
 
     void enableCaseSensitiveSearch()
@@ -161,9 +165,8 @@ SCENARIO( "Crawler widget search", "[ui]" )
     crawlerVisitor.crawler.reset( static_cast<CrawlerWidget*>(
         session.open( file.fileName(), []() { return new CrawlerWidget(); } ) ) );
 
-    int loadWaitCycle = 0;
-    while ( crawlerVisitor.getLogNbLines().get() != SL_NB_LINES && loadWaitCycle++ < 50 )
-        QTest::qWait( 100 );
+    waitUiState( [ & ]() { return crawlerVisitor.getLogNbLines().get() == SL_NB_LINES; } );
+    waitUiState( [ & ]() { return crawlerVisitor.isLoadingFinished(); } );
 
     crawlerVisitor.render();
 
@@ -217,9 +220,7 @@ SCENARIO( "Crawler widget search", "[ui]" )
 
             crawlerVisitor.runSearch();
 
-            loadWaitCycle = 0;
-            while ( crawlerVisitor.getLogFilteredNbLines().get() != 1 && loadWaitCycle++ < 50 )
-                QTest::qWait( 100 );
+            waitUiState( [ & ]() { return crawlerVisitor.getLogFilteredNbLines().get() == 1; } );
 
             THEN( "single line match" )
             {
