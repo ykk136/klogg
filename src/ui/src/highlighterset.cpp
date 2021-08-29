@@ -490,7 +490,7 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
             settings.remove( "current" );
             if ( !currentSet.isEmpty() ) {
                 activateSet( currentSet );
-                settings.setValue("active_sets", activeSets_);
+                settings.setValue( "active_sets", activeSets_ );
             }
 
             size = settings.beginReadArray( "quick" );
@@ -509,34 +509,35 @@ void HighlighterSetCollection::retrieveFromStorage( QSettings& settings )
                 quickHighlighters_.append( std::move( quickHighlighter ) );
             }
             settings.endArray();
-
-            QList<QuickHighlighter> defaultLabels;
-            defaultLabels.append( { "Color label 1", { QColor{}, Qt::red }, true } );
-            defaultLabels.append( { "Color label 2", { QColor{}, Qt::green }, true } );
-            defaultLabels.append( { "Color label 3", { QColor{}, Qt::cyan }, true } );
-            defaultLabels.append( { "Color label 4", { QColor{}, Qt::darkRed }, true } );
-            defaultLabels.append( { "Color label 5", { QColor{}, Qt::darkGreen }, true } );
-            defaultLabels.append( { "Color label 6", { QColor{}, Qt::darkCyan }, true } );
-            defaultLabels.append( { "Color label 7", { QColor{}, Qt::magenta }, true } );
-            defaultLabels.append( { "Color label 8", { QColor{}, Qt::darkMagenta }, true } );
-            defaultLabels.append( { "Color label 9", { QColor{}, Qt::gray }, true } );
-
-            if ( quickHighlighters_.size() < defaultLabels.size() ) {
-                LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
-                std::copy( defaultLabels.begin() + quickHighlighters_.size(), defaultLabels.end(),
-                           std::back_inserter( quickHighlighters_ ) );
-            }
-            else if ( quickHighlighters_.size() > defaultLabels.size() ) {
-                LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
-
-                quickHighlighters_.erase( quickHighlighters_.begin() + defaultLabels.size(),
-                                          quickHighlighters_.end() );
-            }
         }
         else {
             LOG_ERROR << "Unknown version of HighlighterSetCollection, ignoring it...";
         }
+
         settings.endGroup();
+    }
+
+    QList<QuickHighlighter> defaultLabels;
+    defaultLabels.append( { "Color label 1", { QColor{}, Qt::red }, true } );
+    defaultLabels.append( { "Color label 2", { QColor{}, Qt::green }, true } );
+    defaultLabels.append( { "Color label 3", { QColor{}, Qt::cyan }, true } );
+    defaultLabels.append( { "Color label 4", { QColor{}, Qt::darkRed }, true } );
+    defaultLabels.append( { "Color label 5", { QColor{}, Qt::darkGreen }, true } );
+    defaultLabels.append( { "Color label 6", { QColor{}, Qt::darkCyan }, true } );
+    defaultLabels.append( { "Color label 7", { QColor{}, Qt::magenta }, true } );
+    defaultLabels.append( { "Color label 8", { QColor{}, Qt::darkMagenta }, true } );
+    defaultLabels.append( { "Color label 9", { QColor{}, Qt::gray }, true } );
+
+    if ( quickHighlighters_.size() < defaultLabels.size() ) {
+        LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
+        std::copy( defaultLabels.begin() + quickHighlighters_.size(), defaultLabels.end(),
+                   std::back_inserter( quickHighlighters_ ) );
+    }
+    else if ( quickHighlighters_.size() > defaultLabels.size() ) {
+        LOG_WARNING << "Got " << quickHighlighters_.size() << " quick highlighters";
+
+        quickHighlighters_.erase( quickHighlighters_.begin() + defaultLabels.size(),
+                                  quickHighlighters_.end() );
     }
 
     HighlighterSet oldHighlighterSet;
