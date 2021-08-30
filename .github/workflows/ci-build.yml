@@ -51,6 +51,8 @@ jobs:
             check_container: ubuntu:18.04
             container_root: docker/ubuntu18.04
             container: variar/klogg_ubuntu18.04
+            cmake_opts:
+
 
     runs-on: ubuntu-18.04
     steps:
@@ -102,6 +104,7 @@ jobs:
             os_version: latest
             qt_version: 5.15.2
             arch: x64
+            cmake_opts:
 
     runs-on: ${{ matrix.config.os }}-${{ matrix.config.os_version }}
     steps:
@@ -211,12 +214,14 @@ jobs:
             qt_version: 5.15.2
             arch: x64
             ssl_arch: -x64
+            cmake_opts:
 
           - os: windows
             os_version: latest
             qt_version: 5.15.2
             arch: x86
             qt_arch: win32_msvc2019
+            cmake_opts:
 
     runs-on: ${{ matrix.config.os }}-${{ matrix.config.os_version }}
     steps:
