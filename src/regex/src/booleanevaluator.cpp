@@ -19,9 +19,36 @@
 
 #include "booleanevaluator.h"
 
-#include "log.h"
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+
+#include "log.h"
+
+namespace {
+
+static constexpr size_t MaxPrecomputedPatterns = 4;
+static constexpr size_t PrecomputedCombinations[] = { 0, 2, 4, 8, 16 };
+
+bool isBitSet( unsigned num, unsigned bit )
+{
+    return 1 == ( ( num >> bit ) & 1 );
+}
+
+uint32_t buildPatternCombination( const std::vector<unsigned char>& variables )
+{
+    uint32_t combination = 0;
+    for ( auto bit = 0u; bit < variables.size(); ++bit ) {
+        if ( variables[ bit ] ) {
+            combination = combination | ( 1u << bit );
+        }
+    }
+
+    return combination;
+}
+
+} // namespace
 
 BooleanExpressionEvaluator::BooleanExpressionEvaluator(
     const std::string& expression, const std::vector<RegularExpressionPattern>& patterns )
@@ -41,6 +68,18 @@ BooleanExpressionEvaluator::BooleanExpressionEvaluator(
         exprtk::parser_error::update_error( error, expression );
         errorString_ = error.diagnostic + " at " + std::to_string( error.column_no );
     }
+    else if ( patterns.size() <= MaxPrecomputedPatterns ) {
+        const auto patternVariants = PrecomputedCombinations[ patterns.size() ];
+        for ( auto patternCombination = 0u; patternCombination < patternVariants;
+              ++patternCombination ) {
+            for ( auto p = 0u; p < patterns.size(); ++p ) {
+                *variables_[ p ] = isBitSet( patternCombination, p );
+            }
+            precomputedResults_[ patternCombination ] = expression_.value();
+            LOG_INFO << "precomputed result for " << patternCombination << " is "
+                     << ( precomputedResults_[ patternCombination ] > 0 );
+        }
+    }
 }
 
 bool BooleanExpressionEvaluator::evaluate( const std::vector<unsigned char>& variables )
@@ -52,6 +91,11 @@ bool BooleanExpressionEvaluator::evaluate( const std::vector<unsigned char>& var
     if ( variables_.size() != variables.size() ) {
         LOG_ERROR << "Wrong number of matched patterns";
         return false;
+    }
+
+    if ( variables.size() <= MaxPrecomputedPatterns ) {
+        const auto patternCombination = buildPatternCombination( variables );
+        return precomputedResults_[ patternCombination ] > 0;
     }
 
     for ( auto index = 0u; index < variables_.size(); ++index ) {

@@ -49,4 +49,6 @@ class BooleanExpressionEvaluator {
     exprtk::parser<double> parser_;
 
     std::vector<double*> variables_;
+
+    double precomputedResults_[16];
 };
