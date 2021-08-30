@@ -18,6 +18,7 @@ Development status
 
 [![Next milestone](https://img.shields.io/github/milestones/progress-percent/variar/klogg/8?style=flat)](https://github.com/variar/klogg/milestone/8)
 [![Ready for testing](https://img.shields.io/github/issues-raw/variar/klogg/status:%20ready%20for%20testing?color=green&label=issues%20ready%20for%20testing&style=flat)](https://github.com/variar/klogg/issues?q=is%3Aopen+is%3Aissue+label%3A%22status%3A+ready+for+testing%22)
+[![Need documentation](https://img.shields.io/github/issues-search/variar/klogg?color=yellow&label=features%20need%20documentation&query=is%3Aissue%20label%3A%22status%3A%20need%20documentation%22&style=flat)](https://github.com/variar/klogg/issues?q=is%3Aissue+label%3A%22status%3A+need+documentation%22)
 [![GitHub commits](https://img.shields.io/github/commits-since/variar/klogg/v20.12.svg?style=flat)](https://github.com/variar/klogg/commits/)
 [![CI Build and Release](https://github.com/variar/klogg/actions/workflows/ci-build.yml/badge.svg)](https://github.com/variar/klogg/actions/workflows/ci-build.yml)
 

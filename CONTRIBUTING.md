@@ -55,6 +55,15 @@ General questions do not need to follow this checklist.
 Feel free to ask anything about using, developing or distributing Klogg. Such questions often
 help to improve project documentation.
 
+# Documentation
+
+Klogg has become a quite complex tool with many features. Any time spent fixing
+typos or clarifying sections in the documentation is greatly appreciated.
+Features that need better documentation can be found in this 
+[list](https://github.com/variar/klogg/issues?q=is%3Aissue+label%3A%22status%3A+need+documentation%22+). 
+Both open and closed issues marked with label `status: need documentation`
+require some work with documentation.
+
 # How to contribute code
 
 Unsure where to begin contributing to Klogg? 
