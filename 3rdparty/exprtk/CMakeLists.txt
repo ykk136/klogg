@@ -8,4 +8,5 @@ target_compile_definitions(exprtk INTERFACE
     -Dexprtk_disable_return_statement
     -Dexprtk_disable_superscalar_unroll
     -Dexprtk_disable_rtl_io_file
-    -Dexprtk_disable_rtl_vecops)
+    -Dexprtk_disable_rtl_vecops
+    -Dexprtk_disable_string_capabilities)

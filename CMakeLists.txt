@@ -107,6 +107,8 @@ if(MSVC)
     ELSE (CMAKE_C_FLAGS MATCHES "/W[0-4]")	
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")	
     ENDIF (CMAKE_C_FLAGS MATCHES "/W[0-4]")
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj ")
 else()
     ucm_add_flags(CXX "-fno-sized-deallocation -fno-omit-frame-pointer")
     ucm_add_flags(C CXX "-mmmx -msse -msse2 -msse3 -mssse3 -mpopcnt")
@@ -149,6 +151,7 @@ ucm_print_flags()
 find_package(Qt5 COMPONENTS Core Widgets Concurrent Network Xml REQUIRED)
 
 message("Qt version ${Qt5Core_VERSION}")
+message("LTO ${KLOGG_USE_LTO}")
 
 set(CMAKE_AUTOMOC OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR OFF)
