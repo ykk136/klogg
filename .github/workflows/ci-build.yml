@@ -40,6 +40,7 @@ jobs:
             check_container: centos:8
             container_root: docker/centos8
             container: variar/klogg_centos8
+            cmake_opts: -DKLOGG_USE_LTO=OFF
 
           - os: ubuntu
             os_version: 18.04
