@@ -69,10 +69,10 @@ Following logic operations are supported:
 
 *klogg* keeps history of used search patterns and provides autocomplete
 for them. This history can be cleared from search text box context menu.
-Autocomplete is case sensitive if this option is selected for matching 
+Autocomplete is case-sensitive if this option is selected for matching 
 regular expression.
 
-In addition to the filtered window, the match overview on the right hand
+In addition to the filtered window, the match overview on the right-hand
 side of the screen offers a view of the position of matches in the log
 file. Matches are showed as small red lines.
 
@@ -83,7 +83,7 @@ the line and press `'m'` hotkey.
 To mark several lines at once select them and use `'m'` hotkey or context menu.
 
 Marks are combined with matches and are always visible
-in the filtered window. They also appears as blue lines in the match overview.
+in the filtered window. They also appear as blue lines in the match overview.
 
 ### Opening files
 
@@ -109,9 +109,9 @@ content or extension).
 decompressed to temporary folder and then opened. Compression type is
 determined automatically (by file content or extension).
 
-#### Urls
+#### Network
 
-*klogg* can open files from remote urls. In that case *klogg* will
+*klogg* can open files from remote URLs. In that case *klogg* will
 download file to temporary directory and open it from there.
 
 #### Recent files
@@ -171,7 +171,7 @@ highlighter overrides colors for current line.
 
 Highlighters configuration can be exported to a file and 
 imported for example on another machine. Each set is identified
-by unique guid. Only new sets are imported from file.
+by unique id. Only new sets are imported from file.
 
 ### Browsing changing log files
 
@@ -192,13 +192,13 @@ search results will be cleared.
 *klogg* has two options to distinguish appends from overwrites.
 General and more stable options is to recalculate hash of indexed part
 of the file and check if it matches current file on disk. This is
-reliable but can be slow for large files and for slow filesystem
+reliable but can be slow for large files and for slow file system
 (e.g. network shares). The other option is to check hashes for only
 first and last part of the file. This usually works fast 
 but can miss a change in the middle of the file. Appropriate option
 can be selected in `Settings->File` tab.
 
-Following file requires monitoring filesystem for changes. If native
+Following file requires monitoring file system for changes. If native
 monitoring or polling are both disabled in settings, then following file
 is also disabled.
 
@@ -206,7 +206,7 @@ is also disabled.
 
 Sometimes in log files there are text in base64 encoding, unformatted
 xml/json, etc. For such cases *klogg* provides Scratchpad tool. Text can
-be copied to this window and transformed to human readable form.
+be copied to this window and transformed to human-readable form.
 
 New tabs can be opened in Scratchpad using `Ctrl+N` hotkey.
 
@@ -238,7 +238,7 @@ incremental quickfind can use only fixed strings patterns.
 *   Minimize to tray -- if enabled *klogg* will minimize to tray instead
     of closing main window. Use tray icon context menu of `File->Exit`
     to exit application. This option is not available on Mac OS.
-*   Enable multiple windows -- if enabled *klogg* will allow to open
+*   Enable multiple windows -- if enabled *klogg* will allow opening
     more than one main window using `File->New window`. In this mode last
     closed windows will be saved to open session on next *klogg* start.
     When exiting *klogg* using `File->Exit` all windows are saved and
@@ -247,7 +247,7 @@ incremental quickfind can use only fixed strings patterns.
 #### Version checking options
 
 If version checking is enabled then *klogg* will once a week try to grab a version
-information file from Github repository and see if new version has been released.
+information file from GitHub repository and see if new version has been released.
 
 Stable builds will check if new stable version is available and pop a dialog about it.
 Testing builds will check for new testing versions.
@@ -260,13 +260,13 @@ The font used to display the log file. A clear, monospace font (like the
 free, open source, [DejaVu Mono](http://www.dejavu-fonts.org) for
 example) is recommended.
 
-Font antialiasing can be forced if autodeteced options result in bad
+Font antialiasing can be forced if autodetected options result in bad
 text rendering.
 
 #### Style
 
 Qt usually comes with several options of drawing application widgets.
-By default *klogg* uses style that matches current operating system.
+By default, *klogg* uses style that matches current operating system.
 Other styles can be chosen from the dropdown.
 
 *klogg* will try to respect current display manager theme and 
@@ -305,35 +305,35 @@ the file, so should be used with caution.
 
 If extract archives is selected then *klogg* will detect if opened file
 is of one of supported archives type or a single compressed file and
-will ask user permisson to extract archives content to temporary folder.
+will ask user permission to extract archives content to temporary folder.
 
-If you do not want *klogg* to ask for permisson check extract archives
+If you do not want *klogg* to ask for permission check extract archives
 without confirmation option.
 
 #### File download
 
-By default *klogg* will not download files using https if certificates
+By default, *klogg* will not download files using HTTPS if certificates
 can't be checked. In some development environments self-signed 
 certificates are used. In this case *klogg* can be instructed to ignore
 SSL errors.
 
 ### Advanced options
 
-These options allow to customize performance related settings.
+These options allow customizing performance related settings.
 
-If parallel search is enabled *klogg* will try to use several cpu cores
+If parallel search is enabled, *klogg* will try to use several CPU cores
 for regular expression matching. This does not work with quickfind.
 
-If search results cache is enabled *klogg* will store numbers of lines
+If search results cache is enabled, *klogg* will store numbers of lines
 that matched search pattern in memory. Repeating search for the same
-pattern will not go through all file but use cached line numbers
+pattern will not go through all file, but use cached line numbers
 instead.
 
 When using *klogg* to monitor updating files this option should be
 disabled.
 
 In case there is some problem with *klogg* logging can be enabled with
-desired level of verbosity. Log files are save to temporary directory.
+desired level of verbosity. Log files are saved to temporary directory.
 Log level of 4 or 5 is usually enough.
 
 ## Crash reporting
@@ -353,7 +353,7 @@ These minidumps do not include full content of *klogg* process memory during the
 
 ## Keyboard commands
 
-*klogg* keyboard commands try to approximatively emulate the default
+*klogg* keyboard commands try to approximately emulate the default
 bindings used by the classic Unix utilities *vi* and *less*.
 
 The main commands are:
@@ -372,14 +372,14 @@ The main commands are:
 |' or "          |start a quickfind search in the current screen                    |
 |                |(forward and backward)                                            |
 |n or N          |repeat the previous quickfind search forward/backward             |
-|\* or .         |search for the next occurence of the currently selected text      |
-|/ or ,          |search for the previous occurence of the currently selected text  |
+|\* or .         |search for the next occurrence of the currently selected text      |
+|/ or ,          |search for the previous occurrence of the currently selected text  |
 |f               |activate 'follow' mode, which keep the display as the tail of the |
 |                |file (like "tail -f")                                             |
 |m               |put a mark on current selected line                               |
 |\[ or \]        |jump to previous or next marked line                              |
 |+ or -          |decrease/increase filtered view size                              |
-|v               |switch filtered view visibilty mode                               |
+|v               |switch filtered view visibility mode                               |
 |                |(Marks and Matches -&gt; Marks -&gt; Matches)                     |
 |F5              |reload current file                                               |
 |Ctrl+S          |Set focus to search string edit box                               |
