@@ -37,7 +37,8 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: klogg_version
-          path: 'klogg_version.txt' 
+          path: 'klogg_version.txt'
+          if-no-files-found: error
 
   Linux:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
@@ -107,7 +108,8 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: packages-${{ matrix.config.artifacts_id }}-${{ matrix.config.arch }}
-          path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*'       
+          path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*'
+          if-no-files-found: error      
 
   Mac:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
@@ -217,6 +219,7 @@ jobs:
         with:
           name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}
           path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*' 
+          if-no-files-found: error
 
   Windows:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
@@ -336,3 +339,4 @@ jobs:
         with:
           name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}
           path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*'
+          if-no-files-found: error
