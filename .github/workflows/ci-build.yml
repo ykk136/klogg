@@ -1,4 +1,4 @@
-name: "CI Build and Release"
+name: "CI Build"
 
 on:
   push:
@@ -24,6 +24,21 @@ on:
   workflow_dispatch:
 
 jobs:
+  SaveVersion:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/klogg-version
+
+      - name: Save version 
+        run: echo $KLOGG_VERSION > klogg_version.txt
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: klogg_version
+          path: 'klogg_version.txt' 
+
   Linux:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     strategy:
@@ -320,84 +335,4 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}
-          path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*'      
-
-  release:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[ci release]')) }}
-    runs-on: ubuntu-latest
-    needs: [Linux, Mac, Windows] 
-    steps:
-    - uses: actions/checkout@v2
-
-    - uses: ./.github/actions/klogg-version
-
-    - uses: actions/download-artifact@v2
-
-    - name: Display structure of downloaded files
-      run: ls -R
-
-    - name: Release win
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: ${{ secrets.KLOGG_GITHUB_TOKEN }}
-        automatic_release_tag: continuous-win
-        prerelease: true
-        files: |
-          ./packages-windows-x64/*
-          ./packages-windows-x86/*
-
-    - name: Release linux
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: ${{ secrets.KLOGG_GITHUB_TOKEN }}
-        automatic_release_tag: continuous-linux
-        prerelease: true
-        files: |
-          ./packages-deb-x64/*
-          ./packages-rpm-x64/*
-
-    - name: Release mac
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: ${{ secrets.KLOGG_GITHUB_TOKEN }}
-        automatic_release_tag: continuous-osx
-        prerelease: true
-        files: ./packages-macos-x64/*
-
-    - name: Setup Sentry CLI
-      uses: mathrix-education/setup-sentry-cli@0.1.0
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-      with:
-        token: ${{ secrets.SENTRY_TOKEN }}
-        organization: anton-filimonov
-        project: klogg
-
-    - name: Create Sentry release
-      shell: sh
-      run: |
-        sentry-cli releases new $KLOGG_VERSION
-        sentry-cli releases set-commits --auto $KLOGG_VERSION
-
-    - name: Upload symbols linux
-      shell: sh
-      run: |
-        sentry-cli upload-dif ./packages-deb-x64/klogg_deb.sym 
-        sentry-cli upload-dif ./packages-rpm-x64/klogg_rpm.sym 
-
-    - name: Upload symbols mac
-      shell: sh
-      run: |
-        sentry-cli upload-dif ./packages-macos-x64/klogg.app/Contents/MacOS/klogg ./packages-macos-x64/klogg.dSym
-
-    - name: Upload symbols win x64
-      shell: sh
-      run: |
-        sentry-cli upload-dif ./packages-windows-x64/klogg-$KLOGG_VERSION-x64-pdb.zip
-
-    - name: Upload symbols win x86
-      shell: sh
-      run: |
-        sentry-cli upload-dif ./packages-windows-x86/klogg-$KLOGG_VERSION-x86-pdb.zip 
-
-
+          path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*'
