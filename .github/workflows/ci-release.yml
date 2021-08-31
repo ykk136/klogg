@@ -15,7 +15,13 @@ jobs:
         workflow_conclusion: success
         branch: master
 
+    - name: Initialize version
+      run: echo "KLOGG_VERSION=`ls ./packages-deb-x64/klogg*.deb | cut -d '-' -f4`" >> $GITHUB_ENV
+      
     - name: Display structure of downloaded files
       run: ls -R
+
+
+
 
    
