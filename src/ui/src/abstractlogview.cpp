@@ -494,6 +494,9 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                 fillColor.setAlphaF( 1.0 );
                 pixmap.fill( fillColor );
                 colorLabelAction->setIcon( QIcon( pixmap ) );
+#ifdef Q_OS_WIN
+                colorLabelAction->setIconVisibleInMenu( true );
+#endif
             }
             colorLabelsMenu_->addSeparator();
             auto clearAllAction = colorLabelsMenu_->addAction( "Clear all" );
