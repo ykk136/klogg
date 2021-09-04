@@ -3,7 +3,7 @@ add_subdirectory(singleapp) #3.3.0
 add_subdirectory(maddy)
 add_subdirectory(whereami)
 add_subdirectory(kdab)
-add_subdirectory(robin_hood) #3.11.2
+add_subdirectory(robin_hood) #3.11.3
 add_subdirectory(exprtk)
 add_subdirectory(roaring) #0.3.3
 add_subdirectory(simdutf) #1.0.0
