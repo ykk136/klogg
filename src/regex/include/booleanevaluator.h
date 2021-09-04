@@ -18,6 +18,7 @@
  */
 
 #include <exprtk.hpp>
+#include <string_view>
 
 #include "regularexpressionpattern.h"
 
@@ -36,7 +37,7 @@ class BooleanExpressionEvaluator {
         return errorString_;
     }
 
-    bool evaluate( const std::vector<unsigned char>& variables );
+    bool evaluate( std::string_view variables );
 
   private:
     bool isValid_ = true;

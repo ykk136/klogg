@@ -63,16 +63,16 @@ class PatternMatcher {
     bool hasMatch( std::string_view line ) const;
 
   private:
-    bool hasMatchInternal( std::string_view line ) const;
+    using MatchFunc = bool ( * )( std::string_view line, const MatcherVariant& matcher, BooleanExpressionEvaluator* evaluator );
+    MatchFunc hasMatchImpl_;
 
   private:
     bool isInverse_ = false;
     bool isBooleanCombination_ = false;
 
     std::string mainPatternId_;
-    
-    MatcherVariant matcher_;
 
+    MatcherVariant matcher_;
     std::unique_ptr<BooleanExpressionEvaluator> evaluator_;
 };
 

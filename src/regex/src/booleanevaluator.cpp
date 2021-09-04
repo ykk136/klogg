@@ -36,7 +36,7 @@ bool isBitSet( unsigned num, unsigned bit )
     return 1 == ( ( num >> bit ) & 1 );
 }
 
-uint32_t buildPatternCombination( const std::vector<unsigned char>& variables )
+uint32_t buildPatternCombination( std::string_view variables )
 {
     uint32_t combination = 0;
     for ( auto bit = 0u; bit < variables.size(); ++bit ) {
@@ -82,7 +82,7 @@ BooleanExpressionEvaluator::BooleanExpressionEvaluator(
     }
 }
 
-bool BooleanExpressionEvaluator::evaluate( const std::vector<unsigned char>& variables )
+bool BooleanExpressionEvaluator::evaluate( std::string_view variables )
 {
     if ( !isValid() ) {
         return false;

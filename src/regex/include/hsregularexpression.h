@@ -21,7 +21,9 @@
 #define KLOGG_HS_REGULAR_EXPRESSION
 
 #include <algorithm>
+#include <cstddef>
 #include <iterator>
+#include <string>
 #include <string_view>
 #include <variant>
 #include <vector>
@@ -37,8 +39,7 @@
 
 #include "regularexpressionpattern.h"
 
-using MatchedPatterns = std::vector<unsigned char>;
-using MatchingResult = std::variant<bool, MatchedPatterns>;
+using MatchedPatterns = std::string;
 
 class DefaultRegularExpressionMatcher {
   public:
@@ -50,9 +51,9 @@ class DefaultRegularExpressionMatcher {
             []( const auto& pattern ) { return static_cast<QRegularExpression>( pattern ); } );
     }
 
-    MatchingResult match( const std::string_view& utf8Data ) const
+    MatchedPatterns match( const std::string_view& utf8Data ) const
     {
-        MatchedPatterns matchedPatterns( regexp_.size() );
+        MatchedPatterns matchedPatterns( regexp_.size(), 0 );
         std::transform( regexp_.cbegin(), regexp_.cend(), matchedPatterns.begin(),
                         [ utf8Data ]( const auto& regexp ) {
                             return regexp
@@ -62,9 +63,7 @@ class DefaultRegularExpressionMatcher {
                             ;
                         } );
 
-        return matchedPatterns.size() == 1
-                   ? MatchingResult{ static_cast<bool>( matchedPatterns[ 0 ] ) }
-                   : MatchingResult{ matchedPatterns };
+        return matchedPatterns;
     }
 
   private:
@@ -76,10 +75,22 @@ class DefaultRegularExpressionMatcher {
 using HsScratch = UniqueResource<hs_scratch_t, hs_free_scratch>;
 using HsDatabase = SharedResource<hs_database_t>;
 
+struct HsMatcherContext {
+
+    HsMatcherContext( std::size_t numberOfPatterns = 1 );
+
+    void reset();
+   
+    MatchedPatterns matchingPatterns;
+
+private:
+    MatchedPatterns matchingPatternsTemplate_;
+};
+
 class HsMatcher {
   public:
     HsMatcher() = default;
-    HsMatcher( HsDatabase database, HsScratch scratch, const std::vector<std::string>& patternIds );
+    HsMatcher( HsDatabase database, HsScratch scratch, std::size_t numberOfPatterns );
 
     HsMatcher( const HsMatcher& ) = delete;
     HsMatcher& operator=( const HsMatcher& ) = delete;
@@ -87,15 +98,36 @@ class HsMatcher {
     HsMatcher( HsMatcher&& other ) = default;
     HsMatcher& operator=( HsMatcher&& other ) = default;
 
-    MatchingResult match( const std::string_view& utf8Data ) const;
-
-  private:
+  protected:
     HsDatabase database_;
     HsScratch scratch_;
-    std::vector<std::string> patternIds_;
+
+    mutable HsMatcherContext context_;
 };
 
-using MatcherVariant = std::variant<DefaultRegularExpressionMatcher, HsMatcher>;
+class HsSingleMatcher : public HsMatcher {
+  public:
+    HsSingleMatcher() = default;
+    HsSingleMatcher( HsDatabase database, HsScratch scratch );
+
+    MatchedPatterns match( const std::string_view& utf8Data ) const;
+};
+
+class HsMultiMatcher : public HsMatcher {
+  public:
+    HsMultiMatcher() = default;
+    HsMultiMatcher( HsDatabase database, HsScratch scratch, std::size_t numberOfPatterns );
+
+    MatchedPatterns match( const std::string_view& utf8Data ) const;
+};
+
+class HsNoopMatcher {
+  public:
+    MatchedPatterns match( const std::string_view& utf8Data ) const;
+};
+
+using MatcherVariant
+    = std::variant<DefaultRegularExpressionMatcher, HsNoopMatcher, HsSingleMatcher, HsMultiMatcher>;
 
 class HsRegularExpression {
   public:
@@ -122,7 +154,6 @@ class HsRegularExpression {
     HsScratch scratch_;
 
     std::vector<RegularExpressionPattern> patterns_;
-    std::vector<std::string> patternIds_;
 
     bool isValid_ = true;
     QString errorMessage_;

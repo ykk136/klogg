@@ -95,8 +95,8 @@ parseBooleanExpressions( QString& pattern, bool isCaseSensitive, bool isPlainTex
     }
 
     LOG_INFO << "Parsed pattern: " << pattern;
-    QRegularExpression finalPatternCheck("^(and|nand|or|nor|xor|xnor|not|[ ()!|&]|p_[0-9]+)+$");
-    if (!finalPatternCheck.match(pattern).hasMatch()) {
+    QRegularExpression finalPatternCheck( "^(and|nand|or|nor|xor|xnor|not|[ ()!|&]|p_[0-9]+)+$" );
+    if ( !finalPatternCheck.match( pattern ).hasMatch() ) {
         throw std::runtime_error( "Patterns must be enclosed in quotes" );
     }
 
@@ -152,18 +152,60 @@ std::unique_ptr<PatternMatcher> RegularExpression::createMatcher() const
     return std::make_unique<PatternMatcher>( *this );
 }
 
+namespace matching {
+
+bool hasSingleMatch( std::string_view line, const MatcherVariant& matcher,
+                     BooleanExpressionEvaluator* )
+{
+    const auto result
+        = std::visit( [ &line ]( const auto& m ) { return m.match( line ); }, matcher );
+
+    return !result.empty() && result[0] > 0;
+}
+
+bool hasCombinedMatch( std::string_view line, const MatcherVariant& matcher,
+                       BooleanExpressionEvaluator* evaluator )
+{
+    auto result = std::visit( [ &line ]( const auto& m ) { return m.match( line ); }, matcher );
+    return evaluator && evaluator->evaluate( result );
+}
+
+bool hasInverseSingleMatch( std::string_view line, const MatcherVariant& matcher,
+                            BooleanExpressionEvaluator* evaluator )
+{
+    return !hasSingleMatch( line, matcher, evaluator );
+}
+
+bool hasInverseCombinedMatch( std::string_view line, const MatcherVariant& matcher,
+                              BooleanExpressionEvaluator* evaluator )
+{
+    return !hasCombinedMatch( line, matcher, evaluator );
+}
+
+} // namespace matching
+
 PatternMatcher::PatternMatcher( const RegularExpression& expression )
     : isInverse_( expression.isInverse_ )
     , isBooleanCombination_( expression.isBooleanCombination_ )
     , mainPatternId_( expression.subPatterns_.front().id() )
     , matcher_( expression.hsExpression_.createMatcher() )
-    , evaluator_( std::make_unique<BooleanExpressionEvaluator>(
-          expression.expression_.toStdString(), expression.subPatterns_ ) )
 {
     const auto& config = Configuration::get();
     const auto useHyperscanEngine = config.regexpEngine() == RegexpEngine::Hyperscan;
     if ( !useHyperscanEngine ) {
         matcher_ = DefaultRegularExpressionMatcher( expression.subPatterns_ );
+    }
+
+    if ( expression.isBooleanCombination_ ) {
+        evaluator_ = std::make_unique<BooleanExpressionEvaluator>(
+            expression.expression_.toStdString(), expression.subPatterns_ );
+    }
+
+    if ( !isBooleanCombination_ ) {
+        hasMatchImpl_ = isInverse_ ? matching::hasInverseSingleMatch : matching::hasSingleMatch;
+    }
+    else {
+        hasMatchImpl_ = isInverse_ ? matching::hasInverseCombinedMatch : matching::hasCombinedMatch;
     }
 }
 
@@ -171,28 +213,5 @@ PatternMatcher::~PatternMatcher() = default;
 
 bool PatternMatcher::hasMatch( std::string_view line ) const
 {
-    const auto isMatch = hasMatchInternal( line );
-    return ( !isInverse_ ) ? isMatch : !isMatch;
-}
-
-bool PatternMatcher::hasMatchInternal( std::string_view line ) const
-{
-    const auto results
-        = std::visit( [ &line ]( const auto& m ) { return m.match( line ); }, matcher_ );
-
-    return std::visit( makeOverloadVisitor(
-                           [ this ]( bool hasMatch ) {
-                               if ( !isBooleanCombination_ ) {
-                                   return hasMatch;
-                               }
-                               else {
-                                   MatchedPatterns matchedPatterns;
-                                   matchedPatterns.push_back( hasMatch );
-                                   return evaluator_->evaluate( matchedPatterns );
-                               }
-                           },
-                           [ this ]( const MatchedPatterns& matchedPatterns ) {
-                               return evaluator_->evaluate( matchedPatterns );
-                           } ),
-                       results );
+    return hasMatchImpl_( line, matcher_, evaluator_.get() );
 }

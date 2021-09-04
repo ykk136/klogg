@@ -33,60 +33,87 @@
 
 namespace {
 
-struct MatcherContext {
-    const std::size_t patternsCount = 0;
-    MatchedPatterns& matchingPatterns;
-    bool hasMatch = false;
-};
+int matchSingleCallback( unsigned int id, unsigned long long from, unsigned long long to,
+                         unsigned int flags, void* context )
+{
+    Q_UNUSED( id );
+    Q_UNUSED( from );
+    Q_UNUSED( to );
+    Q_UNUSED( flags );
 
-int matchCallback( unsigned int id, unsigned long long from, unsigned long long to,
-                   unsigned int flags, void* context )
+    auto* matchContext = static_cast<HsMatcherContext*>( context );
+
+    matchContext->matchingPatterns[0] = true;
+    return 1;
+}
+
+int matchMultiCallback( unsigned int id, unsigned long long from, unsigned long long to,
+                        unsigned int flags, void* context )
 {
     Q_UNUSED( from );
     Q_UNUSED( to );
     Q_UNUSED( flags );
 
-    MatcherContext* matchContext = static_cast<MatcherContext*>( context );
+    auto* matchContext = static_cast<HsMatcherContext*>( context );
 
-    if ( matchContext->patternsCount == 1 ) {
-        matchContext->hasMatch = true;
-        return 1;
-    }
-    else {
-        matchContext->matchingPatterns[ id ] = true;
-    }
+    matchContext->matchingPatterns[ id ] = true;
 
     return 0;
 }
 
 } // namespace
 
-HsMatcher::HsMatcher( HsDatabase db, HsScratch scratch, const std::vector<std::string>& patternIds )
-    : database_{ std::move( db ) }
-    , scratch_{ std::move( scratch ) }
-    , patternIds_{ patternIds }
+HsMatcherContext::HsMatcherContext( std::size_t numberOfPatterns )
+    : matchingPatterns( numberOfPatterns, 0 )
+    , matchingPatternsTemplate_( numberOfPatterns, 0 )
 {
-    LOG_INFO << "Created matcher, patterns in db: " << patternIds_.size();
 }
 
-MatchingResult HsMatcher::match( const std::string_view& utf8Data ) const
+void HsMatcherContext::reset()
 {
+    matchingPatterns = matchingPatternsTemplate_;
+}
 
-    if ( !scratch_ || !database_ ) {
-        return {};
-    }
-    MatchedPatterns matchingPatterns( patternIds_.size() );
+HsMatcher::HsMatcher( HsDatabase db, HsScratch scratch, std::size_t numberOfPatterns )
+    : database_{ std::move( db ) }
+    , scratch_{ std::move( scratch ) }
+    , context_( numberOfPatterns )
+{
+}
 
-    MatcherContext context{ patternIds_.size(), matchingPatterns };
+HsSingleMatcher::HsSingleMatcher( HsDatabase db, HsScratch scratch )
+    : HsMatcher( db, std::move( scratch ), 1 )
+{
+}
+
+MatchedPatterns HsSingleMatcher::match( const std::string_view& utf8Data ) const
+{
+    context_.reset();
+
     hs_scan( database_.get(), utf8Data.data(), static_cast<unsigned int>( utf8Data.size() ), 0,
-             scratch_.get(), matchCallback, static_cast<void*>( &context ) );
+             scratch_.get(), matchSingleCallback, static_cast<void*>( &context_ ) );
 
-    if ( context.patternsCount == 1 ) {
-        return context.hasMatch;
-    }
-    else {
-        return matchingPatterns;
-    }
+    return std::move( context_.matchingPatterns );
+}
+
+HsMultiMatcher::HsMultiMatcher( HsDatabase db, HsScratch scratch, std::size_t numberOfPatterns )
+    : HsMatcher( db, std::move( scratch ), numberOfPatterns )
+{
+}
+
+MatchedPatterns HsMultiMatcher::match( const std::string_view& utf8Data ) const
+{
+    context_.reset();
+
+    hs_scan( database_.get(), utf8Data.data(), static_cast<unsigned int>( utf8Data.size() ), 0,
+             scratch_.get(), matchMultiCallback, static_cast<void*>( &context_ ) );
+
+    return std::move( context_.matchingPatterns );
+}
+
+MatchedPatterns HsNoopMatcher::match( const std::string_view& ) const
+{
+    return {};
 }
 
 HsRegularExpression::HsRegularExpression( const RegularExpressionPattern& pattern )
@@ -97,9 +124,6 @@ HsRegularExpression::HsRegularExpression( const RegularExpressionPattern& patter
 HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPattern>& patterns )
     : patterns_( patterns )
 {
-    std::transform( patterns.cbegin(), patterns.cend(), std::back_inserter( patternIds_ ),
-                    []( const auto& p ) { return p.id(); } );
-
     database_ = HsDatabase{ makeUniqueResource<hs_database_t, hs_free_database>(
         []( const std::vector<RegularExpressionPattern>& expressions,
             QString& errorMessage ) -> hs_database_t* {
@@ -178,7 +202,7 @@ HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPat
         errorMessage_ = validationResult.second;
     }
 
-    LOG_INFO << "Finished creating pattern database, patterns: " << patternIds_.size()
+    LOG_INFO << "Finished creating pattern database, patterns: " << patterns_.size()
              << ", is db valid: " << isValid_;
 }
 
@@ -217,6 +241,14 @@ MatcherVariant HsRegularExpression::createMatcher() const
         },
         scratch_.get() );
 
-    return MatcherVariant{ HsMatcher{ database_, std::move( matcherScratch ), patternIds_ } };
+    if ( !database_ || !scratch_ ) {
+        return HsNoopMatcher();
+    }
+    else if ( patterns_.size() == 1 ) {
+        return HsSingleMatcher{ database_, std::move( matcherScratch ) };
+    }
+    else {
+        return HsMultiMatcher{ database_, std::move( matcherScratch ), patterns_.size() };
+    }
 }
 #endif
