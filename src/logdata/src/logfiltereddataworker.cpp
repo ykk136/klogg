@@ -89,6 +89,8 @@ struct SearchBlockData {
 
     LineNumber chunkStart;
     LogData::RawLines lines;
+
+    PartialSearchResults searchResults;
 };
 
 PartialSearchResults filterLines( const PatternMatcher& matcher, const LogData::RawLines& rawLines,
@@ -295,7 +297,6 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
     std::chrono::microseconds fileReadingDuration{ 0 };
 
     using BlockDataType = std::shared_ptr<SearchBlockData>;
-    using PartialResultType = std::shared_ptr<PartialSearchResults>;
 
     auto chunkStart = initialLine;
     auto linesSource = tbb::flow::input_node<BlockDataType>(
@@ -348,7 +349,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
     auto lineBlocksQueue = tbb::flow::buffer_node<BlockDataType>( searchGraph );
 
     using RegexMatcherNode
-        = tbb::flow::function_node<BlockDataType, PartialResultType, tbb::flow::rejecting>;
+        = tbb::flow::function_node<BlockDataType, BlockDataType, tbb::flow::rejecting>;
 
     using PatternMatcherPtr = std::unique_ptr<PatternMatcher>;
     using MatcherContext = std::tuple<PatternMatcherPtr, microseconds, RegexMatcherNode>;
@@ -363,16 +364,16 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
                     if ( interruptRequested_ ) {
                         LOG_INFO << "Matcher " << index << " interrupted";
                         auto results = std::make_shared<PartialSearchResults>();
-                        results->chunkStart = blockData->chunkStart;
-                        results->processedLines =  blockData->lines.numberOfLines;
-                        return results;
+                        blockData->searchResults.chunkStart = blockData->chunkStart;
+                        blockData->searchResults.processedLines = blockData->lines.numberOfLines;
+                        return blockData;
                     }
 
                     const auto& matcher = std::get<PatternMatcherPtr>( regexMatchers.at( index ) );
                     const auto matchStartTime = high_resolution_clock::now();
 
-                    auto results = std::make_shared<PartialSearchResults>(
-                        filterLines( *matcher, blockData->lines, blockData->chunkStart ) );
+                    blockData->searchResults
+                        = filterLines( *matcher, blockData->lines, blockData->chunkStart );
 
                     const auto matchEndTime = high_resolution_clock::now();
 
@@ -380,12 +381,13 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
                         = std::get<microseconds>( regexMatchers.at( index ) );
                     matchDuration += duration_cast<microseconds>( matchEndTime - matchStartTime );
                     LOG_DEBUG << "Searcher " << index << " block " << blockData->chunkStart
-                              << " sending matches " << results->matchingLines.cardinality();
-                    return results;
+                              << " sending matches "
+                              << blockData->searchResults.matchingLines.cardinality();
+                    return blockData;
                 } ) );
     }
 
-    auto resultsQueue = tbb::flow::buffer_node<PartialResultType>( searchGraph );
+    auto resultsQueue = tbb::flow::buffer_node<BlockDataType>( searchGraph );
 
     const auto totalLines = endLine - initialLine;
     LinesCount totalProcessedLines = 0_lcount;
@@ -396,50 +398,53 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
     std::chrono::microseconds matchCombiningDuration{ 0 };
 
-    auto matchProcessor = tbb::flow::function_node<PartialResultType, tbb::flow::continue_msg,
-                                                   tbb::flow::rejecting>(
-        searchGraph, 1, [ & ]( const PartialResultType& matchResults ) {
-            if ( interruptRequested_ ) {
-                LOG_INFO << "Match processor interrupted";
+    auto matchProcessor
+        = tbb::flow::function_node<BlockDataType, tbb::flow::continue_msg, tbb::flow::rejecting>(
+            searchGraph, 1, [ & ]( const BlockDataType& blockData ) {
+                if ( interruptRequested_ ) {
+                    LOG_INFO << "Match processor interrupted";
+                    return tbb::flow::continue_msg{};
+                }
+
+                const auto& matchResults = blockData->searchResults;
+
+                const auto matchProcessorStartTime = high_resolution_clock::now();
+
+                if ( matchResults.processedLines.get() ) {
+
+                    maxLength = qMax( maxLength, matchResults.maxLength );
+                    nbMatches += LinesCount( matchResults.matchingLines.cardinality() );
+
+                    const auto processedLines = LinesCount{ matchResults.chunkStart.get()
+                                                            + matchResults.processedLines.get() };
+
+                    totalProcessedLines += matchResults.processedLines;
+
+                    // After each block, copy the data to shared data
+                    // and update the client
+                    searchData.addAll( maxLength, matchResults.matchingLines, processedLines );
+
+                    LOG_DEBUG << "done Searching chunk starting at " << matchResults.chunkStart
+                              << ", " << matchResults.processedLines << " lines read.";
+                }
+
+                const int percentage
+                    = calculateProgress( totalProcessedLines.get(), totalLines.get() );
+
+                if ( percentage > reportedPercentage || nbMatches > reportedMatches ) {
+
+                    emit searchProgressed( nbMatches, std::min( 99, percentage ), initialLine );
+
+                    reportedPercentage = percentage;
+                    reportedMatches = nbMatches;
+                }
+
+                const auto matchProcessorEndTime = high_resolution_clock::now();
+                matchCombiningDuration += duration_cast<microseconds>( matchProcessorEndTime
+                                                                       - matchProcessorStartTime );
+
                 return tbb::flow::continue_msg{};
-            }
-
-            const auto matchProcessorStartTime = high_resolution_clock::now();
-
-            if ( matchResults->processedLines.get() ) {
-
-                maxLength = qMax( maxLength, matchResults->maxLength );
-                nbMatches += LinesCount( matchResults->matchingLines.cardinality() );
-
-                const auto processedLines = LinesCount{ matchResults->chunkStart.get()
-                                                        + matchResults->processedLines.get() };
-
-                totalProcessedLines += matchResults->processedLines;
-
-                // After each block, copy the data to shared data
-                // and update the client
-                searchData.addAll( maxLength, matchResults->matchingLines, processedLines );
-
-                LOG_DEBUG << "done Searching chunk starting at " << matchResults->chunkStart << ", "
-                          << matchResults->processedLines << " lines read.";
-            }
-
-            const int percentage = calculateProgress( totalProcessedLines.get(), totalLines.get() );
-
-            if ( percentage > reportedPercentage || nbMatches > reportedMatches ) {
-
-                emit searchProgressed( nbMatches, std::min( 99, percentage ), initialLine );
-
-                reportedPercentage = percentage;
-                reportedMatches = nbMatches;
-            }
-
-            const auto matchProcessorEndTime = high_resolution_clock::now();
-            matchCombiningDuration
-                += duration_cast<microseconds>( matchProcessorEndTime - matchProcessorStartTime );
-
-            return tbb::flow::continue_msg{};
-        } );
+            } );
 
     tbb::flow::make_edge( linesSource, blockPrefetcher );
     tbb::flow::make_edge( blockPrefetcher, lineBlocksQueue );
