@@ -539,7 +539,7 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
             }
             else {
                 utf8Data_.resize( static_cast<int>( buffer.size() * 2 ) );
-                resultSize = simdutf::convert_valid_utf16_to_utf8(
+                resultSize = simdutf::convert_utf16_to_utf8(
                     reinterpret_cast<const char16_t*>( utf16Data.utf16() ),
                     static_cast<size_t>( utf16Data.length() ), utf8Data_.data() );
             }
