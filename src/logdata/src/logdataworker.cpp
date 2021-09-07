@@ -40,14 +40,13 @@
 #include <cmath>
 #include <exception>
 #include <functional>
+#include <oneapi/tbb/flow_graph.h>
 #include <string_view>
 #include <thread>
 
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
-
-#include <tbb/flow_graph.h>
 
 #include "configuration.h"
 #include "dispatch_to.h"
@@ -127,6 +126,16 @@ void IndexingData::addAll( const QByteArray& block, LineLength length,
     encodingGuess_ = encoding;
 }
 
+int IndexingData::getProgress() const
+{
+    return progress_;
+}
+
+void IndexingData::setProgress( int progress )
+{
+    progress_ = progress;
+}
+
 void IndexingData::clear()
 {
     maxLength_ = 0_length;
@@ -135,6 +144,8 @@ void IndexingData::clear()
     linePosition_ = LinePositionArray();
     encodingGuess_ = nullptr;
     encodingForced_ = nullptr;
+
+    progress_ = {};
 
     const auto& config = Configuration::get();
     useFastModificationDetection_ = config.fastModificationDetection();
@@ -407,7 +418,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
         }
 
         const auto currentDataEnd = posWithinBlock + blockBeginning;
-        
+
         const auto length = ( currentDataEnd - state.pos ) / state.encodingParams.lineFeedWidth
                             + state.additional_spaces;
 
@@ -451,6 +462,100 @@ void IndexOperation::guessEncoding( const QByteArray& block,
               << state.encodingParams.lineFeedWidth;
 }
 
+std::chrono::microseconds IndexOperation::readFileInBlocks( QFile& file,
+                                                            BlockReader::gateway_type& gw )
+{
+    using namespace std::chrono;
+    using clock = high_resolution_clock;
+
+    LOG_INFO << "Starting IO thread";
+
+    microseconds ioDuration{};
+    while ( !file.atEnd() ) {
+
+        if ( interruptRequest_ ) {
+            break;
+        }
+
+        BlockData blockData{ file.pos(), QByteArray{ IndexingBlockSize, Qt::Uninitialized } };
+
+        clock::time_point ioT1 = clock::now();
+        const auto readBytes
+            = static_cast<int>( file.read( blockData.second.data(), blockData.second.size() ) );
+
+        if ( readBytes < 0 ) {
+            LOG_ERROR << "Reading past the end of file";
+            break;
+        }
+
+        if ( readBytes < blockData.second.size() ) {
+            blockData.second.resize( readBytes );
+        }
+
+        clock::time_point ioT2 = clock::now();
+
+        ioDuration += duration_cast<microseconds>( ioT2 - ioT1 );
+
+        LOG_DEBUG << "Sending block " << blockData.first << " size " << blockData.second.size();
+
+        while ( !gw.try_put( blockData ) ) {
+            std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+        }
+    }
+
+    auto lastBlock = std::make_pair( -1, QByteArray{} );
+    while ( !gw.try_put( lastBlock ) ) {
+        std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+    }
+
+    LOG_INFO << "IO thread done";
+    return ioDuration;
+}
+
+void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& blockData )
+{
+    const auto& blockBeginning = blockData.first;
+    const auto& block = blockData.second;
+
+    LOG_DEBUG << "Indexing block " << blockBeginning << " start";
+
+    if ( blockBeginning < 0 ) {
+        return;
+    }
+
+    IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
+
+    guessEncoding( block, scopedAccessor, state );
+
+    if ( !block.isEmpty() ) {
+        const auto linePositions = parseDataBlock( blockBeginning, block, state );
+        auto maxLength = state.max_length;
+        if ( maxLength > std::numeric_limits<LineLength::UnderlyingType>::max() ) {
+            LOG_ERROR << "Too long lines " << maxLength;
+            maxLength = std::numeric_limits<LineLength::UnderlyingType>::max();
+        }
+
+        scopedAccessor.addAll( block,
+                               LineLength( static_cast<LineLength::UnderlyingType>( maxLength ) ),
+                               linePositions, state.encodingGuess );
+
+        // Update the caller for progress indication
+        const auto progress
+            = ( state.file_size > 0 ) ? calculateProgress( state.pos, state.file_size ) : 100;
+
+        if ( progress != scopedAccessor.getProgress() ) {
+            scopedAccessor.setProgress( progress );
+            LOG_INFO << "Indexing progress " << progress << ", indexed size " << state.pos;
+            emit indexingProgressed( progress );
+        }
+    }
+    else {
+        scopedAccessor.setEncodingGuess( state.encodingGuess );
+    }
+
+    LOG_DEBUG << "Indexing block " << blockBeginning << " done";
+}
+
 void IndexOperation::doIndex( LineOffset initialPosition )
 {
     QFile file( fileName_ );
@@ -465,6 +570,7 @@ void IndexOperation::doIndex( LineOffset initialPosition )
         scopedAccessor.clear();
         scopedAccessor.setEncodingGuess( QTextCodec::codecForLocale() );
 
+        scopedAccessor.setProgress( 100 );
         emit indexingProgressed( 100 );
         return;
     }
@@ -487,6 +593,8 @@ void IndexOperation::doIndex( LineOffset initialPosition )
     const auto& config = Configuration::get();
     const auto prefetchBufferSize = static_cast<size_t>( config.indexReadBufferSizeMb() );
 
+    LOG_INFO << "Prefetch buffer " << readableSize( prefetchBufferSize * IndexingBlockSize );
+
     using namespace std::chrono;
     using clock = high_resolution_clock;
     microseconds ioDuration{};
@@ -494,54 +602,14 @@ void IndexOperation::doIndex( LineOffset initialPosition )
     const auto indexingStartTime = clock::now();
 
     tbb::flow::graph indexingGraph;
-    using BlockData = std::pair<LineOffset::UnderlyingType, QByteArray>;
 
     std::thread ioThread;
-    auto blockReaderAsync = tbb::flow::async_node<tbb::flow::continue_msg, BlockData>(
+    auto blockReaderAsync = BlockReader(
         indexingGraph, tbb::flow::serial,
         [ this, &ioThread, &file, &ioDuration ]( const auto&, auto& gateway ) {
             gateway.reserve_wait();
-
             ioThread = std::thread( [ this, &file, &ioDuration, gw = std::ref( gateway ) ] {
-                while ( !file.atEnd() ) {
-
-                    if ( interruptRequest_ ) {
-                        break;
-                    }
-
-                    BlockData blockData{ file.pos(),
-                                         QByteArray{ IndexingBlockSize, Qt::Uninitialized } };
-
-                    clock::time_point ioT1 = clock::now();
-                    const auto readBytes = static_cast<int>(
-                        file.read( blockData.second.data(), blockData.second.size() ) );
-
-                    if ( readBytes < 0 ) {
-                        LOG_ERROR << "Reading past the end of file";
-                        break;
-                    }
-
-                    if ( readBytes < blockData.second.size() ) {
-                        blockData.second.resize( readBytes );
-                    }
-
-                    clock::time_point ioT2 = clock::now();
-
-                    ioDuration += duration_cast<microseconds>( ioT2 - ioT1 );
-
-                    LOG_DEBUG << "Sending block " << blockData.first << " size "
-                              << blockData.second.size();
-
-                    while ( !gw.get().try_put( blockData ) ) {
-                        std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
-                    }
-                }
-
-                auto lastBlock = std::make_pair( -1, QByteArray{} );
-                while ( !gw.get().try_put( lastBlock ) ) {
-                    std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
-                }
-
+                ioDuration = readFileInBlocks( file, gw.get() );
                 gw.get().release_wait();
             } );
         } );
@@ -551,43 +619,7 @@ void IndexOperation::doIndex( LineOffset initialPosition )
 
     auto blockParser = tbb::flow::function_node<BlockData, tbb::flow::continue_msg>(
         indexingGraph, 1, [ this, &state ]( const BlockData& blockData ) {
-            const auto& block_beginning = blockData.first;
-            const auto& block = blockData.second;
-
-            LOG_DEBUG << "Indexing block " << block_beginning << " start";
-
-            if ( block_beginning < 0 ) {
-                return tbb::flow::continue_msg{};
-            }
-
-            IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
-
-            guessEncoding( block, scopedAccessor, state );
-
-            if ( !block.isEmpty() ) {
-                const auto line_positions = parseDataBlock( block_beginning, block, state );
-                auto max_length = state.max_length;
-                if ( max_length > std::numeric_limits<LineLength::UnderlyingType>::max() ) {
-                    LOG_ERROR << "Too long lines " << max_length;
-                    max_length = std::numeric_limits<LineLength::UnderlyingType>::max();
-                }
-
-                scopedAccessor.addAll(
-                    block, LineLength( static_cast<LineLength::UnderlyingType>( max_length ) ),
-                    line_positions, state.encodingGuess );
-
-                // Update the caller for progress indication
-                const auto progress = ( state.file_size > 0 )
-                                          ? calculateProgress( state.pos, state.file_size )
-                                          : 100;
-                emit indexingProgressed( progress );
-            }
-            else {
-                scopedAccessor.setEncodingGuess( state.encodingGuess );
-            }
-
-            LOG_DEBUG << "Indexing block " << block_beginning << " done";
-
+            indexNextBlock( state, blockData );
             return tbb::flow::continue_msg{};
         } );
 

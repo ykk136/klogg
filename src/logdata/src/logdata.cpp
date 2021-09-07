@@ -552,12 +552,12 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
             lines.push_back( wholeString.substr( 0, nextLineFeed ) );
             wholeString.remove_prefix( nextLineFeed + 1 );
             nextLineFeed = wholeString.find( '\n' );
-            ;
         }
 
         if ( !wholeString.empty() ) {
             lines.push_back( wholeString );
         }
+
     } catch ( const std::exception& e ) {
         LOG_ERROR << "failed to transform lines to utf8 " << e.what();
         const auto lastLineOffset = utf8Data_.size();

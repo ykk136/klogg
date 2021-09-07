@@ -43,8 +43,10 @@
 #include <variant>
 
 #include <QObject>
+#include <QFile>
 #include <QTextCodec>
 
+#include <tbb/flow_graph.h>
 #include <tbb/task_group.h>
 
 #include "atomicflag.h"
@@ -147,6 +149,16 @@ class IndexingDataAccessor {
         data_->hash_.tailDigest = digest;
     }
 
+    int getProgress() const
+    {
+        return data_->getProgress();
+    }
+
+    void setProgress( int progress )
+    {
+        data_->setProgress( progress );
+    }
+
     // Completely clear the indexing data.
     void clear()
     {
@@ -201,11 +213,16 @@ class IndexingData {
 
     size_t allocatedSize() const;
 
+    int getProgress() const;
+    void setProgress( int progress );
+
   private:
     mutable SharedMutex dataMutex_;
 
     LinePositionArray linePosition_;
     LineLength maxLength_;
+
+    int progress_{};
 
     FileDigest hashBuilder_;
     IndexedHash hash_;
@@ -255,6 +272,9 @@ class IndexOperation : public QObject {
     void fileCheckFinished( MonitoredFileStatus );
 
   protected:
+    using BlockData = std::pair<LineOffset::UnderlyingType, QByteArray>;
+    using BlockReader = tbb::flow::async_node<tbb::flow::continue_msg, BlockData>;
+
     // Returns the total size indexed
     // Modify the passed linePosition and maxLength
     void doIndex( LineOffset initialPosition );
@@ -269,6 +289,9 @@ class IndexOperation : public QObject {
 
     void guessEncoding( const QByteArray& block, IndexingData::MutateAccessor& scopedAccessor,
                         IndexingState& state ) const;
+
+    std::chrono::microseconds readFileInBlocks( QFile& file, BlockReader::gateway_type& gw );
+    void indexNextBlock( IndexingState& state, const BlockData& blockData );
 };
 
 class FullIndexOperation : public IndexOperation {
