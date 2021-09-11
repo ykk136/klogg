@@ -618,7 +618,7 @@ void IndexOperation::doIndex( LineOffset initialPosition )
     auto blockQueue = tbb::flow::queue_node<BlockData>( indexingGraph );
 
     auto blockParser = tbb::flow::function_node<BlockData, tbb::flow::continue_msg>(
-        indexingGraph, 1, [ this, &state ]( const BlockData& blockData ) {
+        indexingGraph, tbb::flow::serial, [ this, &state ]( const BlockData& blockData ) {
             indexNextBlock( state, blockData );
             return tbb::flow::continue_msg{};
         } );
