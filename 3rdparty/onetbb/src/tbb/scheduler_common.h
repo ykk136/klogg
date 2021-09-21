@@ -218,8 +218,19 @@ inline void prolonged_pause_impl() {
 }
 #endif
 
-inline void prolonged_pause() {
 #if __TBB_WAITPKG_INTRINSICS_PRESENT && (_WIN32 || _WIN64 || __linux__) && (__TBB_x86_32 || __TBB_x86_64)
+#define __TBB_USE_WAITPKG 
+#if __linux__
+#define __TBB_WAITPKG_ATTRIBUTE __attribute__((__target__("waitpkg")))
+#endif
+#endif
+
+#ifndef __TBB_WAITPKG_ATTRIBUTE
+#define __TBB_WAITPKG_ATTRIBUTE
+#endif
+
+inline void __TBB_WAITPKG_ATTRIBUTE prolonged_pause()  {
+#ifdef __TBB_USE_WAITPKG
     if (governor::wait_package_enabled()) {
         std::uint64_t time_stamp = machine_time_stamp();
         // _tpause function directs the processor to enter an implementation-dependent optimized state
@@ -232,6 +243,9 @@ inline void prolonged_pause() {
 #endif
     prolonged_pause_impl();
 }
+
+#undef __TBB_USE_WAITPKG
+#undef __TBB_WAITPKG_ATTRIBUTE
 
 class stealing_loop_backoff {
     const int my_pause_threshold;

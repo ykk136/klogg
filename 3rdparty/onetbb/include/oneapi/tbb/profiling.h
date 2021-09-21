@@ -28,7 +28,9 @@ inline namespace d0 {
     // include list of index names
     #define TBB_STRING_RESOURCE(index_name,str) index_name,
     enum string_resource_index : std::uintptr_t {
+#ifndef Q_MOC_RUN
         #include "detail/_string_resource.h"
+#endif
         NUM_STRINGS
     };
     #undef TBB_STRING_RESOURCE
