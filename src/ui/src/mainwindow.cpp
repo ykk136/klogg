@@ -614,7 +614,8 @@ void MainWindow::createMenus()
 void MainWindow::createToolBars()
 {
     infoLine = new PathLine();
-    infoLine->setFrameStyle( QFrame::StyledPanel | QFrame::Sunken );
+    infoLine->setFrameStyle( QFrame::StyledPanel );
+    infoLine->setFrameShadow( QFrame::Sunken );
     infoLine->setLineWidth( 0 );
     infoLine->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum );
 
