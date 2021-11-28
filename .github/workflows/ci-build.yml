@@ -295,15 +295,15 @@ jobs:
       - uses: ./.github/actions/agent-run-tests
 
 #Package
-      - name: Win codesign executables
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: apptim/code-sign-action@v8
-        with:
-          certificate: '${{ secrets.MS_CODESIGN_BASE64 }}'
-          password: '${{ secrets.MS_CODESIGN_PASSWORD }}'
-          certificatesha1: '${{ secrets.MS_CODESIGN_HASH }}'
-          folder: '${{ env.KLOGG_BUILD_ROOT }}\output'
-          recursive: true
+      #- name: Win codesign executables
+      #  if: ${{ github.event_name != 'pull_request' }}
+      #  uses: apptim/code-sign-action@v8
+      #  with:
+      #    certificate: '${{ secrets.MS_CODESIGN_BASE64 }}'
+      #    password: '${{ secrets.MS_CODESIGN_PASSWORD }}'
+      #    certificatesha1: '${{ secrets.MS_CODESIGN_HASH }}'
+      #    folder: '${{ env.KLOGG_BUILD_ROOT }}\output'
+      #    recursive: true
 
       - name: Win portable
         shell: cmd
@@ -324,15 +324,15 @@ jobs:
           xcopy klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-pdb.zip %KLOGG_BUILD_ROOT%\packages\ /y
           xcopy klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-setup.exe %KLOGG_BUILD_ROOT%\packages\ /y
 
-      - name: Win codesign installer
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: apptim/code-sign-action@v8
-        with:
-          certificate: '${{ secrets.MS_CODESIGN_BASE64 }}'
-          password: '${{ secrets.MS_CODESIGN_PASSWORD }}'
-          certificatesha1: '${{ secrets.MS_CODESIGN_HASH }}'
-          folder: '${{ env.KLOGG_BUILD_ROOT }}\packages'
-          recursive: true 
+      #- name: Win codesign installer
+      #  if: ${{ github.event_name != 'pull_request' }}
+      #  uses: apptim/code-sign-action@v8
+      #  with:
+      #    certificate: '${{ secrets.MS_CODESIGN_BASE64 }}'
+      #    password: '${{ secrets.MS_CODESIGN_PASSWORD }}'
+      #    certificatesha1: '${{ secrets.MS_CODESIGN_HASH }}'
+      #    folder: '${{ env.KLOGG_BUILD_ROOT }}\packages'
+      #    recursive: true 
       
 # Final upload of all packages
       - uses: actions/upload-artifact@v2
