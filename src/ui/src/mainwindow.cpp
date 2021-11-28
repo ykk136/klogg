@@ -393,6 +393,7 @@ void MainWindow::createActions()
              [ this ]( auto ) { this->editHighlighters(); } );
 
     optionsAction = new QAction( tr( "&Options..." ), this );
+    optionsAction->setMenuRole(QAction::PreferencesRole);
     optionsAction->setStatusTip( tr( "Show the Options box" ) );
     connect( optionsAction, &QAction::triggered, this, [ this ]( auto ) { this->options(); } );
 
