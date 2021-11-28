@@ -272,7 +272,7 @@ jobs:
       - name: Download openssl
         if: ${{ steps.cache-openssl.outputs.cache-hit != 'true' }} 
         run: |
-          Invoke-WebRequest -Uri "https://mirror.firedaemon.com/OpenSSL/openssl-1.1.1l-dev.zip" -OutFile openssl.zip
+          Invoke-WebRequest -Uri "https://mirror.firedaemon.com/OpenSSL/openssl-1.1.1l.zip" -OutFile openssl.zip
           7z x openssl.zip 
 
       - name: Set openssl paths
