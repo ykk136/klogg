@@ -1,5 +1,5 @@
 add_subdirectory(named_type)
-add_subdirectory(singleapp) #3.3.0
+add_subdirectory(singleapp) #3.3.2
 add_subdirectory(maddy)
 add_subdirectory(whereami)
 add_subdirectory(kdab)
