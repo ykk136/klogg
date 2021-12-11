@@ -97,6 +97,7 @@ class OptionsDialog : public QDialog, public Ui::OptionsDialog {
     void setupLogging();
     void setupArchives();
     void setupStyles();
+    void setupEncodings();
 
     void buildShortcutsTable();
 

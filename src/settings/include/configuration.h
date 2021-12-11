@@ -461,6 +461,15 @@ class Configuration final : public Persistable<Configuration> {
         hideAnsiColorSequences_ = hide;
     }
 
+    int defaultEncodingMib() const
+    {
+        return defaultEncodingMib_;
+    }
+    void setDefaultEncodingMib( int mib )
+    {
+        defaultEncodingMib_ = mib;
+    }
+
     // Reads/writes the current config in the QSettings object passed
     void saveToStorage( QSettings& settings ) const;
     void retrieveFromStorage( QSettings& settings );
@@ -536,6 +545,8 @@ class Configuration final : public Persistable<Configuration> {
     bool optimizeForNotLatinEncodings_ = false;
 
     bool hideAnsiColorSequences_ = false;
+
+    int defaultEncodingMib_ = -1;
 
     std::map<std::string, QStringList> shortcuts_;
 };

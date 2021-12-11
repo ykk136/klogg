@@ -42,6 +42,7 @@
 #include <QToolButton>
 #include <QtGui>
 
+#include "encodings.h"
 #include "fontutils.h"
 #include "highlighteredit.h"
 #include "log.h"
@@ -64,6 +65,7 @@ OptionsDialog::OptionsDialog( QWidget* parent )
     setupFontList();
     setupRegexp();
     setupStyles();
+    setupEncodings();
 
     // Validators
     QValidator* pollingIntervalValidator = new QIntValidator( PollIntervalMin, PollIntervalMax );
@@ -138,6 +140,27 @@ void OptionsDialog::setupRegexp()
 void OptionsDialog::setupStyles()
 {
     styleComboBox->addItems( StyleManager::availableStyles() );
+}
+
+void OptionsDialog::setupEncodings()
+{
+    const auto availableEncodings = EncodingMenu::supportedEncodings();
+    encodingComboBox->addItem( "Auto", -1 );
+
+    std::map<QString, int> allMibs;
+
+    for ( const auto& group : availableEncodings ) {
+        for ( const auto& mib : group.second ) {
+            auto codec = QTextCodec::codecForMib( mib );
+            if ( codec ) {
+                allMibs.emplace( codec->name(), mib );
+            }
+        }
+    }
+
+    for ( const auto& codec : allMibs ) {
+        encodingComboBox->addItem( codec.first, codec.second );
+    }
 }
 
 void OptionsDialog::setupPolling()
@@ -306,6 +329,9 @@ void OptionsDialog::updateDialogFromConfig()
     // downloads
     verifySslCheckBox->setChecked( config.verifySslPeers() );
 
+    const auto encodingIndex = encodingComboBox->findData( config.defaultEncodingMib() );
+    encodingComboBox->setCurrentIndex( encodingIndex < 0 ? 0 : encodingIndex );
+
     buildShortcutsTable();
 
     const auto& savedSearches = SavedSearches::get();
@@ -412,6 +438,8 @@ void OptionsDialog::updateConfigFromDialog()
 
     config.setStyle( styleComboBox->currentText() );
     config.setHideAnsiColorSequences( hideAnsiColorsCheckBox->isChecked() );
+
+    config.setDefaultEncodingMib( encodingComboBox->currentData().toInt() );
 
     auto shortcuts = config.shortcuts();
     for ( auto shortcutRow = 0; shortcutRow < shortcutsTable->rowCount(); ++shortcutRow ) {

@@ -187,7 +187,9 @@ void LogDataWorker::attachFile( const QString& fileName )
 void LogDataWorker::indexAll( QTextCodec* forcedEncoding )
 {
     ScopedLock locker( mutex_ );
-    LOG_DEBUG << "FullIndex requested";
+    LOG_INFO << "FullIndex requested, forced encoding: "
+             << ( forcedEncoding != nullptr ? forcedEncoding->name().toStdString()
+                                            : std::string{ "none" } );
 
     waitForDone();
 
@@ -588,6 +590,9 @@ void IndexOperation::doIndex( LineOffset initialPosition )
         }
 
         state.encodingGuess = scopedAccessor.getEncodingGuess();
+        LOG_INFO << "Initial encoding "
+                 << ( state.fileTextCodec != nullptr ? state.fileTextCodec->name().toStdString()
+                                                     : std::string{ "auto" } );
     }
 
     const auto& config = Configuration::get();

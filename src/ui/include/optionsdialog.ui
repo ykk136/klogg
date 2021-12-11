@@ -469,6 +469,29 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="encodingGroupBox">
+         <property name="title">
+          <string>Encoding</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_17">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>Encoding for new files</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="encodingComboBox"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="archivesGroupBox">
          <property name="title">
           <string>Archives</string>

@@ -276,6 +276,10 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         = settings.value( "defaultView.searchIgnoreCase", DefaultConfiguration.searchIgnoreCase_ )
               .toBool();
 
+    defaultEncodingMib_
+        = settings.value( "defaultView.encodingMib", DefaultConfiguration.defaultEncodingMib_ )
+              .toInt();
+
     if ( settings.contains( "defaultView.splitterSizes" ) ) {
         splitterSizes_.clear();
 
@@ -371,6 +375,7 @@ void Configuration::saveToStorage( QSettings& settings ) const
 
     settings.setValue( "defaultView.searchAutoRefresh", searchAutoRefresh_ );
     settings.setValue( "defaultView.searchIgnoreCase", searchIgnoreCase_ );
+    settings.setValue( "defaultView.encodingMib", defaultEncodingMib_ );
 
     QList<QVariant> splitterSizes;
     std::transform( splitterSizes_.cbegin(), splitterSizes_.cend(),

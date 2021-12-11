@@ -44,6 +44,7 @@
 #include <iterator>
 #include <numeric>
 #include <qregularexpression.h>
+#include <qtextcodec.h>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -85,6 +86,11 @@ LogData::LogData()
 
     if ( keepFileClosed_ ) {
         LOG_INFO << "Keep file closed option is set";
+    }
+
+    const auto defaultEncodingMib = config.defaultEncodingMib();
+    if ( defaultEncodingMib >= 0 ) {
+        codec_.setCodec( QTextCodec::codecForMib( defaultEncodingMib ) );
     }
 }
 
@@ -287,7 +293,7 @@ void LogData::doSetDisplayEncoding( const char* encoding )
             currentIndexCodec = scopedAccessor.getEncodingGuess();
         }
 
-        if ( codec_.mibEnum() != currentIndexCodec->mibEnum() ) {
+        if ( currentIndexCodec && codec_.mibEnum() != currentIndexCodec->mibEnum() ) {
             if ( codec_.encodingParameters() != EncodingParameters( currentIndexCodec ) ) {
                 needReload = true;
                 useGuessedCodec = codec_.mibEnum() == scopedAccessor.getEncodingGuess()->mibEnum();

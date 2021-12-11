@@ -984,7 +984,7 @@ void CrawlerWidget::setup()
     // Construct the Search Info line
     searchInfoLine_ = new InfoLine();
     searchInfoLine_->setFrameStyle( QFrame::StyledPanel );
-    searchInfoLine_->setFrameShadow( QFrame::Sunken);
+    searchInfoLine_->setFrameShadow( QFrame::Sunken );
     searchInfoLine_->setLineWidth( 1 );
     searchInfoLine_->setSizePolicy( QSizePolicy::Minimum, QSizePolicy::Minimum );
     auto searchInfoLineSizePolicy = searchInfoLine_->sizePolicy();
@@ -1262,6 +1262,11 @@ void CrawlerWidget::setup()
              &CrawlerWidget::addColorLabelToSelection );
     connect( filteredView_, &AbstractLogView::addColorLabel, this,
              &CrawlerWidget::addColorLabelToSelection );
+    
+    const auto defaultEncodingMib = config.defaultEncodingMib();
+    if ( defaultEncodingMib >= 0 ) {
+        encodingMib_ = defaultEncodingMib;
+    }
 }
 
 void CrawlerWidget::registerShortcuts()
