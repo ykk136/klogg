@@ -21,10 +21,11 @@
 #include <QColor>
 #include <QPalette>
 #include <QStyleFactory>
+#include <qcolor.h>
 
-#include "styles.h"
-
+#include "configuration.h"
 #include "log.h"
+#include "styles.h"
 
 QStringList StyleManager::availableStyles()
 {
@@ -73,33 +74,33 @@ void StyleManager::applyStyle( const QString& style )
     LOG_INFO << "Setting style to " << style;
 
     if ( style == DarkStyleKey || style == DarkWindowsStyleKey ) {
-
-        // based on https://gist.github.com/QuantumCD/6245215
-        QColor darkGray( 53, 53, 53 );
-        QColor gray( 128, 128, 128 );
-        QColor black( 40, 40, 40 );
-        QColor white( 240, 240, 240 );
-        QColor blue( 42, 130, 218 );
+        const auto palette = Configuration::get().darkPalette();
 
         QPalette darkPalette;
-        darkPalette.setColor( QPalette::Window, darkGray );
-        darkPalette.setColor( QPalette::WindowText, white );
-        darkPalette.setColor( QPalette::Base, black );
-        darkPalette.setColor( QPalette::AlternateBase, darkGray );
-        darkPalette.setColor( QPalette::ToolTipBase, blue );
-        darkPalette.setColor( QPalette::ToolTipText, white );
-        darkPalette.setColor( QPalette::Text, white );
-        darkPalette.setColor( QPalette::Button, darkGray );
-        darkPalette.setColor( QPalette::ButtonText, white );
-        darkPalette.setColor( QPalette::Link, blue );
-        darkPalette.setColor( QPalette::Highlight, blue );
-        darkPalette.setColor( QPalette::HighlightedText, black.darker() );
+        darkPalette.setColor( QPalette::Window, QColor( palette.at( "Window" ) ) );
+        darkPalette.setColor( QPalette::WindowText, QColor( palette.at( "WindowText" ) ) );
+        darkPalette.setColor( QPalette::Base, QColor( palette.at( "Base" ) ) );
+        darkPalette.setColor( QPalette::AlternateBase, QColor( palette.at( "AlternateBase" ) ) );
+        darkPalette.setColor( QPalette::ToolTipBase, QColor( palette.at( "ToolTipBase" ) ) );
+        darkPalette.setColor( QPalette::ToolTipText, QColor( palette.at( "ToolTipText" ) ) );
+        darkPalette.setColor( QPalette::Text, QColor( palette.at( "Text" ) ) );
+        darkPalette.setColor( QPalette::Button, QColor( palette.at( "Button" ) ) );
+        darkPalette.setColor( QPalette::ButtonText, QColor( palette.at( "ButtonText" ) ) );
+        darkPalette.setColor( QPalette::Link, QColor( palette.at( "Link" ) ) );
+        darkPalette.setColor( QPalette::Highlight, QColor( palette.at( "Highlight" ) ) );
+        darkPalette.setColor( QPalette::HighlightedText,
+                              QColor( palette.at( "HighlightedText" ) ) );
 
-        darkPalette.setColor( QPalette::Active, QPalette::Button, gray.darker() );
-        darkPalette.setColor( QPalette::Disabled, QPalette::ButtonText, gray );
-        darkPalette.setColor( QPalette::Disabled, QPalette::WindowText, gray );
-        darkPalette.setColor( QPalette::Disabled, QPalette::Text, gray );
-        darkPalette.setColor( QPalette::Disabled, QPalette::Light, darkGray );
+        darkPalette.setColor( QPalette::Active, QPalette::Button,
+                              QColor( palette.at( "ActiveButton" ) ) );
+        darkPalette.setColor( QPalette::Disabled, QPalette::ButtonText,
+                              QColor( palette.at( "DisabledButtonText" ) ) );
+        darkPalette.setColor( QPalette::Disabled, QPalette::WindowText,
+                              QColor( palette.at( "DisabledWindowText" ) ) );
+        darkPalette.setColor( QPalette::Disabled, QPalette::Text,
+                              QColor( palette.at( "DisabledText" ) ) );
+        darkPalette.setColor( QPalette::Disabled, QPalette::Light,
+                              QColor( palette.at( "DisabledLight" ) ) );
 
         if ( style == DarkWindowsStyleKey ) {
             qApp->setStyle( QStyleFactory::create( WindowsKey ) );

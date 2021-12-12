@@ -44,6 +44,7 @@
 #include <QFont>
 #include <QSettings>
 #include <qcolor.h>
+#include <string>
 #include <string_view>
 
 #include "persistable.h"
@@ -470,6 +471,10 @@ class Configuration final : public Persistable<Configuration> {
         defaultEncodingMib_ = mib;
     }
 
+    std::map<QString, QString> darkPalette() const {
+        return darkPalette_;
+    }
+
     // Reads/writes the current config in the QSettings object passed
     void saveToStorage( QSettings& settings ) const;
     void retrieveFromStorage( QSettings& settings );
@@ -549,6 +554,27 @@ class Configuration final : public Persistable<Configuration> {
     int defaultEncodingMib_ = -1;
 
     std::map<std::string, QStringList> shortcuts_;
+
+    // based on https://gist.github.com/QuantumCD/6245215
+    std::map<QString, QString> darkPalette_ = {
+        {"Window", "#353535"},
+        {"WindowText", "#FFFFFF"},
+        {"Base", "#282828"},
+        {"AlternateBase", "#353535"},
+        {"ToolTipBase", "#2a82da"},
+        {"ToolTipText", "#FFFFFF"},
+        {"Text", "#FFFFFF"},
+        {"Button", "#353535"},
+        {"ButtonText", "#FFFFFF"},
+        {"Link", "#2a82da"},
+        {"Highlight", "#2a82da"},
+        {"HighlightedText", "#212121"},
+        {"ActiveButton", "#303030"},
+        {"DisabledButtonText", "#757575"},
+        {"DisabledWindowText", "#808080"},
+        {"DisabledText", "#808080"},
+        {"DisabledLight", "#353535"},
+    };
 };
 
 #endif

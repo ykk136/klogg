@@ -308,6 +308,12 @@ void Configuration::retrieveFromStorage( QSettings& settings )
         }
     }
     settings.endArray();
+
+    settings.beginGroup( "dark" );
+    for ( auto& color : darkPalette_ ) {
+        color.second = settings.value( color.first, color.second ).toString();
+    }
+    settings.endGroup();
 }
 
 void Configuration::saveToStorage( QSettings& settings ) const
@@ -393,4 +399,10 @@ void Configuration::saveToStorage( QSettings& settings ) const
         shortcutIndex++;
     }
     settings.endArray();
+
+    settings.beginGroup( "dark" );
+    for ( const auto& color : darkPalette_ ) {
+        settings.setValue( color.first, color.second );
+    }
+    settings.endGroup();
 }
