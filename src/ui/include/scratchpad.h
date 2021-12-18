@@ -23,6 +23,7 @@
 #include <QWidget>
 
 #include <functional>
+#include <qobjectdefs.h>
 
 class QPlainTextEdit;
 class QStatusBar;
@@ -36,6 +37,9 @@ class ScratchPad : public QWidget {
     ~ScratchPad() = default;
     ScratchPad( const ScratchPad& ) = delete;
     ScratchPad& operator=( const ScratchPad& ) = delete;
+
+  public slots:
+    void addData( QString data );
 
   signals:
     void updateTransformation();
@@ -60,9 +64,9 @@ class ScratchPad : public QWidget {
 
     void decodeUrl();
 
-    QString transformText(const std::function<QString(QString)>& transform);
+    QString transformText( const std::function<QString( QString )>& transform );
 
-    void transformTextInPlace(const std::function<QString(QString)>& transform);
+    void transformTextInPlace( const std::function<QString( QString )>& transform );
 
   private:
     QPlainTextEdit* textEdit_;

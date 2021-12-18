@@ -41,6 +41,7 @@
 // the UI elements.  It implements the connection between the UI elements.
 // It also interacts with the sets of data (full and filtered).
 
+#include "abstractlogview.h"
 #include "log.h"
 
 #include <algorithm>
@@ -1262,7 +1263,12 @@ void CrawlerWidget::setup()
              &CrawlerWidget::addColorLabelToSelection );
     connect( filteredView_, &AbstractLogView::addColorLabel, this,
              &CrawlerWidget::addColorLabelToSelection );
-    
+
+    connect( logMainView_, &AbstractLogView::sendSelectionToScratchpad, this,
+             [ this ]() { emit sendToScratchpad( logMainView_->getSelection() ); } );
+    connect( filteredView_, &AbstractLogView::sendSelectionToScratchpad, this,
+             [ this ]() { emit sendToScratchpad( filteredView_->getSelection() ); } );
+
     const auto defaultEncodingMib = config.defaultEncodingMib();
     if ( defaultEncodingMib >= 0 ) {
         encodingMib_ = defaultEncodingMib;

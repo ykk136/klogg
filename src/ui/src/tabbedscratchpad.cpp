@@ -39,19 +39,19 @@ TabbedScratchPad::TabbedScratchPad( QWidget* parent )
     tabWidget_->setTabsClosable( true );
 
     connect( tabWidget_, &QTabWidget::tabCloseRequested,
-             [this]( const auto index ) { tabWidget_->removeTab( index ); } );
+             [ this ]( const auto index ) { tabWidget_->removeTab( index ); } );
 
     auto addTabButton = std::make_unique<QToolButton>();
     addTabButton->setText( "+" );
     addTabButton->setAutoRaise( true );
 
-    connect( addTabButton.get(), &QToolButton::clicked, [this]( auto ) { addTab(); } );
+    connect( addTabButton.get(), &QToolButton::clicked, [ this ]( auto ) { addTab(); } );
 
     tabWidget_->addTab( new QLabel( "You can add tabs by pressing <b>\"+\"</b> or Ctrl+N" ),
                         QString() );
     tabWidget_->setTabEnabled( 0, false );
 
-    auto deleteTabButton = [this]( QTabBar::ButtonPosition position ) {
+    auto deleteTabButton = [ this ]( QTabBar::ButtonPosition position ) {
         auto button = tabWidget_->tabBar()->tabButton( 0, position );
         if ( button ) {
             button->deleteLater();
@@ -110,4 +110,12 @@ void TabbedScratchPad::addTab()
     const auto newIndex
         = tabWidget_->addTab( new ScratchPad(), QString( "Scratchpad %1" ).arg( ++tabCounter_ ) );
     tabWidget_->setCurrentIndex( newIndex );
+}
+
+void TabbedScratchPad::addData( QString data )
+{
+    auto curretScratchPad = qobject_cast<ScratchPad*>( tabWidget_->currentWidget() );
+    if ( curretScratchPad ) {
+        curretScratchPad->addData( data );
+    }
 }

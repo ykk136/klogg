@@ -95,11 +95,7 @@ class MainWindow : public QMainWindow {
     bool event( QEvent* event ) override;
 
   private:
-    enum class ActionInitiator
-    {
-      User,
-      App
-    };
+    enum class ActionInitiator { User, App };
 
   private slots:
     void open();
@@ -107,8 +103,8 @@ class MainWindow : public QMainWindow {
     void openFileFromFavorites( QAction* action );
     void switchToOpenedFile( QAction* action );
     void setCurrentHighlighter( QAction* action );
-    void closeTab(ActionInitiator initiator);
-    void closeAll(ActionInitiator initiator);
+    void closeTab( ActionInitiator initiator );
+    void closeAll( ActionInitiator initiator );
     void selectAll();
     void copy();
     void find();

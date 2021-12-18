@@ -40,6 +40,7 @@
 // managing the menus, the toolbar, and the CrawlerWidget. It also
 // load/save the settings on opening/closing of the app
 
+#include "configuration.h"
 #include <QNetworkReply>
 #include <cassert>
 #include <exception>
@@ -160,6 +161,9 @@ MainWindow::MainWindow( WindowSession session )
                         SLOT( lineNumberHandler( LineNumber ) ) );
     signalMux_.connect( SIGNAL( saveCurrentSearchAsPredefinedFilter( QString ) ), this,
                         SLOT( newPredefinedFilterHandler( QString ) ) );
+
+    signalMux_.connect( SIGNAL( sendToScratchpad( QString ) ), &scratchPad_,
+                        SLOT( addData( QString ) ) );
 
     // Register for progress status bar
     signalMux_.connect( SIGNAL( loadingProgressed( int ) ), this,
@@ -393,7 +397,7 @@ void MainWindow::createActions()
              [ this ]( auto ) { this->editHighlighters(); } );
 
     optionsAction = new QAction( tr( "&Options..." ), this );
-    optionsAction->setMenuRole(QAction::PreferencesRole);
+    optionsAction->setMenuRole( QAction::PreferencesRole );
     optionsAction->setStatusTip( tr( "Show the Options box" ) );
     connect( optionsAction, &QAction::triggered, this, [ this ]( auto ) { this->options(); } );
 

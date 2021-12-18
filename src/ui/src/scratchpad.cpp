@@ -36,17 +36,20 @@
 #include <QToolBar>
 #include <QUrl>
 #include <QVBoxLayout>
+#include <qchar.h>
 
 #include "crc32.h"
 
 namespace {
 
-template <typename T> QString formatHex( T value )
+template <typename T>
+QString formatHex( T value )
 {
     return QString::fromLatin1( QByteArray::number( value, 16 ).rightJustified( 8, '0', false ) );
 }
 
-template <typename T> QString formatDec( T value )
+template <typename T>
+QString formatDec( T value )
 {
     return QString::fromLatin1( QByteArray::number( value, 10 ) );
 }
@@ -75,33 +78,33 @@ ScratchPad::ScratchPad( QWidget* parent )
     auto toolBar = std::make_unique<QToolBar>();
 
     auto decodeBase64Action = std::make_unique<QAction>( "From base64" );
-    connect( decodeBase64Action.get(), &QAction::triggered, [this]( auto ) { decodeBase64(); } );
+    connect( decodeBase64Action.get(), &QAction::triggered, [ this ]( auto ) { decodeBase64(); } );
     toolBar->addAction( decodeBase64Action.release() );
 
     auto encodeBase64Action = std::make_unique<QAction>( "To base64" );
-    connect( encodeBase64Action.get(), &QAction::triggered, [this]( auto ) { encodeBase64(); } );
+    connect( encodeBase64Action.get(), &QAction::triggered, [ this ]( auto ) { encodeBase64(); } );
     toolBar->addAction( encodeBase64Action.release() );
 
     auto decodeHexAction = std::make_unique<QAction>( "From hex" );
-    connect( decodeHexAction.get(), &QAction::triggered, [this]( auto ) { decodeHex(); } );
+    connect( decodeHexAction.get(), &QAction::triggered, [ this ]( auto ) { decodeHex(); } );
     toolBar->addAction( decodeHexAction.release() );
 
     auto encodeHexAction = std::make_unique<QAction>( "To hex" );
-    connect( encodeHexAction.get(), &QAction::triggered, [this]( auto ) { encodeHex(); } );
+    connect( encodeHexAction.get(), &QAction::triggered, [ this ]( auto ) { encodeHex(); } );
     toolBar->addAction( encodeHexAction.release() );
 
     auto decodeUrlAction = std::make_unique<QAction>( "Decode url" );
-    connect( decodeUrlAction.get(), &QAction::triggered, [this]( auto ) { decodeUrl(); } );
+    connect( decodeUrlAction.get(), &QAction::triggered, [ this ]( auto ) { decodeUrl(); } );
     toolBar->addAction( decodeUrlAction.release() );
 
     toolBar->addSeparator();
 
     auto formatJsonAction = std::make_unique<QAction>( "Format json" );
-    connect( formatJsonAction.get(), &QAction::triggered, [this]( auto ) { formatJson(); } );
+    connect( formatJsonAction.get(), &QAction::triggered, [ this ]( auto ) { formatJson(); } );
     toolBar->addAction( formatJsonAction.release() );
 
     auto formatXmlAction = std::make_unique<QAction>( "Format xml" );
-    connect( formatXmlAction.get(), &QAction::triggered, [this]( auto ) { formatXml(); } );
+    connect( formatXmlAction.get(), &QAction::triggered, [ this ]( auto ) { formatXml(); } );
     toolBar->addAction( formatXmlAction.release() );
 
     toolBar->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum );
@@ -111,7 +114,7 @@ ScratchPad::ScratchPad( QWidget* parent )
     auto transLayout = std::make_unique<QFormLayout>();
 
     auto addBoxToLayout
-        = [&transLayout, this]( const QString& label, QLineEdit** widget, auto changeFunction ) {
+        = [ &transLayout, this ]( const QString& label, QLineEdit** widget, auto changeFunction ) {
               auto box = std::make_unique<QLineEdit>();
               box->setReadOnly( true );
               *widget = box.get();
@@ -144,6 +147,13 @@ ScratchPad::ScratchPad( QWidget* parent )
     connect( textEdit_, &QPlainTextEdit::textChanged, this, &ScratchPad::updateTransformation );
     connect( textEdit_, &QPlainTextEdit::selectionChanged, this,
              &ScratchPad::updateTransformation );
+}
+
+void ScratchPad::addData( QString data )
+{
+    auto cursor = textEdit_->textCursor();
+    cursor.insertText( data );
+    cursor.insertText( QString{QChar::LineFeed} );
 }
 
 QString ScratchPad::transformText( const std::function<QString( QString )>& transform )

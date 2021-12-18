@@ -1731,13 +1731,14 @@ void AbstractLogView::createMenu()
 {
     copyAction_ = new QAction( tr( "&Copy" ), this );
     // No text as this action title depends on the type of selection
-    connect( copyAction_, &QAction::triggered, [ this ]( auto ) { this->copy(); } );
+    connect( copyAction_, &QAction::triggered, this, [ this ]( auto ) { this->copy(); } );
 
     markAction_ = new QAction( tr( "&Mark" ), this );
-    connect( markAction_, &QAction::triggered, [ this ]( auto ) { this->markSelected(); } );
+    connect( markAction_, &QAction::triggered, this, [ this ]( auto ) { this->markSelected(); } );
 
     saveToFileAction_ = new QAction( tr( "Save to file" ), this );
-    connect( saveToFileAction_, &QAction::triggered, [ this ]( auto ) { this->saveToFile(); } );
+    connect( saveToFileAction_, &QAction::triggered, this,
+             [ this ]( auto ) { this->saveToFile(); } );
 
     // For '#' and '*', shortcuts doesn't seem to work but
     // at least it displays them in the menu, we manually handle those keys
@@ -1745,7 +1746,8 @@ void AbstractLogView::createMenu()
     findNextAction_ = new QAction( tr( "Find &next" ), this );
     findNextAction_->setShortcut( Qt::Key_Asterisk );
     findNextAction_->setStatusTip( tr( "Find the next occurrence" ) );
-    connect( findNextAction_, &QAction::triggered, [ this ]( auto ) { this->findNextSelected(); } );
+    connect( findNextAction_, &QAction::triggered, this,
+             [ this ]( auto ) { this->findNextSelected(); } );
 
     findPreviousAction_ = new QAction( tr( "Find &previous" ), this );
     findPreviousAction_->setShortcut( tr( "/" ) );
@@ -1755,49 +1757,56 @@ void AbstractLogView::createMenu()
 
     replaceSearchAction_ = new QAction( tr( "&Replace search" ), this );
     replaceSearchAction_->setStatusTip( tr( "Replace the search expression with the selection" ) );
-    connect( replaceSearchAction_, &QAction::triggered,
+    connect( replaceSearchAction_, &QAction::triggered, this,
              [ this ]( auto ) { this->replaceSearch(); } );
 
     addToSearchAction_ = new QAction( tr( "&Add to search" ), this );
     addToSearchAction_->setStatusTip( tr( "Add the selection to the current search" ) );
-    connect( addToSearchAction_, &QAction::triggered, [ this ]( auto ) { this->addToSearch(); } );
+    connect( addToSearchAction_, &QAction::triggered, this,
+             [ this ]( auto ) { this->addToSearch(); } );
 
     excludeFromSearchAction_ = new QAction( tr( "&Exclude from search" ), this );
     excludeFromSearchAction_->setStatusTip( tr( "Excludes the selection from search" ) );
-    connect( excludeFromSearchAction_, &QAction::triggered,
+    connect( excludeFromSearchAction_, &QAction::triggered, this,
              [ this ]( auto ) { this->excludeFromSearch(); } );
 
     setSearchStartAction_ = new QAction( tr( "Set search start" ), this );
-    connect( setSearchStartAction_, &QAction::triggered,
+    connect( setSearchStartAction_, &QAction::triggered, this,
              [ this ]( auto ) { this->setSearchStart(); } );
 
     setSearchEndAction_ = new QAction( tr( "Set search end" ), this );
-    connect( setSearchEndAction_, &QAction::triggered, [ this ]( auto ) { this->setSearchEnd(); } );
+    connect( setSearchEndAction_, &QAction::triggered, this,
+             [ this ]( auto ) { this->setSearchEnd(); } );
 
     clearSearchLimitAction_ = new QAction( tr( "Clear search limits" ), this );
-    connect( clearSearchLimitAction_, &QAction::triggered,
+    connect( clearSearchLimitAction_, &QAction::triggered, this,
              [ this ]( auto ) { this->clearSearchLimits(); } );
 
     setSelectionStartAction_ = new QAction( tr( "Set selection start" ), this );
-    connect( setSelectionStartAction_, &QAction::triggered,
+    connect( setSelectionStartAction_, &QAction::triggered, this,
              [ this ]( auto ) { this->setSelectionStart(); } );
 
     setSelectionEndAction_ = new QAction( tr( "Set selection end" ), this );
-    connect( setSelectionEndAction_, &QAction::triggered,
+    connect( setSelectionEndAction_, &QAction::triggered, this,
              [ this ]( auto ) { this->setSelectionEnd(); } );
 
     saveDefaultSplitterSizesAction_ = new QAction( tr( "Save splitter position" ), this );
-    connect( saveDefaultSplitterSizesAction_, &QAction::triggered,
+    connect( saveDefaultSplitterSizesAction_, &QAction::triggered, this,
              [ this ]( auto ) { emit saveDefaultSplitterSizes(); } );
+
+    sendToScratchpadAction_ = new QAction( tr( "Send to scratchpad" ), this );
+    connect( sendToScratchpadAction_, &QAction::triggered, this,
+             [ this ]( auto ) { emit sendSelectionToScratchpad(); } );
 
     popupMenu_ = new QMenu( this );
     highlightersMenu_ = popupMenu_->addMenu( "Highlighters" );
     colorLabelsMenu_ = popupMenu_->addMenu( "Color labels" );
+
     popupMenu_->addSeparator();
     popupMenu_->addAction( markAction_ );
     popupMenu_->addSeparator();
     popupMenu_->addAction( copyAction_ );
-    popupMenu_->addAction( saveToFileAction_ );
+    popupMenu_->addAction( sendToScratchpadAction_ );
     popupMenu_->addSeparator();
     popupMenu_->addAction( findNextAction_ );
     popupMenu_->addAction( findPreviousAction_ );
@@ -1814,6 +1823,7 @@ void AbstractLogView::createMenu()
     popupMenu_->addAction( setSelectionEndAction_ );
     popupMenu_->addSeparator();
     popupMenu_->addAction( saveDefaultSplitterSizesAction_ );
+    popupMenu_->addAction( saveToFileAction_ );
 }
 
 void AbstractLogView::considerMouseHovering( int xPos, int yPos )
