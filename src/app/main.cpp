@@ -137,7 +137,14 @@ int main( int argc, char* argv[] )
 
     app.initCrashHandler();
 
-    LOG_INFO << "Klogg instance " << app.instanceId();
+    LOG_INFO << "Klogg instance " << app.instanceId() 
+#ifdef KLOGG_USE_MIMALLOC
+     << ", mimalloc v" << mi_version()
+#endif
+#ifdef KLOGG_USE_TBBMALLOC
+    << ", tbbmalloc v2021.4"
+#endif
+;
 
     if ( !parameters.multi_instance && app.isSecondary() ) {
         LOG_INFO << "Found another klogg, pid " << app.primaryPid();

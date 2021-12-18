@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(mimalloc-test C CXX)
 
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+
 # Set default build type
 if (NOT CMAKE_BUILD_TYPE)
   if ("${CMAKE_BINARY_DIR}" MATCHES ".*(D|d)ebug$")
@@ -13,7 +16,7 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Import mimalloc (if installed)
-find_package(mimalloc 2.0 REQUIRED NO_SYSTEM_ENVIRONMENT_PATH)
+find_package(mimalloc 1.7 REQUIRED NO_SYSTEM_ENVIRONMENT_PATH)
 message(STATUS "Found mimalloc installed at: ${MIMALLOC_LIBRARY_DIR}")
 
 # overriding with a dynamic library
