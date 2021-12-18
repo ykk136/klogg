@@ -78,7 +78,6 @@ class HighlightersDialog : public QDialog, public Ui::HighlightersDialog {
   private:
     void populateHighlighterList();
     void setCurrentRow( int row );
-    void updateGroupTitle( const HighlighterSet& set );
 
   private:
     HighlighterSetEdit* highlighterSetEdit_;

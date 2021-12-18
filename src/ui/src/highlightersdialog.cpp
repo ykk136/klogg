@@ -330,11 +330,6 @@ void HighlightersDialog::setCurrentRow( int row )
     dispatchToMainThread( [ this, row ]() { highlighterListWidget->setCurrentRow( row ); } );
 }
 
-void HighlightersDialog::updateGroupTitle( const HighlighterSet& set )
-{
-    groupBox->setTitle( QString( "Set %1 properties" ).arg( set.name() ) );
-}
-
 void HighlightersDialog::updatePropertyFields()
 {
     if ( highlighterListWidget->selectedItems().count() >= 1 )
@@ -353,8 +348,6 @@ void HighlightersDialog::updatePropertyFields()
         removeHighlighterButton->setEnabled( true );
         upHighlighterButton->setEnabled( selectedRow_ > 0 );
         downHighlighterButton->setEnabled( selectedRow_ < ( highlighterListWidget->count() - 1 ) );
-
-        updateGroupTitle( currentSet );
     }
     else {
         highlighterSetEdit_->reset();
@@ -375,7 +368,6 @@ void HighlightersDialog::updateHighlighterProperties()
         currentSet = highlighterSetEdit_->highlighters();
         // Update the entry in the highlighterList widget
         highlighterListWidget->currentItem()->setText( currentSet.name() );
-        updateGroupTitle( currentSet );
     }
 }
 

@@ -57,6 +57,8 @@ void HighlighterEdit::reset()
 {
     patternEdit->clear();
     patternEdit->setEnabled( false );
+    patternTypeComboBox->setEnabled(false);
+
     ignoreCaseCheckBox->setEnabled( false );
     onlyMatchCheckBox->setEnabled( false );
     foreColorButton->setEnabled( false );
