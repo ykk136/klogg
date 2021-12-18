@@ -23,6 +23,9 @@
 // because they bring in lots of STL headers, and the tests here
 // are supposed to work in the abscense of STL.
 
+#ifndef __TBB_test_common_allocator_test_common_H_
+#define __TBB_test_common_allocator_test_common_H_
+
 #include "common/test.h"
 #include "common/utils.h"
 #include <utility> //for std::pair
@@ -290,6 +293,7 @@ void TestAllocator(TestName name, const Allocator &a = Allocator()) {
     #endif
 
     NumberOfFoo = 0;
+    Allocator a_cpy(a);
     AllocatorFooChar a1(a);
     AllocatorFooDouble a2(a);
     AllocatorFooInt b1(a1);
@@ -297,6 +301,7 @@ void TestAllocator(TestName name, const Allocator &a = Allocator()) {
 
     switch(name) {
     case Comparison:
+        REQUIRE(a_cpy == a);
         REQUIRE(a1 == b1);
         REQUIRE(!(a2 != b2));
         break;
@@ -327,3 +332,4 @@ void TestAllocator(TestName name, const Allocator &a = Allocator()) {
     }
     REQUIRE_MESSAGE(NumberOfFoo == 0, "Allocate/deallocate count mismatched");
 }
+#endif // __TBB_test_common_allocator_test_common_H_

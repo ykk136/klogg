@@ -54,8 +54,7 @@ set(TBB_BINARY_MINOR_VERSION ${_tbb_ver_minor})
 set(TBBMALLOC_BINARY_VERSION 2)
 set(TBBBIND_BINARY_VERSION 3)
 
-#project(TBB VERSION ${_tbb_ver_major}.${_tbb_ver_minor}.${_tbb_ver_patch} LANGUAGES CXX)
-project(TBB LANGUAGES CXX)
+project(TBB VERSION ${_tbb_ver_major}.${_tbb_ver_minor}.${_tbb_ver_patch} LANGUAGES CXX)
 unset(_tbb_ver_major)
 unset(_tbb_ver_minor)
 
@@ -101,12 +100,14 @@ option(TBB_NO_APPCONTAINER "Apply /APPCONTAINER:NO (for testing binaries for Win
 option(TBB4PY_BUILD "Enable tbb4py build" OFF)
 option(TBB_CPF "Enable preview features of the library" OFF)
 option(TBB_FIND_PACKAGE "Enable search for external oneTBB using find_package instead of build from sources" OFF)
+option(TBB_DISABLE_HWLOC_AUTOMATIC_SEARCH "Disable HWLOC automatic search by pkg-config tool" OFF)
 
-#if (NOT DEFINED BUILD_SHARED_LIBS)
-#    set(BUILD_SHARED_LIBS ON)
-#endif()
-#
+if (NOT DEFINED BUILD_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS ON)
+endif()
+
 #if (NOT BUILD_SHARED_LIBS)
+#    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 #    message(WARNING "You are building oneTBB as a static library. This is highly discouraged and such configuration is not supported. Consider building a dynamic library to avoid unforeseen issues.")
 #endif()
 
@@ -119,51 +120,51 @@ endif()
 
 # -------------------------------------------------------------------
 # Files and folders naming
-#set(CMAKE_DEBUG_POSTFIX _debug)
+set(CMAKE_DEBUG_POSTFIX _debug)
 
-#if (NOT DEFINED TBB_OUTPUT_DIR_BASE)
-#    if (MSVC)
-#        if (NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY OR CMAKE_MSVC_RUNTIME_LIBRARY MATCHES DLL)
-#            set(_tbb_msvc_runtime _md)
-#        else()
-#            set(_tbb_msvc_runtime _mt)
-#        endif()
-#
-#        if (WINDOWS_STORE)
-#            if (TBB_NO_APPCONTAINER)
-#                set(_tbb_win_store _wsnoappcont)
-#            else()
-#                set(_tbb_win_store _ws)
-#            endif()
-#        elseif(TBB_WINDOWS_DRIVER)
-#            set(_tbb_win_store _wd)
-#        endif()
-#    endif()
-#
-#     string(REGEX MATCH "^([0-9]+\.[0-9]+|[0-9]+)" _tbb_compiler_version_short ${CMAKE_CXX_COMPILER_VERSION})
-#     string(TOLOWER ${CMAKE_CXX_COMPILER_ID}_${_tbb_compiler_version_short}_cxx${CMAKE_CXX_STANDARD}_${TBB_ARCH}${_tbb_msvc_runtime}${_tbb_win_store} TBB_OUTPUT_DIR_BASE)
-#     unset(_tbb_msvc_runtime)
-#     unset(_tbb_win_store)
-#     unset(_tbb_compiler_version_short)
-#endif()
-#
-#foreach(output_type LIBRARY ARCHIVE PDB RUNTIME)
-#    if (CMAKE_BUILD_TYPE)
-#        string(TOLOWER ${CMAKE_BUILD_TYPE} _tbb_build_type_lower)
-#        set(CMAKE_${output_type}_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TBB_OUTPUT_DIR_BASE}_${_tbb_build_type_lower})
-#        unset(_tbb_build_type_lower)
-#    endif()
-#
-#    if (CMAKE_CONFIGURATION_TYPES)
-#        foreach(suffix ${CMAKE_CONFIGURATION_TYPES})
-#            string(TOUPPER ${suffix} _tbb_suffix_upper)
-#            string(TOLOWER ${suffix} _tbb_suffix_lower)
-#            set(CMAKE_${output_type}_OUTPUT_DIRECTORY_${_tbb_suffix_upper} ${CMAKE_BINARY_DIR}/${TBB_OUTPUT_DIR_BASE}_${_tbb_suffix_lower})
-#        endforeach()
-#        unset(_tbb_suffix_lower)
-#        unset(_tbb_suffix_upper)
-#    endif()
-#endforeach()
+if (NOT DEFINED TBB_OUTPUT_DIR_BASE)
+    if (MSVC)
+        if (NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY OR CMAKE_MSVC_RUNTIME_LIBRARY MATCHES DLL)
+            set(_tbb_msvc_runtime _md)
+        else()
+            set(_tbb_msvc_runtime _mt)
+        endif()
+
+        if (WINDOWS_STORE)
+            if (TBB_NO_APPCONTAINER)
+                set(_tbb_win_store _wsnoappcont)
+            else()
+                set(_tbb_win_store _ws)
+            endif()
+        elseif(TBB_WINDOWS_DRIVER)
+            set(_tbb_win_store _wd)
+        endif()
+    endif()
+
+     string(REGEX MATCH "^([0-9]+\.[0-9]+|[0-9]+)" _tbb_compiler_version_short ${CMAKE_CXX_COMPILER_VERSION})
+     string(TOLOWER ${CMAKE_CXX_COMPILER_ID}_${_tbb_compiler_version_short}_cxx${CMAKE_CXX_STANDARD}_${TBB_ARCH}${_tbb_msvc_runtime}${_tbb_win_store} TBB_OUTPUT_DIR_BASE)
+     unset(_tbb_msvc_runtime)
+     unset(_tbb_win_store)
+     unset(_tbb_compiler_version_short)
+endif()
+
+foreach(output_type LIBRARY ARCHIVE PDB RUNTIME)
+    if (CMAKE_BUILD_TYPE)
+        string(TOLOWER ${CMAKE_BUILD_TYPE} _tbb_build_type_lower)
+        set(CMAKE_${output_type}_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TBB_OUTPUT_DIR_BASE}_${_tbb_build_type_lower})
+        unset(_tbb_build_type_lower)
+    endif()
+
+    if (CMAKE_CONFIGURATION_TYPES)
+        foreach(suffix ${CMAKE_CONFIGURATION_TYPES})
+            string(TOUPPER ${suffix} _tbb_suffix_upper)
+            string(TOLOWER ${suffix} _tbb_suffix_lower)
+            set(CMAKE_${output_type}_OUTPUT_DIRECTORY_${_tbb_suffix_upper} ${CMAKE_BINARY_DIR}/${TBB_OUTPUT_DIR_BASE}_${_tbb_suffix_lower})
+        endforeach()
+        unset(_tbb_suffix_lower)
+        unset(_tbb_suffix_upper)
+    endif()
+endforeach()
 
 # -------------------------------------------------------------------
 
@@ -192,44 +193,43 @@ if (TBB_FIND_PACKAGE OR TBB_DIR)
     find_package(TBB REQUIRED)
 else()
     add_subdirectory(src/tbb)
-   
-    if (NOT APPLE AND NOT "${CMAKE_SYSTEM_PROCESSOR}" MATCHES "mips" )
+    if (NOT "${CMAKE_SYSTEM_PROCESSOR}" MATCHES "mips")
         add_subdirectory(src/tbbmalloc)
         add_subdirectory(src/tbbmalloc_proxy)
         if (APPLE)
-            message(STATUS "TBBBind build target is disabled due to unsupported environment")
+            message(STATUS "TBBBind build targets are disabled due to unsupported environment")
         else()
             add_subdirectory(src/tbbbind)
         endif()
     endif()
 
     # -------------------------------------------------------------------
-#    # Installation instructions
-#    include(CMakePackageConfigHelpers)
-#
-#    install(DIRECTORY include/
-#            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#            COMPONENT devel)
-#
-#    install(EXPORT ${PROJECT_NAME}Targets
-#            NAMESPACE TBB::
-#            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-#            COMPONENT devel)
-#    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-#               "include(\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Targets.cmake)\n")
-#
-#    write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-#                                     COMPATIBILITY AnyNewerVersion)
-#
-#    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-#                  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-#            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-#            COMPONENT devel)
-#
-#    install(FILES "README.md"
-#            DESTINATION ${CMAKE_INSTALL_DOCDIR}
-#            COMPONENT devel)
-#    # -------------------------------------------------------------------
+    # Installation instructions
+    include(CMakePackageConfigHelpers)
+
+    install(DIRECTORY include/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            COMPONENT devel)
+
+    install(EXPORT ${PROJECT_NAME}Targets
+            NAMESPACE TBB::
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+            COMPONENT devel)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+               "include(\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Targets.cmake)\n")
+
+    write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+                                     COMPATIBILITY AnyNewerVersion)
+
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+                  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+            COMPONENT devel)
+
+    install(FILES "README.md"
+            DESTINATION ${CMAKE_INSTALL_DOCDIR}
+            COMPONENT devel)
+    # -------------------------------------------------------------------
 endif()
 
 if (TBB_TEST)

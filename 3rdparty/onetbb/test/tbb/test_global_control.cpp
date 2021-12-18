@@ -179,18 +179,26 @@ namespace TestBlockingTerminateNS {
         void operator()() {
             const int numThreads = 4;
             tbb::global_control init(tbb::global_control::max_allowed_parallelism, numThreads);
-            utils::SpinBarrier barrier( numThreads );
-            tbb::parallel_for( 0, numThreads, Body( barrier ) );
-            REQUIRE_MESSAGE( false, "Parallel loop did not throw the exception" );
+            tbb::task_arena a(numThreads);
+            a.execute([&] {
+                utils::SpinBarrier barrier(numThreads);
+                tbb::parallel_for(0, numThreads, Body(barrier));
+                REQUIRE_MESSAGE(false, "Parallel loop did not throw the exception");
+            });
         }
     };
 
     void TestExceptions() {
-        ExceptionTest1 Test1(0), Test2(1);
+        ExceptionTest1 Test1(0);
         TestException( Test1 );
+        ExceptionTest1 Test2(1);
         TestException( Test2 );
-        ExceptionTest2 Test3;
-        TestException( Test3 );
+        if (utils::get_platform_max_threads() > 1) {
+            // TODO: Fix the arena leak issue on single threaded machine
+            // (see https://github.com/oneapi-src/oneTBB/issues/396)
+            ExceptionTest2 Test3;
+            TestException(Test3);
+        }
     }
 
 #endif /* TBB_USE_EXCEPTIONS */
@@ -233,6 +241,40 @@ TEST_CASE("prolong lifetime simple") {
 TEST_CASE("prolong lifetime simple 2") {
     TestTerminationAndAutoinit(false);
     TestTerminationAndAutoinit(true);
+}
+
+//! Testing handle check for emptiness
+//! \brief \ref interface \ref requirement
+TEST_CASE("null handle check") {
+    tbb::task_scheduler_handle hndl;
+    REQUIRE_FALSE(hndl);
+}
+
+//! Testing handle check for emptiness
+//! \brief \ref interface \ref requirement
+TEST_CASE("null handle check 2") {
+    tbb::task_scheduler_handle hndl = tbb::task_scheduler_handle::get();
+    bool not_empty = (bool)hndl;
+
+    tbb::finalize(hndl, std::nothrow);
+
+    REQUIRE(not_empty);
+    REQUIRE_FALSE(hndl);
+}
+
+//! Testing handle check for emptiness
+//! \brief \ref interface \ref requirement
+TEST_CASE("null handle check 3") {
+    tbb::task_scheduler_handle handle1 = tbb::task_scheduler_handle::get();
+    tbb::task_scheduler_handle handle2(std::move(handle1));
+
+    bool handle1_empty = !handle1;
+    bool handle2_not_empty = (bool)handle2;
+
+    tbb::finalize(handle2, std::nothrow);
+
+    REQUIRE(handle1_empty);
+    REQUIRE(handle2_not_empty);
 }
 
 #if TBB_USE_EXCEPTIONS

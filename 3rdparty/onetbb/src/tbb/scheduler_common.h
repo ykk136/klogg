@@ -33,6 +33,7 @@
 #endif
 // TODO: add conditional inclusion based on specified type
 #include "oneapi/tbb/spin_mutex.h"
+#include "oneapi/tbb/mutex.h"
 
 #if TBB_USE_ASSERT
 #include <atomic>
@@ -174,7 +175,7 @@ public:
 #endif // _WIN64
 };
 
-#if (_WIN32 || _WIN64 || __linux__) && (__TBB_x86_32 || __TBB_x86_64)
+#if (_WIN32 || _WIN64 || __unix__) && (__TBB_x86_32 || __TBB_x86_64)
 #if _MSC_VER
 #pragma intrinsic(__rdtsc)
 #endif
@@ -218,19 +219,8 @@ inline void prolonged_pause_impl() {
 }
 #endif
 
-#if __TBB_WAITPKG_INTRINSICS_PRESENT && (_WIN32 || _WIN64 || __linux__) && (__TBB_x86_32 || __TBB_x86_64)
-#define __TBB_USE_WAITPKG 
-#if __linux__
-#define __TBB_WAITPKG_ATTRIBUTE __attribute__((__target__("waitpkg")))
-#endif
-#endif
-
-#ifndef __TBB_WAITPKG_ATTRIBUTE
-#define __TBB_WAITPKG_ATTRIBUTE
-#endif
-
-inline void __TBB_WAITPKG_ATTRIBUTE prolonged_pause()  {
-#ifdef __TBB_USE_WAITPKG
+inline void prolonged_pause() {
+#if __TBB_WAITPKG_INTRINSICS_PRESENT && (_WIN32 || _WIN64 || __unix__) && (__TBB_x86_32 || __TBB_x86_64)
     if (governor::wait_package_enabled()) {
         std::uint64_t time_stamp = machine_time_stamp();
         // _tpause function directs the processor to enter an implementation-dependent optimized state
@@ -244,9 +234,10 @@ inline void __TBB_WAITPKG_ATTRIBUTE prolonged_pause()  {
     prolonged_pause_impl();
 }
 
-#undef __TBB_USE_WAITPKG
-#undef __TBB_WAITPKG_ATTRIBUTE
-
+// TODO: investigate possibility to work with number of CPU cycles
+// because for different configurations this number of pauses + yields
+// will be calculated in different amount of CPU cycles
+// for example use rdtsc for it
 class stealing_loop_backoff {
     const int my_pause_threshold;
     const int my_yield_threshold;
@@ -257,13 +248,13 @@ public:
     // the time spent spinning before calling is_out_of_work() should be approximately
     // the time it takes for a thread to be woken up. Doing so would guarantee that we do
     // no worse than 2x the optimal spin time. Or perhaps a time-slice quantum is the right amount.
-    stealing_loop_backoff(int num_workers)
+    stealing_loop_backoff(int num_workers, int yields_multiplier)
         : my_pause_threshold{ 2 * (num_workers + 1) }
 #if __APPLE__
         // threshold value tuned separately for macOS due to high cost of sched_yield there
-        , my_yield_threshold{10}
+        , my_yield_threshold{10 * yields_multiplier}
 #else
-        , my_yield_threshold{100}
+        , my_yield_threshold{100 * yields_multiplier}
 #endif
         , my_pause_count{}
         , my_yield_count{}
@@ -379,6 +370,12 @@ struct suspend_point_type {
 #endif /*__TBB_RESUMABLE_TASKS */
 };
 
+#if _MSC_VER && !defined(__INTEL_COMPILER)
+// structure was padded due to alignment specifier
+#pragma warning( push )
+#pragma warning( disable: 4324 )
+#endif
+
 class alignas (max_nfs_size) task_dispatcher {
 public:
     // TODO: reconsider low level design to better organize dependencies and files.
@@ -478,13 +475,17 @@ public:
 #if __TBB_RESUMABLE_TASKS
     /* [[noreturn]] */ void co_local_wait_for_all() noexcept;
     void suspend(suspend_callback_type suspend_callback, void* user_callback);
-    void resume(task_dispatcher& target);
+    bool resume(task_dispatcher& target);
     suspend_point_type* get_suspend_point();
     void init_suspend_point(arena* a, std::size_t stack_size);
     friend void internal_resume(suspend_point_type*);
     void recall_point();
 #endif /* __TBB_RESUMABLE_TASKS */
 };
+
+#if _MSC_VER && !defined(__INTEL_COMPILER)
+#pragma warning( pop )
+#endif
 
 inline std::uintptr_t calculate_stealing_threshold(std::uintptr_t base, std::size_t stack_size) {
     return base - stack_size / 2;

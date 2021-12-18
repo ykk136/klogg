@@ -211,8 +211,8 @@ struct IntHashCompare {
     bool equal(const int j, const int k) const {
         return j == k;
     }
-    unsigned long hash(const int k) const {
-        return (unsigned long)k;
+    std::size_t hash(const int k) const {
+        return (std::size_t)k;
     }
 };
 //! NumbersTable type based on concurrent_hash_map
@@ -506,6 +506,8 @@ int main(int argc, char *argv[]) {
     }
     if (!Verbose)
         printf("TEST PASSED\n");
+    // flush to prevent bufferization on exit
+    fflush(stdout);
     return 0;
 }
 

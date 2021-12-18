@@ -20,6 +20,7 @@
 #define __TBB_NO_IMPLICIT_LINKAGE 1
 
 #if (_WIN32 || _WIN64)
+#define _CRT_SECURE_NO_WARNINGS
 // As the test is intentionally build with /EHs-, suppress multiple VS2005's
 // warnings like C4530: C++ exception handler used, but unwind semantics are not enabled
 #if defined(_MSC_VER) && !__INTEL_COMPILER
@@ -43,20 +44,21 @@
 
 #include "common/test.h"
 
-#if !HARNESS_SKIP_TEST
+//ASAN overloads memory allocation functions, so no point to run this test under it.
+#if !HARNESS_SKIP_TEST && !__TBB_USE_ADDRESS_SANITIZER
 
 #if __ANDROID__
   #include <android/api-level.h> // for __ANDROID_API__
 #endif
 
-#define __TBB_POSIX_MEMALIGN_PRESENT (__linux__ && !__ANDROID__) || __APPLE__
-#define __TBB_PVALLOC_PRESENT __linux__ && !__ANDROID__
+#define __TBB_POSIX_MEMALIGN_PRESENT (__unix__ && !__ANDROID__) || __APPLE__
+#define __TBB_PVALLOC_PRESENT __unix__ && !__ANDROID__
 #if __GLIBC__
   // aligned_alloc available since GLIBC 2.16
   #define __TBB_ALIGNED_ALLOC_PRESENT __GLIBC_PREREQ(2, 16)
 #endif // __GLIBC__
  // later Android doesn't have valloc or dlmalloc_usable_size
-#define __TBB_VALLOC_PRESENT (__linux__ && __ANDROID_API__<21) || __APPLE__
+#define __TBB_VALLOC_PRESENT (__unix__ && __ANDROID_API__<21) || __APPLE__
 #define __TBB_DLMALLOC_USABLE_SIZE_PRESENT  __ANDROID__ && __ANDROID_API__<21
 
 #include "common/utils.h"
@@ -76,7 +78,7 @@
 #include <dlfcn.h>
 #endif
 
-#if __linux__
+#if __unix__
 #include <stdint.h> // for uintptr_t
 
 extern "C" {
@@ -326,7 +328,7 @@ struct BigStruct {
 };
 
 void CheckNewDeleteOverload() {
-    BigStruct *s1, *s2, *s3, *s4;
+    BigStruct *s1, *s2, *s3, *s4, *s5, *s6;
 
     s1 = new BigStruct;
     scalableMallocCheckSize(s1, sizeof(BigStruct));
@@ -343,6 +345,15 @@ void CheckNewDeleteOverload() {
     s4 = new(std::nothrow) BigStruct[2];
     scalableMallocCheckSize(s4, 2*sizeof(BigStruct));
     delete []s4;
+
+    s5 = new BigStruct;
+    scalableMallocCheckSize(s5, sizeof(BigStruct));
+    operator delete(s5, std::nothrow);
+
+    s6 = new BigStruct[5];
+    scalableMallocCheckSize(s6, 5*sizeof(BigStruct));
+    operator delete[](s6, std::nothrow);
+
 }
 
 #if MALLOC_WINDOWS_OVERLOAD_ENABLED
@@ -385,6 +396,10 @@ void FuncReplacementInfoCheck() {
 //! Testing tbbmalloc_proxy overload capabilities
 //! \brief \ref error_guessing
 TEST_CASE("Main set of tests") {
+#if __unix__
+    REQUIRE(mallopt(0, 0)); // add dummy mallopt call for coverage
+#endif // __unix__
+
     void *ptr = NULL;
     utils::suppress_unused_warning(ptr); // for android
 
@@ -428,13 +443,16 @@ TEST_CASE("Main set of tests") {
 #if __TBB_PVALLOC_PRESENT
     CheckPvalloc(pvalloc, free);
 #endif
-#if __linux__
+#if __unix__
     CheckMemalignFuncOverload(memalign, free);
 #if __TBB_ALIGNED_ALLOC_PRESENT
     CheckMemalignFuncOverload(aligned_alloc, free);
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     struct mallinfo info = mallinfo();
+#pragma GCC diagnostic pop
     // right now mallinfo initialized by zero
     REQUIRE((!info.arena && !info.ordblks && !info.smblks && !info.hblks
            && !info.hblkhd && !info.usmblks && !info.fsmblks
@@ -449,7 +467,7 @@ TEST_CASE("Main set of tests") {
     CheckVallocFuncOverload(__libc_valloc, __libc_free);
     CheckPvalloc(__libc_pvalloc, __libc_free);
  #endif
-#endif // __linux__
+#endif // __unix__
 
 #else // MALLOC_WINDOWS_OVERLOAD_ENABLED
 
@@ -481,5 +499,22 @@ TEST_CASE("Main set of tests") {
 #endif
     TestZoneOverload();
     TestRuntimeRoutines();
+}
+
+//! Test address range tracker in backend that could be
+//! broken during remap because of incorrect order of
+//! deallocation event and the mremap system call
+//! \brief \ref regression
+TEST_CASE("Address range tracker regression test") {
+    int numThreads = 16;
+    utils::NativeParallelFor(numThreads, [](int) {
+        void *ptr = nullptr;
+        for (int i = 0; i < 1000; ++i) {
+            for (int j = 0; j < 100; ++j) {
+                ptr = realloc(ptr, 1024*1024 + 4096*j);
+            }
+        }
+        free(ptr);
+    });
 }
 #endif // !HARNESS_SKIP_TEST

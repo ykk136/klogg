@@ -24,27 +24,23 @@ endmacro()
 
 macro(tbb_install_target target)
     install(TARGETS ${target}
-            LIBRARY
-            DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endmacro()
+        EXPORT TBBTargets
+        LIBRARY
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            NAMELINK_SKIP
+            COMPONENT runtime
+        RUNTIME
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            COMPONENT runtime
+        ARCHIVE
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            COMPONENT devel)
 
-#macro(tbb_install_target target)
-#    install(TARGETS ${target}
-#        EXPORT TBBTargets
-#        LIBRARY
-#            DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#            NAMELINK_SKIP
-#            COMPONENT runtime
-#        RUNTIME
-#            DESTINATION ${CMAKE_INSTALL_BINDIR}
-#            COMPONENT runtime
-#        ARCHIVE
-#            DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#            COMPONENT devel)
-#
-#    install(TARGETS ${target}
-#        LIBRARY
-#            DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#            NAMELINK_ONLY
-#            COMPONENT devel)
-#endmacro()
+    if (BUILD_SHARED_LIBS)
+        install(TARGETS ${target}
+            LIBRARY
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                NAMELINK_ONLY
+                COMPONENT devel)
+    endif()
+endmacro()

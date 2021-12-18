@@ -264,7 +264,7 @@ public:
     inline Block *grab();
 
 private:
-    Block *top;
+    std::atomic<Block*> top;
     MallocMutex lock;
 };
 
@@ -315,6 +315,23 @@ public:
     master_t getMaster() const { return master; }
     uint16_t getOffset() const { return offset; }
 
+#if __TBB_USE_THREAD_SANITIZER
+    friend
+    __attribute__((no_sanitize("thread")))
+     BackRefIdx dereference(const BackRefIdx* ptr) {
+        BackRefIdx idx;
+        idx.master = ptr->master;
+        idx.largeObj = ptr->largeObj;
+        idx.offset = ptr->offset;
+        return idx;
+    }
+#else
+    friend
+    BackRefIdx dereference(const BackRefIdx* ptr) {
+        return *ptr;
+    }
+#endif
+
     // only newBackRef can modify BackRefIdx
     static BackRefIdx newBackRef(bool largeObj);
 };
@@ -322,7 +339,14 @@ public:
 // Block header is used during block coalescing
 // and must be preserved in used blocks.
 class BlockI {
+#if __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
     intptr_t     blockState[2];
+#if __clang__
+    #pragma clang diagnostic pop // "-Wunused-private-field"
+#endif
 };
 
 struct LargeMemoryBlock : public BlockI {
@@ -425,7 +449,7 @@ private:
         bool thpAvailable = false;
         unsigned long long hugePageSize = 0;
 
-#if __linux__
+#if __unix__
         // Check huge pages existence
         unsigned long long meminfoHugePagesTotal = 0;
 
@@ -495,10 +519,6 @@ public:
         MallocMutex::scoped_lock lock(setModeLock);
         requestedMode.set(newVal);
         isEnabled = (isHPAvailable || isTHPAvailable) && newVal;
-    }
-
-    bool isRequested() const {
-        return requestedMode.ready() ? requestedMode.get() : false;
     }
 
     void reset() {
@@ -598,8 +618,10 @@ struct ExtMemoryPool {
     LargeMemoryBlock *mallocLargeObject(MemoryPool *pool, size_t allocationSize);
     void freeLargeObject(LargeMemoryBlock *lmb);
     void freeLargeObjectList(LargeMemoryBlock *head);
+#if MALLOC_DEBUG
     // use granulatity as marker for pool validity
     bool isPoolValid() const { return granularity; }
+#endif
 };
 
 inline bool Backend::inUserPool() const { return extMemPool->userPool(); }
@@ -621,9 +643,9 @@ struct FreeObject {
 
 class RecursiveMallocCallProtector {
     // pointer to an automatic data of holding thread
-    static void       *autoObjPtr;
+    static std::atomic<void*> autoObjPtr;
     static MallocMutex rmc_mutex;
-    static pthread_t   owner_thread;
+    static std::atomic<pthread_t> owner_thread;
 /* Under FreeBSD 8.0 1st call to any pthread function including pthread_self
    leads to pthread initialization, that causes malloc calls. As 1st usage of
    RecursiveMallocCallProtector can be before pthread initialized, pthread calls
@@ -645,32 +667,28 @@ class RecursiveMallocCallProtector {
 
     MallocMutex::scoped_lock* lock_acquired;
     char scoped_lock_space[sizeof(MallocMutex::scoped_lock)+1];
-
-    static uintptr_t absDiffPtr(void *x, void *y) {
-        uintptr_t xi = (uintptr_t)x, yi = (uintptr_t)y;
-        return xi > yi ? xi - yi : yi - xi;
-    }
+    
 public:
 
     RecursiveMallocCallProtector() : lock_acquired(NULL) {
         lock_acquired = new (scoped_lock_space) MallocMutex::scoped_lock( rmc_mutex );
         if (canUsePthread)
-            owner_thread = pthread_self();
-        autoObjPtr = &scoped_lock_space;
+            owner_thread.store(pthread_self(), std::memory_order_relaxed);
+        autoObjPtr.store(&scoped_lock_space, std::memory_order_relaxed);
     }
     ~RecursiveMallocCallProtector() {
         if (lock_acquired) {
-            autoObjPtr = NULL;
+            autoObjPtr.store(nullptr, std::memory_order_relaxed);
             lock_acquired->~scoped_lock();
         }
     }
     static bool sameThreadActive() {
-        if (!autoObjPtr) // fast path
+        if (!autoObjPtr.load(std::memory_order_relaxed)) // fast path
             return false;
         // Some thread has an active recursive call protector; check if the current one.
         // Exact pthread_self based test
         if (canUsePthread) {
-            if (pthread_equal( owner_thread, pthread_self() )) {
+            if (pthread_equal( owner_thread.load(std::memory_order_relaxed), pthread_self() )) {
                 mallocRecursionDetected = true;
                 return true;
             } else
@@ -679,9 +697,13 @@ public:
         // inexact stack size based test
         const uintptr_t threadStackSz = 2*1024*1024;
         int dummy;
-        return absDiffPtr(autoObjPtr, &dummy)<threadStackSz;
+
+        uintptr_t xi = (uintptr_t)autoObjPtr.load(std::memory_order_relaxed), yi = (uintptr_t)&dummy;
+        uintptr_t diffPtr = xi > yi ? xi - yi : yi - xi;
+
+        return diffPtr < threadStackSz;
     }
-    static bool noRecursion();
+
 /* The function is called on 1st scalable_malloc call to check if malloc calls
    scalable_malloc (nested call must set mallocRecursionDetected). */
     static void detectNaiveOverload() {
@@ -691,7 +713,7 @@ public:
    is already on, so can do it. */
             if (!canUsePthread) {
                 canUsePthread = true;
-                owner_thread = pthread_self();
+                owner_thread.store(pthread_self(), std::memory_order_relaxed);
             }
 #endif
             free(malloc(1));
@@ -708,8 +730,6 @@ public:
 };
 
 #endif  /* MALLOC_CHECK_RECURSION */
-
-bool isMallocInitializedExt();
 
 unsigned int getThreadId();
 

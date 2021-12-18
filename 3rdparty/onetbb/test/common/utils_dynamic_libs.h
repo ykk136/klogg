@@ -14,8 +14,11 @@
     limitations under the License.
 */
 
-#include "oneapi/tbb/version.h"
+#ifndef __TBB_test_common_utils_dynamic_libs_H_
+#define __TBB_test_common_utils_dynamic_libs_H_
+
 #include "common/test.h"
+#include "oneapi/tbb/version.h"
 
 #if __TBB_DYNAMIC_LOAD_ENABLED
 
@@ -35,8 +38,12 @@ namespace utils {
 #define SUFFIX2 "_debug"
 #endif /* TBB_USE_DEBUG */
 
-#if _WIN32||_WIN64
-#define PREFIX
+#if (_WIN32||_WIN64)
+#if __MINGW32__
+    #define PREFIX "lib"
+#else
+    #define PREFIX
+#endif
 #define EXT ".dll"
 #else
 #define PREFIX "lib"
@@ -45,7 +52,7 @@ namespace utils {
 // Android SDK build system does not support .so file name versioning
 #elif __FreeBSD__ || __NetBSD__ || __sun || _AIX || __ANDROID__
 #define EXT ".so"
-#elif __linux__  // Order of these elif's matters!
+#elif __unix__  // Order of these elif's matters!
 #define EXT __TBB_STRING(.so.2)
 #else
 #error Unknown OS
@@ -119,3 +126,4 @@ FunctionAddress GetAddress(utils::LIBRARY_HANDLE lib, const char *name)
 }  // namespace utils
 
 #endif // __TBB_DYNAMIC_LOAD_ENABLED
+#endif // __TBB_test_common_utils_dynamic_libs_H_

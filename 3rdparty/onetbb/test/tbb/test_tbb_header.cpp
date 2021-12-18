@@ -28,15 +28,12 @@
 #pragma warning(disable : 2586) // decorated name length exceeded, name was truncated
 #endif
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+
 #define __TBB_NO_IMPLICIT_LINKAGE 1
 
-#if __TBB_CPF_BUILD
-// Add testing of preview features
-#define TBB_PREVIEW_CONCURRENT_LRU_CACHE 1
-#define TBB_PREVIEW_VARIADIC_PARALLEL_INVOKE 1
-#define TBB_PREVIEW_BLOCKED_RANGE_ND 1
-#define TBB_PREVIEW_ISOLATED_TASK_GROUP 1
-#endif
 
 #if __TBB_TEST_SECONDARY
     // Test _DEBUG macro custom definitions.
@@ -70,6 +67,8 @@
 #undef TBB_USE_DEBUG
 #endif /* DO_TEST_DEBUG_MACRO */
 #define __TBB_CONFIG_PREPROC_ONLY _MSC_VER // For MSVC, prevent including standard headers in tbb_config.h
+#include "common/config.h"
+
 #include "oneapi/tbb/detail/_config.h"
 
 #if !TBB_USE_DEBUG && defined(_DEBUG)
@@ -100,8 +99,11 @@ struct Body1 {
 struct Body1a { // feeder body for parallel_do
     void operator() ( int, tbb::feeder<int>& ) const {}
 };
-struct Body1b { // binary operator for reduction and comparison
+struct Body1b { // binary operator for reduction
     int operator() ( const int, const int ) const { return 0; }
+};
+struct Body1bc { // binary operator for comparison
+    bool operator() (const int, const int) const { return false; }
 };
 struct Body2 {
     Body2 () {}
@@ -172,6 +174,8 @@ static void TestPreviewNames() {
     TestTypeDefinitionPresence2( blocked_rangeNd<int,4> );
     TestTypeDefinitionPresence2( concurrent_lru_cache<int, int> );
     TestTypeDefinitionPresence( isolated_task_group );
+    TestTypeDefinitionPresence( collaborative_once_flag );
+    TestFuncDefinitionPresence( collaborative_call_once, (tbb::collaborative_once_flag&, const Body&), void );
 }
 #endif
 
@@ -244,8 +248,9 @@ static void DefinitionPresence() {
     TestFuncDefinitionPresence( parallel_scan, (const tbb::blocked_range2d<int>&, Body3&, const tbb::auto_partitioner&), void );
     TestFuncDefinitionPresence( parallel_scan, (const tbb::blocked_range<int>&, const int&, const Body3a&, const Body1b&), int );
     typedef int intarray[10];
+
     TestFuncDefinitionPresence( parallel_sort, (int*, int*), void );
-    TestFuncDefinitionPresence( parallel_sort, (intarray&, const Body1b&), void );
+    TestFuncDefinitionPresence( parallel_sort, (intarray&, const Body1bc&), void );
     TestFuncDefinitionPresence( parallel_pipeline, (size_t, const tbb::filter<void,void>&), void );
     TestFuncDefinitionPresence( parallel_invoke, (const Body&, const Body&, tbb::task_group_context&), void );
     TestFuncDefinitionPresence( parallel_for_each, (const intarray&, const Body1a&, tbb::task_group_context&), void );

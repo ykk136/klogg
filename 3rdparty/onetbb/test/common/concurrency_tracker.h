@@ -48,7 +48,7 @@ class ConcurrencyTracker {
 public:
     ConcurrencyTracker() : m_Outer(false) {
         std::uintptr_t nested = ctNested;
-        CHECK(nested <= 1);
+        CHECK_FAST(nested <= 1);
         if ( !ctNested ) {
             Started();
             m_Outer = true;
@@ -88,7 +88,7 @@ private:
 
     mutable std::atomic<size_t> myActiveBodyCnt;
     // output parameter for parallel_for body to report that max is reached
-    mutable bool                myReachedMax;
+    mutable std::atomic<bool>   myReachedMax;
     // zero timeout means no barrier is used during concurrency level detection
     const double                myTimeout;
     const size_t                myConcLevel;

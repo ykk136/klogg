@@ -14,10 +14,16 @@
     limitations under the License.
 */
 
+#if _WIN32 || _WIN64
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #if _MSC_VER && !defined(__INTEL_COMPILER)
 // structure was padded due to alignment specifier
 #pragma warning( disable: 4324 )
 #endif
+
+#define TBB_PREVIEW_MUTEXES 1
 
 #include "common/test.h"
 #include "common/utils.h"
@@ -26,7 +32,6 @@
 #define private public
 #define protected public
 #include "tbb/concurrent_queue.h"
-#include "../../src/tbb/concurrent_bounded_queue.cpp"
 #undef protected
 #undef private
 
@@ -74,7 +79,7 @@ void test_flogger_help( Q& q, std::size_t items_per_page ) {
     }
 
     // To induce the overflow occurrence
-    utils::NativeParallelFor(utils::MaxThread, FloggerBody<Q>(q, reserved_elem_num + 20));
+    utils::NativeParallelFor(static_cast<typename Q::value_type>(utils::MaxThread), FloggerBody<Q>(q, reserved_elem_num + 20));
 
     REQUIRE_MESSAGE(q.empty(), "Failed flogger/empty test");
     REQUIRE_MESSAGE(q.my_queue_representation->head_counter < hack_val, "Failed wraparound test");

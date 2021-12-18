@@ -13,6 +13,7 @@
 # limitations under the License.
 
 add_library(klogg_tbb
+    address_waiter.cpp
     allocator.cpp
     arena.cpp
     arena_slot.cpp
@@ -44,7 +45,7 @@ add_library(klogg_tbb
 add_library(TBB::tbb ALIAS klogg_tbb)
 
 #if (WIN32)
-#    set_target_properties(klogg_tbb PROPERTIES OUTPUT_NAME "klogg_tbb")
+#    set_target_properties(klogg_tbb PROPERTIES OUTPUT_NAME "tbb${TBB_BINARY_VERSION}")
 #endif()
 
 # TODO: Add statistics.cpp
@@ -53,7 +54,9 @@ target_compile_definitions(klogg_tbb
                            PUBLIC
                            $<$<CONFIG:DEBUG>:TBB_USE_DEBUG>
                            PRIVATE
-                           __TBB_BUILD)
+                           __TBB_BUILD
+                           $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:__TBB_DYNAMIC_LOAD_ENABLED=0>
+                           $<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:__TBB_SOURCE_DIRECTLY_INCLUDED=1>)
 
 if (NOT ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "(armv7-a|aarch64|mips|arm64)" OR
          "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm64" OR
@@ -64,8 +67,9 @@ endif()
 
 target_include_directories(klogg_tbb
     SYSTEM PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>)
-#    $<INSTALL_INTERFACE:include>)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+    #$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
 
 target_compile_options(klogg_tbb
     PRIVATE
@@ -76,16 +80,22 @@ target_compile_options(klogg_tbb
     ${TBB_WARNING_SUPPRESS}
     ${TBB_LIB_COMPILE_FLAGS}
     ${TBB_COMMON_COMPILE_FLAGS}
+    ${TBB_IPO_COMPILE_FLAGS}
 )
 
 # Avoid use of target_link_libraries here as it changes /DEF option to \DEF on Windows.
 set_target_properties(klogg_tbb PROPERTIES
     DEFINE_SYMBOL ""
-#    VERSION ${TBB_BINARY_VERSION}.${TBB_BINARY_MINOR_VERSION}
-#    SOVERSION ${TBB_BINARY_VERSION}
-    LINK_FLAGS ${TBB_LINK_DEF_FILE_FLAG}${CMAKE_CURRENT_SOURCE_DIR}/def/${TBB_DEF_FILE_PREFIX}-tbb.def
-    LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/def/${TBB_DEF_FILE_PREFIX}-tbb.def
+    #VERSION ${TBB_BINARY_VERSION}.${TBB_BINARY_MINOR_VERSION}
+    #SOVERSION ${TBB_BINARY_VERSION}
 )
+
+if (TBB_DEF_FILE_PREFIX) # If there's no prefix, assume we're using export directives
+    set_target_properties(klogg_tbb PROPERTIES
+        LINK_FLAGS ${TBB_LINK_DEF_FILE_FLAG}${CMAKE_CURRENT_SOURCE_DIR}/def/${TBB_DEF_FILE_PREFIX}-tbb.def
+        LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/def/${TBB_DEF_FILE_PREFIX}-tbb.def
+    )
+endif()
 
 # Prefer using target_link_options instead of target_link_libraries to specify link options because
 # target_link_libraries may incorrectly handle some options (on Windows, for example).
@@ -94,12 +104,14 @@ if (COMMAND target_link_options)
         PRIVATE
         ${TBB_LIB_LINK_FLAGS}
         ${TBB_COMMON_LINK_FLAGS}
+        ${TBB_IPO_LINK_FLAGS}
     )
 else()
     target_link_libraries(klogg_tbb
         PRIVATE
         ${TBB_LIB_LINK_FLAGS}
         ${TBB_COMMON_LINK_FLAGS}
+        ${TBB_IPO_LINK_FLAGS}
     )
 endif()
 
@@ -111,26 +123,57 @@ target_link_libraries(klogg_tbb
 )
 
 #tbb_install_target(klogg_tbb)
-
-if (WIN32)
-    # Create a copy of target linker file (tbb<ver>[_debug].lib) with legacy name (tbb[_debug].lib)
-    # to support previous user experience for linkage.
-    install(FILES
-            $<TARGET_LINKER_FILE:klogg_tbb>
-            DESTINATION lib
-            CONFIGURATIONS RelWithDebInfo Release MinSizeRel
-            RENAME tbb.lib
-            COMPONENT devel
-    )
-
-    install(FILES
-            $<TARGET_LINKER_FILE:klogg_tbb>
-            DESTINATION lib
-            CONFIGURATIONS Debug
-            RENAME tbb_debug.lib
-            COMPONENT devel
-    )
-endif()
+#
+#if (WIN32)
+#    # Create a copy of target linker file (klogg_tbb<ver>[_debug].lib) with legacy name (klogg_tbb[_debug].lib)
+#    # to support previous user experience for linkage.
+#    install(FILES
+#            $<TARGET_LINKER_FILE:tbb>
+#            DESTINATION lib
+#            CONFIGURATIONS RelWithDebInfo Release MinSizeRel
+#            RENAME tbb.lib
+#            COMPONENT devel
+#    )
+#
+#    install(FILES
+#            $<TARGET_LINKER_FILE:tbb>
+#            DESTINATION lib
+#            CONFIGURATIONS Debug
+#            RENAME tbb_debug.lib
+#            COMPONENT devel
+#    )
+#endif()
+#
+#set(_tbb_pc_lib_name tbb)
+#
+#if (WIN32)
+#    set(_tbb_pc_lib_name ${_tbb_pc_lib_name}${TBB_BINARY_VERSION})
+#endif()
+#
+#if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+#    set(TBB_PC_NAME tbb)
+#else()
+#    set(TBB_PC_NAME tbb32)
+#endif()
+#
+#set(_prefix_for_pc_file "${CMAKE_INSTALL_PREFIX}")
+#
+#if (IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
+#    set(_libdir_for_pc_file "${CMAKE_INSTALL_LIBDIR}")
+#else()
+#    set(_libdir_for_pc_file "\${prefix}/${CMAKE_INSTALL_LIBDIR}")
+#endif()
+#
+#if (IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
+#    set(_includedir_for_pc_file "${CMAKE_INSTALL_INCLUDEDIR}")
+#else()
+#    set(_includedir_for_pc_file "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+#endif()
+#
+#configure_file(${PROJECT_SOURCE_DIR}/integration/pkg-config/tbb.pc.in ${CMAKE_CURRENT_BINARY_DIR}/${TBB_PC_NAME}.pc @ONLY)
+#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TBB_PC_NAME}.pc
+#        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/
+#        COMPONENT devel)
 
 if (COMMAND tbb_gen_vars)
     tbb_gen_vars(klogg_tbb)

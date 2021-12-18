@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#if (NOT BUILD_SHARED_LIBS)
+#    return()
+#endif()
+
 add_library(klogg_tbbmalloc_proxy SHARED
     function_replacement.cpp
     proxy.cpp)
@@ -27,7 +31,8 @@ target_compile_definitions(klogg_tbbmalloc_proxy
 target_include_directories(klogg_tbbmalloc_proxy
     SYSTEM PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
-    $<INSTALL_INTERFACE:include>)
+    #$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 if (NOT APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # gcc 5.0 and later have -Wno-sized-deallocation options
@@ -53,8 +58,8 @@ target_compile_options(klogg_tbbmalloc_proxy
 if (UNIX AND NOT APPLE)
     # Avoid use of target_link_libraries here as it changes /DEF option to \DEF on Windows.
     set_target_properties(klogg_tbbmalloc_proxy PROPERTIES
-        LINK_FLAGS ${TBB_LINK_DEF_FILE_FLAG}${CMAKE_CURRENT_SOURCE_DIR}/def/${TBB_DEF_FILE_PREFIX}-proxy.def
-        LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/def/${TBB_DEF_FILE_PREFIX}-proxy.def
+        LINK_FLAGS "${TBB_LINK_DEF_FILE_FLAG}\"${CMAKE_CURRENT_SOURCE_DIR}/def/${TBB_DEF_FILE_PREFIX}-proxy.def\""
+        LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/def/${TBB_DEF_FILE_PREFIX}-proxy.def"
         DEFINE_SYMBOL "")
 endif()
 
