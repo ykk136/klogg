@@ -33,6 +33,8 @@ ColorLabelsManager::QuickHighlightersCollection ColorLabelsManager::clear()
     for ( auto& quickHighlighters : quickHighlighters_ ) {
         quickHighlighters.clear();
     }
+    currentLabel_.reset();
+    
     return quickHighlighters_;
 }
 
