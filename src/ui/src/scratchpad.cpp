@@ -149,11 +149,15 @@ ScratchPad::ScratchPad( QWidget* parent )
              &ScratchPad::updateTransformation );
 }
 
-void ScratchPad::addData( QString data )
+void ScratchPad::addData( QString newData )
 {
+    if ( newData.isEmpty() ) {
+        return;
+    }
+
     auto cursor = textEdit_->textCursor();
-    cursor.insertText( data );
-    cursor.insertText( QString{QChar::LineFeed} );
+    cursor.insertText( newData );
+    cursor.insertText( QString{ QChar::LineFeed } );
 }
 
 QString ScratchPad::transformText( const std::function<QString( QString )>& transform )

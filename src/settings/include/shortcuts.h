@@ -97,6 +97,12 @@ struct ShortcutAction {
     static constexpr auto LogViewClearColorLabels = "logview.clear_color_labels";
     static constexpr auto LogViewAddNextColorLabel = "logview.add_next_color_label";
 
+    static constexpr auto LogViewSendSelectionToScratchpad = "logview.send_selection_to_scratchpad";
+
+    static constexpr auto LogViewAddToSearch = "logview.add_to_search";
+    static constexpr auto LogViewExcludeFromSearch = "logview.exclude_from_search";
+    static constexpr auto LogViewReplaceSearch = "logview.replace_search";
+    
     static const std::map<std::string, QStringList>& defaultShortcuts();
 
     static QStringList defaultShortcuts( const std::string& action );

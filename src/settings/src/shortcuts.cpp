@@ -138,6 +138,13 @@ const std::map<std::string, QStringList>& ShortcutAction::defaultShortcuts()
         shortcuts.emplace( LogViewClearColorLabels, QStringList() << "Ctrl+Shift+0" );
         shortcuts.emplace( LogViewAddNextColorLabel, QStringList() << "Ctrl+D" );
 
+        shortcuts.emplace( LogViewSendSelectionToScratchpad, QStringList() << "Ctrl+Z" );
+
+        shortcuts.emplace( LogViewSendSelectionToScratchpad, QStringList() << "Ctrl+Z" );
+        shortcuts.emplace( LogViewAddToSearch, QStringList() << "Shift+A" );
+        shortcuts.emplace( LogViewExcludeFromSearch, QStringList() << "Shift+E" );
+        shortcuts.emplace( LogViewReplaceSearch, QStringList() << "Shift+R" );
+
         return shortcuts;
     }();
 
@@ -228,6 +235,12 @@ QString ShortcutAction::actionName( const std::string& action )
         shortcuts.emplace( LogViewAddNextColorLabel, "Highlight text with next color" );
 
         shortcuts.emplace( LogViewClearColorLabels, "Clear all color labels" );
+
+        shortcuts.emplace( LogViewSendSelectionToScratchpad, "Send selection to scratchpad" );
+
+        shortcuts.emplace( LogViewAddToSearch, "Add selection to search pattern" );
+        shortcuts.emplace( LogViewExcludeFromSearch, "Exclude selection from search pattern " );
+        shortcuts.emplace( LogViewReplaceSearch, "Replace search pattern with selection" );
 
         return shortcuts;
     }();

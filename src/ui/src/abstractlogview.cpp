@@ -56,6 +56,7 @@
 #include <memory>
 #include <numeric>
 #include <optional>
+#include <qobjectdefs.h>
 #include <qpen.h>
 #include <qwidget.h>
 #include <string_view>
@@ -715,6 +716,13 @@ void AbstractLogView::doRegisterShortcuts()
     } );
 
     registerShortcut( ShortcutAction::LogViewExitView, [ this ]() { emit exitView(); } );
+
+    registerShortcut( ShortcutAction::LogViewSendSelectionToScratchpad,
+                      [ this ]() { emit sendSelectionToScratchpad(); } );
+
+    registerShortcut( ShortcutAction::LogViewAddToSearch, [ this ]() { addToSearch(); } );
+    registerShortcut( ShortcutAction::LogViewExcludeFromSearch, [ this ]() { excludeFromSearch(); } );
+    registerShortcut( ShortcutAction::LogViewReplaceSearch, [ this ]() { replaceSearch(); } );
 }
 
 void AbstractLogView::keyPressEvent( QKeyEvent* keyEvent )
