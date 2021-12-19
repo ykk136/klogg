@@ -42,6 +42,7 @@
 // it can be asked to return the matches in a specific string.
 
 #include <iostream>
+#include <qregularexpression.h>
 
 #include "quickfindpattern.h"
 
@@ -101,9 +102,9 @@ void QuickFindMatcher::getLastMatch( int* start_col, int* end_col ) const
 
 void QuickFindPattern::changeSearchPattern( const QString& pattern, bool isRegex )
 {
-
     // Determine the type of regexp depending on the config
-    switch ( Configuration::get().quickfindRegexpType() ) {
+    const auto searchType = Configuration::get().quickfindRegexpType();
+    switch ( searchType ) {
     case SearchRegexpType::ExtendedRegexp:
         pattern_ = isRegex ? pattern : QRegularExpression::escape( pattern );
         break;
@@ -112,7 +113,9 @@ void QuickFindPattern::changeSearchPattern( const QString& pattern, bool isRegex
         break;
     }
 
-    regexp_.setPattern( pattern_ );
+    regexp_.setPattern( searchType == SearchRegexpType::ExtendedRegexp
+                            ? pattern_
+                            : QRegularExpression::escape( pattern_ ) );
 
     if ( regexp_.isValid() && ( !pattern_.isEmpty() ) )
         active_ = true;
