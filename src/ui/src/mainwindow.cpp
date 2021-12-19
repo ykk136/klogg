@@ -391,15 +391,16 @@ void MainWindow::createActions()
     stopAction->setEnabled( true );
     signalMux_.connect( stopAction, SIGNAL( triggered() ), SLOT( stopLoading() ) );
 
+    optionsAction = new QAction( tr( "&Preferences..." ), this );
+    optionsAction->setMenuRole( QAction::PreferencesRole );
+    optionsAction->setStatusTip( tr( "Show application settings dialog" ) );
+    connect( optionsAction, &QAction::triggered, this, [ this ]( auto ) { this->options(); } );
+
     editHighlightersAction = new QAction( tr( "Configure &highlighters..." ), this );
+    editHighlightersAction->setMenuRole( QAction::NoRole );
     editHighlightersAction->setStatusTip( tr( "Show highlighters configuration" ) );
     connect( editHighlightersAction, &QAction::triggered, this,
              [ this ]( auto ) { this->editHighlighters(); } );
-
-    optionsAction = new QAction( tr( "&Options..." ), this );
-    optionsAction->setMenuRole( QAction::PreferencesRole );
-    optionsAction->setStatusTip( tr( "Show the Options box" ) );
-    connect( optionsAction, &QAction::triggered, this, [ this ]( auto ) { this->options(); } );
 
     showDocumentationAction = new QAction( tr( "&Documentation..." ), this );
     showDocumentationAction->setStatusTip( tr( "Show documentation" ) );
@@ -554,6 +555,9 @@ void MainWindow::createMenus()
     }
 
     fileMenu->addSeparator();
+    fileMenu->addAction( optionsAction );
+
+    fileMenu->addSeparator();
     fileMenu->addAction( exitAction );
 
     editMenu = menuBar()->addMenu( tr( "&Edit" ) );
@@ -590,9 +594,6 @@ void MainWindow::createMenus()
              [ this ]() { setCurrentHighlighterAction( highlightersActionGroup ); } );
 
     toolsMenu->addAction( predefinedFiltersDialogAction );
-
-    toolsMenu->addSeparator();
-    toolsMenu->addAction( optionsAction );
 
     toolsMenu->addSeparator();
     toolsMenu->addAction( showScratchPadAction );
