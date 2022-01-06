@@ -49,7 +49,7 @@ class SimpleLinePositionStorage {
   public:
     SimpleLinePositionStorage()
     {
-        storage_.reserve(10000);
+        storage_.reserve( 10000 );
     }
 
     SimpleLinePositionStorage( const SimpleLinePositionStorage& ) = delete;
@@ -58,6 +58,7 @@ class SimpleLinePositionStorage {
     SimpleLinePositionStorage( SimpleLinePositionStorage&& ) = default;
     SimpleLinePositionStorage& operator=( SimpleLinePositionStorage&& ) = default;
 
+    using Cache = void*;
     // Append the passed end-of-line to the storage
     void append( LineOffset pos )
     {
@@ -81,12 +82,12 @@ class SimpleLinePositionStorage {
     }
 
     // Element at index
-    LineOffset at( size_t i ) const
+    LineOffset at( size_t i, Cache* = nullptr ) const
     {
         return storage_.at( i );
     }
 
-    LineOffset at( LineNumber i ) const
+    LineOffset at( LineNumber i, Cache* = nullptr ) const
     {
         return at( i.get() );
     }
@@ -116,9 +117,11 @@ class SimpleLinePositionStorage {
 // in addition to a list of uint64_t (positions within the files)
 // it can keep track of whether the final LF was added (for non-LF terminated
 // files) and remove it when more data are added.
-template <typename Storage> class LinePosition {
+template <typename Storage>
+class LinePosition {
   public:
-    template <typename> friend class LinePosition;
+    template <typename>
+    friend class LinePosition;
 
     // Default constructor
     LinePosition()
@@ -166,9 +169,10 @@ template <typename Storage> class LinePosition {
     }
 
     // Extract an element
-    inline LineOffset at( LineNumber::UnderlyingType i ) const
+    inline LineOffset at( LineNumber::UnderlyingType i,
+                          typename Storage::Cache* lastPosition = nullptr ) const
     {
-        const auto pos = array.at( i );
+        const auto pos = array.at( i, lastPosition );
         LOG_DEBUG << "Line pos at " << i << " is " << pos;
         return pos;
     }

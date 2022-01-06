@@ -176,8 +176,6 @@ void CompressedLinePositionStorage::move_from( CompressedLinePositionStorage&& o
     previous_block_offset_ = orig.previous_block_offset_;
 
     orig.nb_lines_ = 0_lcount;
-
-    cache_.clear();
 }
 
 // Move constructor
@@ -286,9 +284,9 @@ void CompressedLinePositionStorage::append( LineOffset pos )
     }
 }
 
-LineOffset CompressedLinePositionStorage::at( LineNumber index ) const
+LineOffset CompressedLinePositionStorage::at( LineNumber index, Cache* lastPosition ) const
 {
-    auto& last_read = cache_.local();
+    auto last_read = lastPosition != nullptr ? *lastPosition : Cache{};
 
     const uint8_t* block = nullptr;
     BlockOffset offset;
@@ -335,9 +333,11 @@ LineOffset CompressedLinePositionStorage::at( LineNumber index ) const
     }
 
     // Populate our cache ready for next consecutive read
-    last_read.index = index;
-    last_read.position = position;
-    last_read.offset = offset;
+    if ( lastPosition != nullptr ) {
+        lastPosition->index = index;
+        lastPosition->position = position;
+        lastPosition->offset = offset;
+    }
 
     return position;
 }
@@ -377,8 +377,6 @@ void CompressedLinePositionStorage::pop_back()
 
     --nb_lines_;
     current_pos_ = at( nb_lines_.get() - 1 );
-
-    cache_.clear();
 }
 
 size_t CompressedLinePositionStorage::allocatedSize() const

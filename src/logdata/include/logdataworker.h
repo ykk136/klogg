@@ -39,6 +39,7 @@
 #ifndef LOGDATAWORKERTHREAD_H
 #define LOGDATAWORKERTHREAD_H
 
+#include <oneapi/tbb/enumerable_thread_specific.h>
 #include <oneapi/tbb/task_group.h>
 #include <variant>
 
@@ -220,6 +221,8 @@ class IndexingData {
     mutable SharedMutex dataMutex_;
 
     LinePositionArray linePosition_;
+    mutable tbb::enumerable_thread_specific<CompressedLinePositionStorage::Cache> linePositionCache_;
+
     LineLength maxLength_;
 
     int progress_{};

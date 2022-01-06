@@ -134,21 +134,29 @@ class CompressedLinePositionStorage {
 
     size_t allocatedSize() const;
 
+   using BlockOffset = fluent::NamedType<size_t, struct block_offset, fluent::Incrementable,
+                                          fluent::Addable, fluent::Comparable>;
+
+    // Cache the last position read
+    // This is to speed up consecutive reads (whole page)
+    struct Cache {
+        LineNumber index {std::numeric_limits<LineNumber::UnderlyingType>::max() - 1U};
+        LineOffset position {0};
+        BlockOffset offset {0};
+    };
+
     // Element at index
-    LineOffset at( size_t i ) const
+    LineOffset at( size_t i, Cache* lastPosition = nullptr ) const
     {
-        return at( LineNumber( i ) );
+        return at( LineNumber( i ), lastPosition );
     }
-    LineOffset at( LineNumber i ) const;
+    LineOffset at( LineNumber i, Cache* lastPosition = nullptr ) const;
 
     // Add one list to the other
     void append_list( const std::vector<LineOffset>& positions );
 
     // Pop the last element of the storage
     void pop_back();
-
-    using BlockOffset = fluent::NamedType<size_t, struct block_offset, fluent::Incrementable,
-                                          fluent::Addable, fluent::Comparable>;
 
   private:
     // Utility for move ctor/assign
@@ -183,23 +191,6 @@ class CompressedLinePositionStorage {
     // A null here means pop_back need to free the block
     // that has just been created.
     BlockOffset previous_block_offset_;
-
-    // Cache the last position read
-    // This is to speed up consecutive reads (whole page)
-    struct Cache {
-        Cache()
-            : index{ std::numeric_limits<uint32_t>::max() - 1U }
-            , position{ 0 }
-            , offset{ 0 }
-        {
-        }
-
-        LineNumber index;
-        LineOffset position;
-        BlockOffset offset;
-    };
-
-    mutable tbb::enumerable_thread_specific<Cache> cache_;
 };
 
 #endif
