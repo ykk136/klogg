@@ -3,7 +3,7 @@ add_subdirectory(singleapp) #3.3.2
 add_subdirectory(maddy)
 add_subdirectory(whereami)
 add_subdirectory(kdab)
-add_subdirectory(robin_hood) #3.11.3
+add_subdirectory(robin_hood) #3.11.5
 add_subdirectory(exprtk)
 add_subdirectory(roaring) #0.3.3
 add_subdirectory(simdutf) #1.0.0
@@ -20,7 +20,7 @@ endif(KLOGG_USE_SENTRY)
 
 set(EFSW_INSTALL OFF CACHE INTERNAL "" FORCE)
 set(BUILD_TEST_APP OFF CACHE INTERNAL "" FORCE)
-add_subdirectory(efsw) #2bfda30 on 14 Dec 2020
+add_subdirectory(efsw) #0d2492f on 25 Jan 2022
 mark_as_advanced(BUILD_TEST_APP VERBOSE)
 mark_as_advanced(EFSW_INSTALL VERBOSE)
 
