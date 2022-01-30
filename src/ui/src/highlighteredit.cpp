@@ -92,6 +92,7 @@ void HighlighterEdit::setHighlighter( Highlighter highlighter )
     updateIcon( backColorButton, highlighter_.backColor() );
 
     patternEdit->setEnabled( true );
+    patternTypeComboBox->setEnabled( true );
     ignoreCaseCheckBox->setEnabled( true );
     onlyMatchCheckBox->setEnabled( true );
     foreColorButton->setEnabled( true );
