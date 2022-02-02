@@ -40,13 +40,15 @@
 #include <cmath>
 #include <exception>
 #include <functional>
-#include <oneapi/tbb/flow_graph.h>
 #include <string_view>
 #include <thread>
+
+#include <oneapi/tbb/flow_graph.h>
 
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QThreadPool>
 
 #include "configuration.h"
 #include "dispatch_to.h"
@@ -55,10 +57,12 @@
 #include "linetypes.h"
 #include "log.h"
 #include "logdata.h"
+#include "memory_info.h"
 #include "progress.h"
 #include "readablesize.h"
 
 #include "logdataworker.h"
+#include "synchronization.h"
 
 constexpr int IndexingBlockSize = 1 * 1024 * 1024;
 
@@ -548,7 +552,7 @@ void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& bloc
 
         if ( progress != scopedAccessor.getProgress() ) {
             scopedAccessor.setProgress( progress );
-            LOG_INFO << "Indexing progress " << progress << ", indexed size " << state.pos;
+            LOG_DEBUG << "Indexing progress " << progress << ", indexed size " << state.pos;
             emit indexingProgressed( progress );
         }
     }
@@ -609,15 +613,16 @@ void IndexOperation::doIndex( LineOffset initialPosition )
 
     tbb::flow::graph indexingGraph;
 
-    std::thread ioThread;
+    QThreadPool::globalInstance()->reserveThread();
     auto blockReaderAsync = BlockReader(
         indexingGraph, tbb::flow::serial,
-        [ this, &ioThread, &file, &ioDuration ]( const auto&, auto& gateway ) {
+        [ this, &file, &ioDuration ]( const auto&, auto& gateway ) {
             gateway.reserve_wait();
-            ioThread = std::thread( [ this, &file, &ioDuration, gw = std::ref( gateway ) ] {
-                ioDuration = readFileInBlocks( file, gw.get() );
-                gw.get().release_wait();
-            } );
+            QThreadPool::globalInstance()->start(
+                [ this, &file, &ioDuration, gw = std::ref( gateway ) ] {
+                    ioDuration = readFileInBlocks( file, gw.get() );
+                    gw.get().release_wait();
+                } );
         } );
 
     auto blockPrefetcher = tbb::flow::limiter_node<BlockData>( indexingGraph, prefetchBufferSize );
@@ -637,7 +642,7 @@ void IndexOperation::doIndex( LineOffset initialPosition )
     file.seek( state.pos );
     blockReaderAsync.try_put( tbb::flow::continue_msg{} );
     indexingGraph.wait_for_all();
-    ioThread.join();
+    QThreadPool::globalInstance()->releaseThread();
 
     IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
 
@@ -688,6 +693,7 @@ void IndexOperation::doIndex( LineOffset initialPosition )
                   / static_cast<float>( duration.count() ) )
                     / ( 1024 * 1024 )
              << " MiB/s";
+    LOG_INFO << "Memory usage " << readableSize( usedMemory() );
 
     if ( interruptRequest_ ) {
         scopedAccessor.clear();
