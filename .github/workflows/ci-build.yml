@@ -53,7 +53,7 @@ jobs:
             check_command: yum install -y --setopt tsflags=test /usr/local/klogg*.rpm
             cpack_gen: RPM
             artifacts_id: rpm
-            check_container: centos:8
+            check_container: roboxes/rhel8
             container_root: docker/centos8
             container: variar/klogg_centos8
             cmake_opts: -DKLOGG_USE_LTO=OFF
