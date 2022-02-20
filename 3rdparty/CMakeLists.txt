@@ -42,7 +42,7 @@ else()
     set(TBB_TEST OFF CACHE INTERNAL "" FORCE)
     set(TBB_EXAMPLES OFF CACHE INTERNAL "" FORCE)
     set(TBB_STRICT OFF CACHE INTERNAL "" FORCE)
-    add_subdirectory(onetbb) #2021.2.0
+    add_subdirectory(onetbb) #2021.5.0
     mark_as_advanced(FORCE TBB_TEST)
     mark_as_advanced(FORCE TBB_EXAMPLES)
     mark_as_advanced(FORCE TBB_STRICT)
