@@ -40,6 +40,7 @@
 #include <cmath>
 #include <exception>
 #include <functional>
+#include <qrunnable.h>
 #include <string_view>
 #include <thread>
 
@@ -563,6 +564,30 @@ void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& bloc
     LOG_DEBUG << "Indexing block " << blockBeginning << " done";
 }
 
+template <typename TRunnable>
+class RunnableWrapper : public QRunnable {
+  public:
+    RunnableWrapper( TRunnable&& runnable )
+        : runnable_( std::move( runnable ) )
+    {
+        setAutoDelete( true );
+    }
+
+    void run() override
+    {
+        runnable_();
+    }
+
+  private:
+    TRunnable runnable_;
+};
+
+template <typename TRunnable>
+RunnableWrapper<TRunnable>* createRunnable( TRunnable&& runnable )
+{
+    return new RunnableWrapper<TRunnable>( std::move( runnable ) );
+}
+
 void IndexOperation::doIndex( LineOffset initialPosition )
 {
     QFile file( fileName_ );
@@ -614,16 +639,16 @@ void IndexOperation::doIndex( LineOffset initialPosition )
     tbb::flow::graph indexingGraph;
 
     QThreadPool::globalInstance()->reserveThread();
-    auto blockReaderAsync = BlockReader(
-        indexingGraph, tbb::flow::serial,
-        [ this, &file, &ioDuration ]( const auto&, auto& gateway ) {
-            gateway.reserve_wait();
-            QThreadPool::globalInstance()->start(
-                [ this, &file, &ioDuration, gw = std::ref( gateway ) ] {
-                    ioDuration = readFileInBlocks( file, gw.get() );
-                    gw.get().release_wait();
-                } );
-        } );
+    auto blockReaderAsync
+        = BlockReader( indexingGraph, tbb::flow::serial,
+                       [ this, &file, &ioDuration ]( const auto&, auto& gateway ) {
+                           gateway.reserve_wait();
+                           QThreadPool::globalInstance()->start( createRunnable(
+                               [ this, &file, &ioDuration, gw = std::ref( gateway ) ] {
+                                   ioDuration = readFileInBlocks( file, gw.get() );
+                                   gw.get().release_wait();
+                               } ) );
+                       } );
 
     auto blockPrefetcher = tbb::flow::limiter_node<BlockData>( indexingGraph, prefetchBufferSize );
     auto blockQueue = tbb::flow::queue_node<BlockData>( indexingGraph );
