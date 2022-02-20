@@ -53,7 +53,7 @@ jobs:
             check_command: yum install -y --setopt tsflags=test /usr/local/klogg*.rpm
             cpack_gen: RPM
             artifacts_id: rpm
-            check_container: roboxes/rhel8
+            check_container: roboxes/rhel8git
             container_root: docker/centos8
             container: variar/klogg_centos8
             cmake_opts: -DKLOGG_USE_LTO=OFF
@@ -95,6 +95,7 @@ jobs:
           docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cp ./output/klogg.sym ./packages/klogg_${{ matrix.config.artifacts_id }}.sym"
 
       - name: Check package
+        if: ${{ matrix.config.os == 'ubuntu' }}
         run: |
           docker run --rm -v "$KLOGG_WORKSPACE/$KLOGG_BUILD_ROOT/packages":/usr/local ${{ matrix.config.check_container }} /bin/bash -c "${{ matrix.config.check_command }}"
     
