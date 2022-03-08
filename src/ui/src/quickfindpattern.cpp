@@ -96,8 +96,8 @@ bool QuickFindMatcher::isLineMatchingBackward( const QString& line, int column )
 
 void QuickFindMatcher::getLastMatch( int* start_col, int* end_col ) const
 {
-    *start_col = lastMatchStart_;
-    *end_col = lastMatchEnd_;
+    *start_col = static_cast<int>(lastMatchStart_);
+    *end_col = static_cast<int>(lastMatchEnd_);
 }
 
 void QuickFindPattern::changeSearchPattern( const QString& pattern, bool isRegex )

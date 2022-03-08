@@ -83,6 +83,7 @@ void setApplicationAttributes( bool enableQtHdpi, int scaleFactorRounding )
     // - https://bugreports.qt.io/browse/QTBUG-46015
     qputenv( "QT_BEARER_POLL_TIMEOUT", QByteArray::number( std::numeric_limits<int>::max() ) );
 
+#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
     if ( enableQtHdpi ) {
         // This attribute must be set before QGuiApplication is constructed:
         QCoreApplication::setAttribute( Qt::AA_EnableHighDpiScaling );
@@ -99,6 +100,10 @@ void setApplicationAttributes( bool enableQtHdpi, int scaleFactorRounding )
     else {
         QCoreApplication::setAttribute( Qt::AA_DisableHighDpiScaling );
     }
+#else
+    Q_UNUSED( enableQtHdpi );
+    Q_UNUSED( scaleFactorRounding );
+#endif
 
     QCoreApplication::setAttribute( Qt::AA_DontShowIconsInMenus );
 
@@ -137,14 +142,14 @@ int main( int argc, char* argv[] )
 
     app.initCrashHandler();
 
-    LOG_INFO << "Klogg instance " << app.instanceId() 
+    LOG_INFO << "Klogg instance " << app.instanceId()
 #ifdef KLOGG_USE_MIMALLOC
-     << ", mimalloc v" << mi_version()
+             << ", mimalloc v" << mi_version()
 #endif
 #ifdef KLOGG_USE_TBBMALLOC
-    << ", tbbmalloc v2021.4"
+             << ", tbbmalloc v2021.4"
 #endif
-;
+        ;
 
     if ( !parameters.multi_instance && app.isSecondary() ) {
         LOG_INFO << "Found another klogg, pid " << app.primaryPid();

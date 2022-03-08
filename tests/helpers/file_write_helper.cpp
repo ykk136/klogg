@@ -19,6 +19,7 @@
 
 #include <QFile>
 #include <QThread>
+#include <qglobal.h>
 
 #include "file_write_helper.h"
 #include "logger.h"
@@ -31,7 +32,7 @@
 
 int main( int argc, const char** argv )
 {
-    //logging::enableLogging();
+    // logging::enableLogging();
 
     if ( argc < 4 ) {
         LOG_ERROR << "Expected 3 arguments";
@@ -56,7 +57,7 @@ int main( int argc, const char** argv )
     }
     else {
         if ( flag == WriteFileModification::StartWithPartialLineEnd ) {
-            file.write( partial_line_end, qstrlen( partial_line_end ) );
+            file.write( partial_line_end, static_cast<qint64>( qstrlen( partial_line_end ) ) );
         }
 
         char newLine[ 90 ];
@@ -65,7 +66,7 @@ int main( int argc, const char** argv )
                       "LOGDATA is a part of glogg, we are going to test it thoroughly, this is "
                       "line %06d\n",
                       i );
-            file.write( newLine, qstrlen( newLine ) );
+            file.write( newLine, static_cast<qint64>( qstrlen( newLine ) ) );
 
             if ( flag == WriteFileModification::DelayClosingFile ) {
                 QThread::sleep( 2 );
@@ -73,7 +74,7 @@ int main( int argc, const char** argv )
         }
 
         if ( flag == WriteFileModification::EndWithPartialLineBegin ) {
-            file.write( partial_line_begin, qstrlen( partial_line_begin ) );
+            file.write( partial_line_begin, static_cast<qint64>( qstrlen( partial_line_begin ) ) );
         }
     }
 

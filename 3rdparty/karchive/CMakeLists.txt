@@ -1,4 +1,7 @@
+if (${QT_VERSION_MAJOR} LESS 6)
 find_package(KF5Archive)
+endif()
+
 if(KF5Archive_FOUND)
     message("Using system KArchive")
     add_library(klogg_karchive INTERFACE)

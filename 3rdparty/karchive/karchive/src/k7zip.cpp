@@ -24,6 +24,7 @@
 #include <QDir>
 #include <QBuffer>
 #include <QFile>
+#include <qchar.h>
 #include <qplatformdefs.h>
 
 #include "kcompressiondevice.h"
@@ -636,7 +637,7 @@ QString K7Zip::K7ZipPrivate::readString()
 
     QString p;
     for (int i = 0; i < len; i++, buf += 2) {
-        p += (wchar_t)GetUi16(buf, 0);
+        p += (QChar)GetUi16(buf, 0);
     }
 
     pos += rem + 2;

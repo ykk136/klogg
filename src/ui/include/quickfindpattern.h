@@ -43,6 +43,7 @@
 #include <QObject>
 #include <QRegularExpression>
 #include <QString>
+#include <qglobal.h>
 
 #include "highlightedmatch.h"
 
@@ -79,8 +80,8 @@ class QuickFindMatcher {
     bool isActive_ = false;
     QRegularExpression regexp_;
 
-    mutable int lastMatchStart_ = 0;
-    mutable int lastMatchEnd_ = 0;
+    mutable qsizetype lastMatchStart_ = 0;
+    mutable qsizetype lastMatchEnd_ = 0;
 };
 
 // Represents a search pattern for QuickFind (without its results)

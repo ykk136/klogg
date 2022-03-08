@@ -29,11 +29,10 @@ class FontUtils {
   public:
     static QStringList availableFonts()
     {
-        QStringList fixedFamiles;
-
         QFontDatabase database;
 
-        // We only show the fixed fonts
+        // We only show the fixed fonts 
+        QStringList fixedFamiles;
         auto families = database.families();
         for ( const auto& family : qAsConst( families ) ) {
             if ( database.isFixedPitch( family ) )

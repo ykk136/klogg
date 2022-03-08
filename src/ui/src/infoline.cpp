@@ -103,10 +103,10 @@ void InfoLine::contextMenuEvent( QContextMenuEvent* event )
 
     copySelection->setEnabled( this->hasSelectedText() );
     connect( copySelection, &QAction::triggered,
-             [this]( auto ) { QApplication::clipboard()->setText( this->selectedText() ); } );
+             [ this ]( auto ) { QApplication::clipboard()->setText( this->selectedText() ); } );
 
     connect( selectAll, &QAction::triggered,
-             [this]( auto ) { setSelection( 0, this->text().length() ); } );
+             [ this ]( auto ) { setSelection( 0, static_cast<int>( this->text().length() ) ); } );
 
     menu.exec( event->globalPos() );
 }

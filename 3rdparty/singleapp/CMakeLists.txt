@@ -1,5 +1,3 @@
-find_package(Qt5Network REQUIRED)
-
 add_library(singleapp STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include/singleapp/singleapplication.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/singleapplication.cpp

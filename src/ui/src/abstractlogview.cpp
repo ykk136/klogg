@@ -361,7 +361,7 @@ void AbstractLogView::changeEvent( QEvent* changeEvent )
 
 void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
 {
-    auto line = convertCoordToLine( mouseEvent->y() );
+    auto line = convertCoordToLine( mouseEvent->pos().y() );
 
     if ( mouseEvent->button() == Qt::LeftButton ) {
         // Invalidate our cache
@@ -373,7 +373,7 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
             update();
         }
         else if ( line.has_value() ) {
-            if ( mouseEvent->x() < bulletZoneWidthPx_ ) {
+            if ( mouseEvent->pos().x() < bulletZoneWidthPx_ ) {
                 // Mark a line if it is clicked in the left margin
                 // (only if click and release in the same area)
                 markingClickInitiated_ = true;
@@ -561,7 +561,7 @@ void AbstractLogView::mouseMoveEvent( QMouseEvent* mouseEvent )
         }
     }
     else {
-        considerMouseHovering( mouseEvent->x(), mouseEvent->y() );
+        considerMouseHovering( mouseEvent->pos().x(), mouseEvent->pos().y() );
     }
 }
 
@@ -569,7 +569,7 @@ void AbstractLogView::mouseReleaseEvent( QMouseEvent* mouseEvent )
 {
     if ( markingClickInitiated_ ) {
         markingClickInitiated_ = false;
-        const auto line = convertCoordToLine( mouseEvent->y() );
+        const auto line = convertCoordToLine( mouseEvent->pos().y() );
         if ( line.has_value() && line == markingClickLine_ ) {
             // Invalidate our cache
             textAreaCache_.invalid_ = true;
@@ -721,7 +721,8 @@ void AbstractLogView::doRegisterShortcuts()
                       [ this ]() { emit sendSelectionToScratchpad(); } );
 
     registerShortcut( ShortcutAction::LogViewAddToSearch, [ this ]() { addToSearch(); } );
-    registerShortcut( ShortcutAction::LogViewExcludeFromSearch, [ this ]() { excludeFromSearch(); } );
+    registerShortcut( ShortcutAction::LogViewExcludeFromSearch,
+                      [ this ]() { excludeFromSearch(); } );
     registerShortcut( ShortcutAction::LogViewReplaceSearch, [ this ]() { replaceSearch(); } );
 }
 
@@ -1451,9 +1452,11 @@ void AbstractLogView::updateDisplaySize()
 
     // Our text area cache is now invalid
     textAreaCache_.invalid_ = true;
-    textAreaCache_.pixmap_ = QPixmap{ viewport()->width() * viewport()->devicePixelRatio(),
-                                      static_cast<int32_t>( getNbVisibleLines().get() )
-                                          * charHeight_ * viewport()->devicePixelRatio() };
+    textAreaCache_.pixmap_ = QPixmap{
+        static_cast<int>( std::ceil( viewport()->width() * viewport()->devicePixelRatio() ) ),
+        static_cast<int>( std::ceil( static_cast<int>( getNbVisibleLines().get() ) * charHeight_
+                                     * viewport()->devicePixelRatio() ) )
+    };
     textAreaCache_.pixmap_.setDevicePixelRatio( viewport()->devicePixelRatio() );
 }
 
@@ -1567,7 +1570,7 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         line = LineNumber( logData_->getNbLine().get() ) - 1_lcount;
 
     const auto lineText = logData_->getExpandedLineString( line );
-    const auto visibleText = lineText.midRef( firstCol_, getNbVisibleCols() + 1 );
+    const auto visibleText = lineText.mid( firstCol_, getNbVisibleCols() + 1 );
 
     std::vector<int> possibleColumns( static_cast<size_t>( visibleText.length() ) );
     std::iota( possibleColumns.begin(), possibleColumns.end(), 0 );
@@ -1576,12 +1579,12 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         possibleColumns.cbegin(), possibleColumns.cend(), pos,
         [ this, &visibleText ]( int c, const QPoint& p ) {
             const auto width
-                = textWidth( pixmapFontMetrics_, visibleText.left( c ).toString() ) + leftMarginPx_;
+                = textWidth( pixmapFontMetrics_, visibleText.left( c ) ) + leftMarginPx_;
 
             return width < p.x();
         } );
 
-    const auto length = lineText.length();
+    const auto length = static_cast<LineLength::UnderlyingType>( lineText.length() );
 
     auto column = columnIt != possibleColumns.end() ? *columnIt : length;
     column += ( firstCol_ - 1 );
@@ -1887,8 +1890,12 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     const int fontHeight = charHeight_;
     const int fontAscent = painter->fontMetrics().ascent();
     const int nbCols = getNbVisibleCols();
-    const int paintDeviceHeight = paintDevice->height() / viewport()->devicePixelRatio();
-    const int paintDeviceWidth = paintDevice->width() / viewport()->devicePixelRatio();
+
+    const int paintDeviceHeight
+        = static_cast<int>( std::floor( paintDevice->height() / viewport()->devicePixelRatio() ) );
+    const int paintDeviceWidth
+        = static_cast<int>( std::floor( paintDevice->width() / viewport()->devicePixelRatio() ) );
+
     const QPalette& palette = viewport()->palette();
     const auto& highlighterSet = HighlighterSetCollection::get().currentActiveSet();
     const auto& quickHighlighters = HighlighterSetCollection::get().quickHighlighters();
@@ -2071,14 +2078,25 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         }
 
         const auto untabifyHighlight = [ &logLine ]( const auto& match ) {
+#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
             const auto prefix = logLine.leftRef( match.startColumn() );
-            const auto expandedPrefixLength = untabify( prefix.toString() ).length();
-            auto startDelta = expandedPrefixLength - prefix.length();
+#else
+            const auto prefix = QStringView{ logLine }.left( match.startColumn() );
+#endif
+            const auto expandedPrefixLength
+                = static_cast<LineLength::UnderlyingType>( untabify( prefix.toString() ).length() );
+            auto startDelta = static_cast<LineLength::UnderlyingType>(expandedPrefixLength - prefix.length());
 
+#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
             const auto matchPart = logLine.midRef( match.startColumn(), match.length() );
-            const auto expandedMatchLength
-                = untabify( matchPart.toString(), expandedPrefixLength ).length();
-            auto lengthDelta = expandedMatchLength - matchPart.length();
+#else
+            const auto matchPart
+                = QStringView{ logLine }.mid( match.startColumn(), match.length() );
+#endif
+            const auto expandedMatchLength = static_cast<LineLength::UnderlyingType>(
+                untabify( matchPart.toString(), expandedPrefixLength ).length() );
+
+            const auto lengthDelta = static_cast<LineLength::UnderlyingType>(expandedMatchLength - matchPart.length());
 
             return HighlightedMatch{ match.startColumn() + startDelta, match.length() + lengthDelta,
                                      match.foreColor(), match.backColor() };

@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <limits>
 #include <optional>
+#include <qglobal.h>
 #include <string_view>
 
 #include <named_type/named_type.hpp>
@@ -159,16 +160,18 @@ constexpr int TabStop = 8;
 
 inline QString untabify( QString&& line, int initialPosition = 0 )
 {
-    int totalSpaces = 0;
+    LineLength::UnderlyingType totalSpaces = 0;
     line.replace( QChar::Null, QChar::Space );
 
-    int position = 0;
-    position = line.indexOf( QChar::Tabulation, position );
+    LineLength::UnderlyingType position = 0;
+    position
+        = static_cast<LineLength::UnderlyingType>( line.indexOf( QChar::Tabulation, position ) );
     while ( position >= 0 ) {
-        const int spaces = TabStop - ( ( initialPosition + position + totalSpaces ) % TabStop );
+        const auto spaces = TabStop - ( ( initialPosition + position + totalSpaces ) % TabStop );
         line.replace( position, 1, QString( spaces, QChar::Space ) );
         totalSpaces += spaces - 1;
-        position = line.indexOf( QChar::Tabulation, position );
+        position = static_cast<LineLength::UnderlyingType>(
+            line.indexOf( QChar::Tabulation, position ) );
     }
 
     return std::move( line );

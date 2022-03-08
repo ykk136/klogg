@@ -344,7 +344,6 @@ void OptionsDialog::updateDialogFromConfig()
 
 void OptionsDialog::updateFontSize( const QString& fontFamily )
 {
-    QFontDatabase database;
     QString oldFontSize = fontSizeBox->currentText();
     const auto sizes = FontUtils::availableFontSizes( fontFamily );
 

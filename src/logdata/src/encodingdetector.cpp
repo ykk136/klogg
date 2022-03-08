@@ -73,12 +73,13 @@ EncodingParameters::EncodingParameters( const QTextCodec* codec )
 
     isUtf8Compatible = codec->mibEnum() == Utf8Mib || codec->mibEnum() == UsAsciiMib;
     isUtf16LE = codec->mibEnum() == Utf16LEMib;
-    
+
     QTextCodec::ConverterState convertState( QTextCodec::IgnoreHeader );
     QByteArray encodedLineFeed = codec->fromUnicode( &LineFeed, 1, &convertState );
 
-    lineFeedWidth = encodedLineFeed.length();
-    lineFeedIndex = encodedLineFeed[ 0 ] == '\n' ? 0 : ( encodedLineFeed.length() - 1 );
+    lineFeedWidth = static_cast<int>( encodedLineFeed.length() );
+    lineFeedIndex
+        = encodedLineFeed[ 0 ] == '\n' ? 0 : static_cast<int>( ( encodedLineFeed.length() - 1 ) );
 }
 
 QTextCodec* EncodingDetector::detectEncoding( const QByteArray& block ) const

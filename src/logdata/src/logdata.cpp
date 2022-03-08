@@ -55,6 +55,7 @@
 #include <simdutf/simdutf.h>
 
 #include "configuration.h"
+#include "linetypes.h"
 #include "log.h"
 #include "logfiltereddata.h"
 
@@ -275,7 +276,8 @@ LineLength LogData::doGetLineLength( LineNumber line ) const
         return 0_length; /* exception? */
     }
 
-    return LineLength( doGetExpandedLineString( line ).length() );
+    return LineLength(
+        static_cast<LineLength::UnderlyingType>( doGetExpandedLineString( line ).length() ) );
 }
 
 void LogData::doSetDisplayEncoding( const char* encoding )

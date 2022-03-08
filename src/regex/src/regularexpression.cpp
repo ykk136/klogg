@@ -41,12 +41,12 @@ parseBooleanExpressions( QString& pattern, bool isCaseSensitive, bool isPlainTex
 
     std::vector<RegularExpressionPattern> subPatterns;
 
-    auto currentIndex = 0;
-    auto leftQuote = -1;
-    auto rightQuote = -1;
+    int currentIndex = 0;
+    int leftQuote = -1;
+    int rightQuote = -1;
 
     while ( currentIndex < pattern.size() ) {
-        leftQuote = pattern.indexOf( QChar( '"' ), currentIndex );
+        leftQuote = static_cast<int>( pattern.indexOf( QChar( '"' ), currentIndex ) );
         if ( leftQuote < 0 ) {
             break;
         }
@@ -58,7 +58,7 @@ parseBooleanExpressions( QString& pattern, bool isCaseSensitive, bool isPlainTex
         }
 
         while ( currentIndex < pattern.size() ) {
-            rightQuote = pattern.indexOf( QChar( '"' ), currentIndex );
+            rightQuote = static_cast<int>( pattern.indexOf( QChar( '"' ), currentIndex ) );
             if ( rightQuote < 0 ) {
                 break;
             }
@@ -160,7 +160,7 @@ bool hasSingleMatch( std::string_view line, const MatcherVariant& matcher,
     const auto result
         = std::visit( [ &line ]( const auto& m ) { return m.match( line ); }, matcher );
 
-    return !result.empty() && result[0] > 0;
+    return !result.empty() && result[ 0 ] > 0;
 }
 
 bool hasCombinedMatch( std::string_view line, const MatcherVariant& matcher,

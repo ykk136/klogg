@@ -61,7 +61,7 @@ bool isVersionNewer( const QString& current_version, const QString& new_version 
     const auto parseVersion = []( const QString& version_string ) {
         int tweak_index = 0;
         auto version = QVersionNumber::fromString( version_string, &tweak_index );
-        return std::make_pair( version, version_string.rightRef( tweak_index + 1 ).toUInt() );
+        return std::make_pair( version, version_string.right( tweak_index + 1 ).toUInt() );
     };
 
     const auto old = parseVersion( current_version );
@@ -115,7 +115,7 @@ void VersionChecker::startCheck()
         }
         else {
             LOG_DEBUG << "Deadline not reached yet, next check in "
-                            << std::difftime( deadlineConfig.nextDeadline(), std::time( nullptr ) );
+                      << std::difftime( deadlineConfig.nextDeadline(), std::time( nullptr ) );
         }
     }
 }
@@ -125,8 +125,8 @@ void VersionChecker::downloadFinished( QNetworkReply* reply )
     LOG_DEBUG << "VersionChecker::downloadFinished()";
 
     if ( reply->error() == QNetworkReply::NoError ) {
-        const auto rawReply = reply->readAll() ;
-        checkVersionData(rawReply);
+        const auto rawReply = reply->readAll();
+        checkVersionData( rawReply );
     }
     else {
         LOG_WARNING << "Download failed: err " << reply->error();
@@ -174,12 +174,13 @@ void VersionChecker::checkVersionData( QByteArray versionData )
         const auto version = entryData.value( "version" ).toString();
 
         if ( isVersionNewer( currentVersion, version ) ) {
-            changes << QString("%1: %2").arg(version, entryData.value( "description" ).toString());
+            changes
+                << QString( "%1: %2" ).arg( version, entryData.value( "description" ).toString() );
         }
     }
 
-    LOG_DEBUG << "Current version: " << currentVersion << ". Latest version is "
-                    << latestVersion << ", url " << url;
+    LOG_DEBUG << "Current version: " << currentVersion << ". Latest version is " << latestVersion
+              << ", url " << url;
     if ( isVersionNewer( currentVersion, latestVersion ) ) {
         LOG_INFO << "Sending new version notification";
 

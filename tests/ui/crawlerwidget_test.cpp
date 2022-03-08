@@ -23,6 +23,7 @@
 #include <QTemporaryFile>
 #include <QTest>
 #include <QTimer>
+#include <qglobal.h>
 #include <qnamespace.h>
 #include <qtestmouse.h>
 
@@ -48,7 +49,7 @@ bool generateDataFiles( QTemporaryFile& file )
                       "LOGDATA \t is a part of glogg, we are going to test it thoroughly, this is "
                       "line %06d",
                       i );
-            file.write( newLine, qstrlen( newLine ) );
+            file.write( newLine, static_cast<qint64>( qstrlen( newLine ) ) );
 #ifdef Q_OS_WIN
             file.write( "\r\n", 2 );
 #else
