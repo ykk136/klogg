@@ -59,8 +59,8 @@ bool QuickFindMatcher::isLineMatching( const QString& line, int column ) const
 
     QRegularExpressionMatch match = regexp_.match( line, column );
     if ( match.hasMatch() ) {
-        lastMatchStart_ = match.capturedStart();
-        lastMatchEnd_ = match.capturedEnd() - 1;
+        lastMatchStart_ = static_cast<int>( match.capturedStart() );
+        lastMatchEnd_ = static_cast<int>( match.capturedEnd() - 1 );
         return true;
     }
     else {
@@ -85,8 +85,8 @@ bool QuickFindMatcher::isLineMatchingBackward( const QString& line, int column )
     }
 
     if ( lastMatch.hasMatch() ) {
-        lastMatchStart_ = lastMatch.capturedStart();
-        lastMatchEnd_ = lastMatch.capturedEnd() - 1;
+        lastMatchStart_ = static_cast<int>( lastMatch.capturedStart() );
+        lastMatchEnd_ = static_cast<int>( lastMatch.capturedEnd() - 1 );
         return true;
     }
     else {
@@ -96,8 +96,8 @@ bool QuickFindMatcher::isLineMatchingBackward( const QString& line, int column )
 
 void QuickFindMatcher::getLastMatch( int* start_col, int* end_col ) const
 {
-    *start_col = static_cast<int>(lastMatchStart_);
-    *end_col = static_cast<int>(lastMatchEnd_);
+    *start_col = lastMatchStart_;
+    *end_col = lastMatchEnd_;
 }
 
 void QuickFindPattern::changeSearchPattern( const QString& pattern, bool isRegex )

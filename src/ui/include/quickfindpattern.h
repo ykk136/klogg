@@ -80,8 +80,8 @@ class QuickFindMatcher {
     bool isActive_ = false;
     QRegularExpression regexp_;
 
-    mutable qsizetype lastMatchStart_ = 0;
-    mutable qsizetype lastMatchEnd_ = 0;
+    mutable int lastMatchStart_ = 0;
+    mutable int lastMatchEnd_ = 0;
 };
 
 // Represents a search pattern for QuickFind (without its results)
