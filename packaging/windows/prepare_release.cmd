@@ -28,10 +28,11 @@ xcopy %KLOGG_WORKSPACE%\NOTICE %KLOGG_WORKSPACE%\release\ /y
 xcopy %KLOGG_WORKSPACE%\README.md %KLOGG_WORKSPACE%\release\ /y
 xcopy %KLOGG_WORKSPACE%\DOCUMENTATION.md %KLOGG_WORKSPACE%\release\ /y
 
-xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC142.CRT\msvcp140.dll" %KLOGG_WORKSPACE%\release\ /y
-xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC142.CRT\msvcp140_1.dll" %KLOGG_WORKSPACE%\release\ /y
-xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC142.CRT\vcruntime140.dll" %KLOGG_WORKSPACE%\release\ /y
-xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC142.CRT\vcruntime140_1.dll" %KLOGG_WORKSPACE%\release\ /y
+xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC143.CRT\msvcp140.dll" %KLOGG_WORKSPACE%\release\ /y
+xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC143.CRT\msvcp140_1.dll" %KLOGG_WORKSPACE%\release\ /y
+xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC143.CRT\msvcp140_2.dll" %KLOGG_WORKSPACE%\release\ /y
+xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC143.CRT\vcruntime140.dll" %KLOGG_WORKSPACE%\release\ /y
+xcopy "%VCToolsRedistDir%%platform%\Microsoft.VC143.CRT\vcruntime140_1.dll" %KLOGG_WORKSPACE%\release\ /y
 
 md %KLOGG_WORKSPACE%\release\platforms
 md %KLOGG_WORKSPACE%\release\styles
