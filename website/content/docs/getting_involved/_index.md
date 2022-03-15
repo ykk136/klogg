@@ -16,6 +16,10 @@ _glogg_ has a mailing list where bugs, features and future development are discu
 
 The mailing list address is glogg-devel@googlegroups.com and the archive is found on [Google Groups](http://groups.google.co.uk/group/glogg-devel).
 
+## Sponsors
+Big thanks to everyone sponsoring _klogg_. This helps running code-signing infrastructure
+ - PetbkA
+
 ## Contributors
 
 Thanks to all people who help develop _klogg_
@@ -27,16 +31,22 @@ Thanks to all people who help develop _klogg_
  - Dan Berindei
  - David Frey
  - Dmitry Afanasiev
+ - Ilya Shvetsov
  - Gustav Andersson
  - Jeff Jensen
+ - Jonathan Lightjohn
  - Jonathan Wakely
  - Marcin Twardak
  - neurocod
  - Paolo Cancedda
  - Patrick Tsai
  - Robin Luiten
+ - Ryan Wu
  - Seerauber
  - Sergei Dyshel
+ - Stephan Vedder
+ - lilventi
+ - PetbkA 
  - plonibarploni
  - probonopd
  - wiz0u
