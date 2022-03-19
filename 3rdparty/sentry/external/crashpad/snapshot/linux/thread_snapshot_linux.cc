@@ -16,7 +16,14 @@
 
 #include <sched.h>
 
+#ifdef CLIENT_STACKTRACES_ENABLED
+#include <endian.h>
+#include <libunwind-ptrace.h>
+#include <libunwind.h>
+#endif
+
 #include "base/logging.h"
+#include "snapshot/linux/capture_memory_delegate_linux.h"
 #include "snapshot/linux/cpu_context_linux.h"
 #include "util/misc/reinterpret_bytes.h"
 
@@ -138,8 +145,10 @@ ThreadSnapshotLinux::ThreadSnapshotLinux()
 
 ThreadSnapshotLinux::~ThreadSnapshotLinux() {}
 
-bool ThreadSnapshotLinux::Initialize(ProcessReaderLinux* process_reader,
-                                     const ProcessReaderLinux::Thread& thread) {
+bool ThreadSnapshotLinux::Initialize(
+    ProcessReaderLinux* process_reader,
+    const ProcessReaderLinux::Thread& thread,
+    uint32_t* gather_indirectly_referenced_memory_bytes_remaining) {
   INITIALIZATION_STATE_SET_INITIALIZING(initialized_);
 
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -199,11 +208,49 @@ bool ThreadSnapshotLinux::Initialize(ProcessReaderLinux* process_reader,
 
   thread_id_ = thread.tid;
 
+#ifdef CLIENT_STACKTRACES_ENABLED
+  void* upt = _UPT_create(thread_id_);
+  if (upt) {
+    unw_addr_space_t as =
+        unw_create_addr_space(&_UPT_accessors, __LITTLE_ENDIAN);
+    unw_cursor_t cursor;
+    if (unw_init_remote(&cursor, as, upt) == UNW_ESUCCESS) {
+      do {
+        unw_word_t addr;
+        if (unw_get_reg(&cursor, UNW_REG_IP, &addr) < 0) {
+          return false;
+        }
+
+        std::string sym("");
+        char buf[1024];
+        unw_word_t symbol_offset;
+        if (unw_get_proc_name(&cursor, buf, sizeof(buf), &symbol_offset) ==
+            UNW_ESUCCESS) {
+          sym = std::string(buf);
+        }
+
+        FrameSnapshot frame(addr, sym);
+        frames_.push_back(frame);
+      } while (unw_step(&cursor) > 0);
+    }
+
+    unw_destroy_addr_space(as);
+    _UPT_destroy(upt);
+  }
+#endif
+
   priority_ =
       thread.have_priorities
           ? ComputeThreadPriority(
                 thread.static_priority, thread.sched_policy, thread.nice_value)
           : -1;
+
+  CaptureMemoryDelegateLinux capture_memory_delegate(
+      process_reader,
+      &thread,
+      &pointed_to_memory_,
+      gather_indirectly_referenced_memory_bytes_remaining);
+  CaptureMemory::PointedToByContext(context_, &capture_memory_delegate);
 
   INITIALIZATION_STATE_SET_VALID(initialized_);
   return true;
@@ -240,8 +287,29 @@ uint64_t ThreadSnapshotLinux::ThreadSpecificDataAddress() const {
 }
 
 std::vector<const MemorySnapshot*> ThreadSnapshotLinux::ExtraMemory() const {
-  return std::vector<const MemorySnapshot*>();
+  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
+  std::vector<const MemorySnapshot*> result;
+  result.reserve(pointed_to_memory_.size());
+  for (const auto& pointed_to_memory : pointed_to_memory_) {
+    result.push_back(pointed_to_memory.get());
+  }
+  return result;
 }
+
+#ifdef CLIENT_STACKTRACES_ENABLED
+void ThreadSnapshotLinux::TrimStackTrace(uint64_t exception_address) {
+  auto start_frame = begin(frames_);
+  for (; start_frame != end(frames_); start_frame++) {
+    // These two addresses are never equivalent to each other
+    if (start_frame->InstructionAddr() == exception_address) {
+      break;
+    }
+  }
+  if (start_frame < end(frames_)) {
+    frames_.erase(begin(frames_), start_frame);
+  }
+}
+#endif
 
 }  // namespace internal
 }  // namespace crashpad

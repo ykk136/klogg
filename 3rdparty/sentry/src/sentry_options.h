@@ -4,6 +4,7 @@
 #include "sentry_boot.h"
 
 #include "sentry_logger.h"
+#include "sentry_session.h"
 #include "sentry_utils.h"
 
 // Defaults to 2s as per
@@ -54,12 +55,20 @@ typedef struct sentry_options_s {
     sentry_event_function_t before_send_func;
     void *before_send_data;
 
+#ifdef SENTRY_PERFORMANCE_MONITORING
+    /* Experimentally exposed */
+    double traces_sample_rate;
+    size_t max_spans;
+#endif
+
     /* everything from here on down are options which are stored here but
        not exposed through the options API */
     struct sentry_backend_s *backend;
+    sentry_session_t *session;
 
     long user_consent;
     long refcount;
+    uint64_t shutdown_timeout;
 } sentry_options_t;
 
 /**

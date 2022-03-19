@@ -20,17 +20,21 @@ add_executable(sentry_test_unit
 	test_attachments.c
 	test_basic.c
 	test_consent.c
+	test_concurrency.c
 	test_envelopes.c
 	test_failures.c
+	test_fuzzfailures.c
 	test_logger.c
 	test_modulefinder.c
 	test_mpack.c
 	test_path.c
 	test_ratelimiter.c
+	test_sampling.c
 	test_session.c
 	test_slice.c
 	test_symbolizer.c
 	test_sync.c
+	test_tracing.c
 	test_uninit.c
 	test_unwinder.c
 	test_utils.c
@@ -79,5 +83,32 @@ endif()
 target_compile_definitions(sentry PRIVATE SIZEOF_LONG=${CMAKE_SIZEOF_LONG})
 
 target_compile_definitions(sentry_test_unit PRIVATE SENTRY_UNITTEST)
+target_compile_definitions(sentry_test_unit PRIVATE SENTRY_PERFORMANCE_MONITORING)
 
 add_test(NAME sentry_test_unit COMMAND sentry_test_unit)
+
+add_executable(sentry_fuzz_json
+	${SENTRY_SOURCES}
+	fuzz.c
+)
+target_compile_definitions(sentry_fuzz_json PRIVATE ${SENTRY_COMPILE_DEFINITIONS})
+target_include_directories(sentry_fuzz_json PRIVATE
+	${SENTRY_INTERFACE_INCLUDE_DIRECTORIES}
+	${SENTRY_INCLUDE_DIRECTORIES}
+)
+target_link_libraries(sentry_fuzz_json PRIVATE
+	${SENTRY_LINK_LIBRARIES}
+	${SENTRY_INTERFACE_LINK_LIBRARIES}
+	"$<$<PLATFORM_ID:Linux>:rt>"
+)
+
+if(MSVC)
+	target_compile_options(sentry_fuzz_json PRIVATE $<BUILD_INTERFACE:/wd5105>)
+endif()
+
+# set static runtime if enabled
+if (SENTRY_BUILD_RUNTIMESTATIC AND MSVC)
+    set_property(TARGET sentry_fuzz_json PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
+add_test(NAME sentry_fuzz_json COMMAND sentry_fuzz_json)

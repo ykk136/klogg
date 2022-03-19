@@ -20,8 +20,8 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "build/build_config.h"
+#include "snapshot/thread_snapshot.h"
 #include "util/misc/initialization_state_dcheck.h"
 #include "util/process/process_memory_win.h"
 #include "util/win/address_types.h"
@@ -60,9 +60,17 @@ class ProcessReaderWin {
     uint32_t suspend_count;
     uint32_t priority_class;
     uint32_t priority;
+
+#ifdef CLIENT_STACKTRACES_ENABLED
+    std::vector<FrameSnapshot> frames;
+#endif
   };
 
   ProcessReaderWin();
+
+  ProcessReaderWin(const ProcessReaderWin&) = delete;
+  ProcessReaderWin& operator=(const ProcessReaderWin&) = delete;
+
   ~ProcessReaderWin();
 
   //! \brief Initializes this object. This method must be called before any
@@ -135,8 +143,6 @@ class ProcessReaderWin {
   ProcessSuspensionState suspension_state_;
   bool initialized_threads_;
   InitializationStateDcheck initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessReaderWin);
 };
 
 }  // namespace crashpad

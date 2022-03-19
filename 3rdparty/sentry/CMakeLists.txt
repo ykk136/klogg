@@ -30,7 +30,7 @@ if(NOT CMAKE_C_STANDARD)
 endif()
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
 include(GNUInstallDirs)
@@ -38,6 +38,8 @@ set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/sentry")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set(LINUX TRUE)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "AIX" OR CMAKE_SYSTEM_NAME STREQUAL "OS400")
+	set(AIX TRUE)
 endif()
 
 #setup sentry library type
@@ -70,6 +72,7 @@ if(LINUX)
 	if(SENTRY_BUILD_FORCE32)
 		set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS} -m32 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE")
 		set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -m32 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE")
+		set(CMAKE_ASM_FLAGS  "${CMAKE_ASM_FLAGS} -m32 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE")
 		set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
 	endif()
 endif()
@@ -83,7 +86,7 @@ endif()
 
 if(WIN32)
 	set(SENTRY_DEFAULT_TRANSPORT "winhttp")
-elseif((APPLE AND NOT IOS) OR LINUX)
+elseif((APPLE AND NOT IOS) OR LINUX OR AIX)
 	set(SENTRY_DEFAULT_TRANSPORT "curl")
 else()
 	set(SENTRY_DEFAULT_TRANSPORT "none")
@@ -127,8 +130,10 @@ else()
 	set(SENTRY_DEFAULT_BACKEND "inproc")
 endif()
 
-set(SENTRY_BACKEND ${SENTRY_DEFAULT_BACKEND} CACHE STRING
-  "The sentry backend responsible for reporting crashes, can be either 'none', 'inproc', 'breakpad' or 'crashpad'.")
+if(NOT DEFINED SENTRY_BACKEND)
+	set(SENTRY_BACKEND ${SENTRY_DEFAULT_BACKEND} CACHE STRING
+		"The sentry backend responsible for reporting crashes, can be either 'none', 'inproc', 'breakpad' or 'crashpad'.")
+endif()
 
 if(SENTRY_BACKEND STREQUAL "crashpad")
 	set(SENTRY_BACKEND_CRASHPAD TRUE)
@@ -226,6 +231,10 @@ endif()
 
 set_target_properties(sentry PROPERTIES PUBLIC_HEADER "include/sentry.h")
 
+if(DEFINED SENTRY_FOLDER)
+	set_target_properties(sentry PROPERTIES FOLDER ${SENTRY_FOLDER})
+endif()
+
 # check size type
 include(CheckTypeSize)
 check_type_size("long" CMAKE_SIZEOF_LONG)
@@ -247,17 +256,31 @@ else()
 endif()
 target_compile_definitions(sentry PRIVATE SIZEOF_LONG=${CMAKE_SIZEOF_LONG})
 
+# AIX needs libm for isnan used in test suite
+if(CMAKE_SYSTEM_NAME STREQUAL "AIX" OR CMAKE_SYSTEM_NAME STREQUAL "OS400")
+	target_link_libraries(sentry PRIVATE m)
+endif()
+# On IBM i PASE, flock is in libutil. Here because "sentry" exists now.
+if(CMAKE_SYSTEM_NAME STREQUAL "OS400")
+	target_link_libraries(sentry PRIVATE util)
+endif()
+
 if(SENTRY_TRANSPORT_CURL)
-	find_package(CURL REQUIRED)
-	target_include_directories(sentry PRIVATE ${CURL_INCLUDE_DIR})
-	# The exported sentry target must not contain any path of the build machine, therefore use generator expressions
-	# FIXME: cmake 3.12 introduced the target CURL::libcurl
-	string(REPLACE ";" "$<SEMICOLON>" GENEX_CURL_LIBRARIES "${CURL_LIBRARIES}")
-	string(REPLACE ";" "$<SEMICOLON>" GENEX_CURL_COMPILE_DEFINITIONS "${CURL_COMPILE_DEFINITIONS}")
-	target_link_libraries(sentry PRIVATE $<BUILD_INTERFACE:${GENEX_CURL_LIBRARIES}>)
-	target_compile_definitions(sentry PRIVATE $<BUILD_INTERFACE:${GENEX_CURL_COMPILE_DEFINITIONS}>)
-elseif(SENTRY_TRANSPORT_WINHTTP)
-	target_link_libraries(sentry PRIVATE winhttp)
+	if(NOT CURL_FOUND) # Some other lib might bring libcurl already
+		find_package(CURL REQUIRED)
+	endif()
+
+	if(TARGET CURL::libcurl) # Only available in cmake 3.12+
+		target_link_libraries(sentry PRIVATE CURL::libcurl)
+	else()
+		# Needed for cmake < 3.12 support (cmake 3.12 introduced the target CURL::libcurl)
+		target_include_directories(sentry PRIVATE ${CURL_INCLUDE_DIR})
+		# The exported sentry target must not contain any path of the build machine, therefore use generator expressions
+		string(REPLACE ";" "$<SEMICOLON>" GENEX_CURL_LIBRARIES "${CURL_LIBRARIES}")
+		string(REPLACE ";" "$<SEMICOLON>" GENEX_CURL_COMPILE_DEFINITIONS "${CURL_COMPILE_DEFINITIONS}")
+		target_link_libraries(sentry PRIVATE $<BUILD_INTERFACE:${GENEX_CURL_LIBRARIES}>)
+		target_compile_definitions(sentry PRIVATE $<BUILD_INTERFACE:${GENEX_CURL_COMPILE_DEFINITIONS}>)
+	endif()
 endif()
 
 set_property(TARGET sentry PROPERTY C_VISIBILITY_PRESET hidden)
@@ -336,7 +359,6 @@ if(WIN32)
 		target_compile_definitions(sentry PRIVATE "_WIN32_WINNT=0x0501")
 	endif()
 
-	target_link_libraries(sentry PRIVATE shlwapi)
 	# crashpad does not support Windows XP toolset
 	if(MSVC AND CMAKE_GENERATOR_TOOLSET MATCHES "_xp$" AND SENTRY_BACKEND_CRASHPAD)
 		message(FATAL_ERROR "MSVC XP toolset does not support Crashpad")
@@ -349,7 +371,11 @@ if(ANDROID)
 elseif(LINUX)
     set(_SENTRY_PLATFORM_LIBS "dl" "rt")
 elseif(WIN32)
-    set(_SENTRY_PLATFORM_LIBS "dbghelp" "version")
+    set(_SENTRY_PLATFORM_LIBS "dbghelp" "shlwapi" "version")
+endif()
+
+if(SENTRY_TRANSPORT_WINHTTP)
+	list(APPEND _SENTRY_PLATFORM_LIBS "winhttp")
 endif()
 
 # handle platform threads library
@@ -358,7 +384,7 @@ if(SENTRY_LINK_PTHREAD)
 endif()
 
 # apply platform libraries to sentry library
-if(SENTRY_LIBRARY_TYPE STREQUAL "static")
+if(SENTRY_LIBRARY_TYPE STREQUAL "STATIC")
     target_link_libraries(sentry PUBLIC ${_SENTRY_PLATFORM_LIBS})
 else()
     target_link_libraries(sentry PRIVATE ${_SENTRY_PLATFORM_LIBS})
@@ -404,7 +430,7 @@ if(SENTRY_BACKEND_CRASHPAD)
 		endif()
 		add_subdirectory(external/crashpad crashpad_build)
 
-		# set static runime if enabled
+		# set static runtime if enabled
 		if(SENTRY_BUILD_RUNTIMESTATIC AND MSVC)
 			set_property(TARGET crashpad_client PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 			set_property(TARGET crashpad_compat PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
@@ -417,6 +443,20 @@ if(SENTRY_BACKEND_CRASHPAD)
 			set_property(TARGET crashpad_util PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 			set_property(TARGET crashpad_zlib PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 			set_property(TARGET mini_chromium PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+		endif()
+
+		if(DEFINED SENTRY_FOLDER)
+			set_target_properties(crashpad_client PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_compat PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_getopt PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_handler PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_handler_lib PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_minidump PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_snapshot PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_tools PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_util PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(crashpad_zlib PROPERTIES FOLDER ${SENTRY_FOLDER})
+			set_target_properties(mini_chromium PROPERTIES FOLDER ${SENTRY_FOLDER})
 		endif()
 
 		target_link_libraries(sentry PRIVATE
@@ -447,6 +487,11 @@ elseif(SENTRY_BACKEND_BREAKPAD)
 		target_link_libraries(sentry PRIVATE
 			breakpad_client
 		)
+
+		if(DEFINED SENTRY_FOLDER)
+			set_target_properties(breakpad_client PROPERTIES FOLDER ${SENTRY_FOLDER})
+		endif()
+
 		if(NOT SENTRY_BUILD_SHARED_LIBS)
 			sentry_install(TARGETS breakpad_client EXPORT sentry
 				LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -460,7 +505,17 @@ endif()
 
 option(SENTRY_INTEGRATION_QT "Build Qt integration")
 if(SENTRY_INTEGRATION_QT)
-	target_link_libraries(sentry PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+	if(QT_DEFAULT_MAJOR_VERSION)
+		# Let user choose major version
+		set(Qt_VERSION_MAJOR ${QT_DEFAULT_MAJOR_VERSION})
+	else()
+		# Find best match, prioritizing Qt 6 if available
+		find_package(Qt NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+	endif()
+	find_package(Qt${Qt_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+	message(STATUS "Found Qt: ${Qt${Qt_VERSION_MAJOR}_DIR} "
+		"(found version \"${Qt${Qt_VERSION_MAJOR}_VERSION}\")")
+	target_link_libraries(sentry PRIVATE Qt${Qt_VERSION_MAJOR}::Core)
 endif()
 
 include(CMakePackageConfigHelpers)
@@ -504,6 +559,8 @@ if(SENTRY_BUILD_EXAMPLES)
 	add_executable(sentry_example examples/example.c)
 	target_link_libraries(sentry_example PRIVATE sentry)
 
+	target_compile_definitions(sentry_example PRIVATE SENTRY_PERFORMANCE_MONITORING)
+
 	if(MSVC)
 		target_compile_options(sentry_example PRIVATE $<BUILD_INTERFACE:/wd5105>)
 	endif()
@@ -511,6 +568,10 @@ if(SENTRY_BUILD_EXAMPLES)
 	# set static runtime if enabled
 	if(SENTRY_BUILD_RUNTIMESTATIC AND MSVC)
 		set_property(TARGET sentry_example PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	endif()
+
+	if(DEFINED SENTRY_FOLDER)
+		set_target_properties(sentry_example PROPERTIES FOLDER ${SENTRY_FOLDER})
 	endif()
 
 	add_test(NAME sentry_example COMMAND sentry_example)

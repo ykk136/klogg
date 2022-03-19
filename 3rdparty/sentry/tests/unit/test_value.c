@@ -1,3 +1,4 @@
+#include "sentry_json.h"
 #include "sentry_testsupport.h"
 #include "sentry_value.h"
 #include <locale.h>
@@ -228,6 +229,62 @@ SENTRY_TEST(value_object)
     sentry_value_decref(val);
 }
 
+SENTRY_TEST(value_object_merge)
+{
+    sentry_value_t dst = sentry_value_new_object();
+    sentry_value_set_by_key(dst, "a", sentry_value_new_int32(1));
+    sentry_value_set_by_key(dst, "b", sentry_value_new_int32(2));
+
+    sentry_value_t src = sentry_value_new_object();
+    sentry_value_set_by_key(src, "b", sentry_value_new_int32(20));
+    sentry_value_set_by_key(src, "c", sentry_value_new_int32(30));
+
+    int rv = sentry__value_merge_objects(dst, src);
+    TEST_CHECK_INT_EQUAL(rv, 0);
+    sentry_value_decref(src);
+
+    sentry_value_t a = sentry_value_get_by_key(dst, "a");
+    sentry_value_t b = sentry_value_get_by_key(dst, "b");
+    sentry_value_t c = sentry_value_get_by_key(dst, "c");
+    TEST_CHECK_INT_EQUAL(sentry_value_as_int32(a), 1);
+    TEST_CHECK_INT_EQUAL(sentry_value_as_int32(b), 20);
+    TEST_CHECK_INT_EQUAL(sentry_value_as_int32(c), 30);
+
+    sentry_value_decref(dst);
+}
+
+SENTRY_TEST(value_object_merge_nested)
+{
+    sentry_value_t dst = sentry_value_new_object();
+    sentry_value_set_by_key(dst, "a", sentry_value_new_int32(1));
+    sentry_value_t dst_nested = sentry_value_new_object();
+    sentry_value_set_by_key(dst_nested, "ba", sentry_value_new_int32(1));
+    sentry_value_set_by_key(dst_nested, "bb", sentry_value_new_int32(2));
+    sentry_value_set_by_key(dst, "b", dst_nested);
+
+    sentry_value_t src = sentry_value_new_object();
+    sentry_value_t src_nested = sentry_value_new_object();
+    sentry_value_set_by_key(src_nested, "bb", sentry_value_new_int32(20));
+    sentry_value_set_by_key(src_nested, "bc", sentry_value_new_int32(30));
+    sentry_value_set_by_key(src, "b", src_nested);
+
+    int rv = sentry__value_merge_objects(dst, src);
+    TEST_CHECK_INT_EQUAL(rv, 0);
+    sentry_value_decref(src);
+
+    sentry_value_t a = sentry_value_get_by_key(dst, "a");
+    sentry_value_t nested = sentry_value_get_by_key(dst, "b");
+    sentry_value_t ba = sentry_value_get_by_key(nested, "ba");
+    sentry_value_t bb = sentry_value_get_by_key(nested, "bb");
+    sentry_value_t bc = sentry_value_get_by_key(nested, "bc");
+    TEST_CHECK_INT_EQUAL(sentry_value_as_int32(a), 1);
+    TEST_CHECK_INT_EQUAL(sentry_value_as_int32(ba), 1);
+    TEST_CHECK_INT_EQUAL(sentry_value_as_int32(bb), 20);
+    TEST_CHECK_INT_EQUAL(sentry_value_as_int32(bc), 30);
+
+    sentry_value_decref(dst);
+}
+
 SENTRY_TEST(value_freezing)
 {
     sentry_value_t val = sentry_value_new_list();
@@ -253,7 +310,19 @@ SENTRY_TEST(value_freezing)
 
 SENTRY_TEST(value_json_parsing)
 {
-    sentry_value_t rv = sentry__value_from_json(STRING("[42, \"foo\\u2603\"]"));
+    sentry_value_t rv;
+
+    rv = sentry__value_from_json(STRING("42"));
+    TEST_CHECK(sentry_value_get_type(rv) == SENTRY_VALUE_TYPE_INT32);
+    TEST_CHECK_INT_EQUAL(sentry_value_as_int32(rv), 42);
+    sentry_value_decref(rv);
+
+    rv = sentry__value_from_json(STRING("false"));
+    TEST_CHECK(sentry_value_get_type(rv) == SENTRY_VALUE_TYPE_BOOL);
+    TEST_CHECK(!sentry_value_is_true(rv));
+    sentry_value_decref(rv);
+
+    rv = sentry__value_from_json(STRING("[42, \"foo\\u2603\"]"));
     TEST_CHECK_INT_EQUAL(
         sentry_value_as_int32(sentry_value_get_by_index(rv, 0)), 42);
     TEST_CHECK_STRING_EQUAL(
@@ -287,6 +356,41 @@ SENTRY_TEST(value_json_parsing)
         STRING("{\"valid key\": true, \"invalid key \\uD801\": false}"));
     TEST_CHECK_JSON_VALUE(rv, "{\"valid key\":true}");
     sentry_value_decref(rv);
+}
+
+SENTRY_TEST(value_json_deeply_nested)
+{
+    sentry_value_t root = sentry_value_new_list();
+    sentry_value_t child = root;
+    for (int i = 0; i < 128; i++) {
+        sentry_value_t new_child;
+        if (i % 2) {
+            // odd = object
+            sentry_value_set_by_key(child, "_1", sentry_value_new_null());
+            new_child = sentry_value_new_list();
+            sentry_value_set_by_key(child, "_2", new_child);
+            sentry_value_set_by_key(child, "_3", sentry_value_new_null());
+        } else {
+            // even = list
+            sentry_value_append(child, sentry_value_new_null());
+            new_child = sentry_value_new_object();
+            sentry_value_append(child, new_child);
+            sentry_value_append(child, sentry_value_new_null());
+        }
+        child = new_child;
+    }
+
+    sentry_jsonwriter_t *jw = sentry__jsonwriter_new(NULL);
+    sentry__jsonwriter_write_value(jw, root);
+    size_t serialized_len = 0;
+    char *serialized = sentry__jsonwriter_into_string(jw, &serialized_len);
+    sentry_value_decref(root);
+
+    sentry_value_t parsed = sentry__value_from_json(serialized, serialized_len);
+    sentry_free(serialized);
+
+    TEST_CHECK(!sentry_value_is_null(parsed));
+    sentry_value_decref(parsed);
 }
 
 SENTRY_TEST(value_json_escaping)
@@ -428,6 +532,15 @@ SENTRY_TEST(value_collections_leak)
     sentry__value_append_bounded(list, obj, 2);
 
     TEST_CHECK_INT_EQUAL(sentry_value_refcount(obj), 3);
+
+    sentry_value_incref(obj);
+    sentry__value_append_bounded(list, obj, 1);
+    TEST_CHECK_INT_EQUAL(sentry_value_refcount(obj), 2);
+
+    sentry_value_incref(obj);
+    sentry__value_append_bounded(list, obj, 0);
+    TEST_CHECK_INT_EQUAL(sentry_value_refcount(obj), 1);
+    TEST_CHECK_INT_EQUAL(sentry_value_get_length(list), 0);
 
     sentry_value_decref(list);
 

@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "util/misc/initialization_state_dcheck.h"
 #include "util/posix/process_info.h"
@@ -111,6 +110,10 @@ class ProcessReaderMac {
   };
 
   ProcessReaderMac();
+
+  ProcessReaderMac(const ProcessReaderMac&) = delete;
+  ProcessReaderMac& operator=(const ProcessReaderMac&) = delete;
+
   ~ProcessReaderMac();
 
   //! \brief Initializes this object. This method must be called before any
@@ -181,6 +184,8 @@ class ProcessReaderMac {
   //!     On failure, returns `0` with a message logged.
   mach_vm_address_t DyldAllImageInfo(mach_vm_size_t* all_image_info_size);
 
+  task_t task_;  // weak
+
  private:
   //! Performs lazy initialization of the \a threads_ vector on behalf of
   //! Threads().
@@ -250,7 +255,6 @@ class ProcessReaderMac {
   std::vector<Module> modules_;
   std::vector<std::unique_ptr<MachOImageReader>> module_readers_;
   ProcessMemoryMac process_memory_;
-  task_t task_;  // weak
   InitializationStateDcheck initialized_;
 
 #if defined(CRASHPAD_MAC_32_BIT_SUPPORT)
@@ -262,8 +266,6 @@ class ProcessReaderMac {
 
   bool initialized_threads_;
   bool initialized_modules_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessReaderMac);
 };
 
 }  // namespace crashpad

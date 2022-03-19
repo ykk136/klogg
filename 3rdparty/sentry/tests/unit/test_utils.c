@@ -86,6 +86,20 @@ SENTRY_TEST(dsn_parsing_complete)
     TEST_CHECK_STRING_EQUAL(dsn->path, "/foo/bar");
     TEST_CHECK_INT_EQUAL((int)dsn->project_id, 42);
     sentry__dsn_decref(dsn);
+
+    dsn = sentry__dsn_new("https://username@example.com/42");
+    TEST_CHECK(!!dsn);
+    if (!dsn) {
+        return;
+    }
+    TEST_CHECK(dsn->is_valid);
+    TEST_CHECK(dsn->is_secure);
+    TEST_CHECK_STRING_EQUAL(dsn->host, "example.com");
+    TEST_CHECK_STRING_EQUAL(dsn->public_key, "username");
+    TEST_CHECK(!dsn->secret_key);
+    TEST_CHECK_STRING_EQUAL(dsn->path, "");
+    TEST_CHECK_INT_EQUAL((int)dsn->project_id, 42);
+    sentry__dsn_decref(dsn);
 }
 
 SENTRY_TEST(dsn_parsing_invalid)
@@ -93,11 +107,39 @@ SENTRY_TEST(dsn_parsing_invalid)
     sentry_dsn_t *dsn
         = sentry__dsn_new("http://username:password@example.com/foo/bar?x=y#z");
     TEST_CHECK(!!dsn);
-    if (!dsn) {
-        return;
+    if (dsn) {
+        TEST_CHECK(!dsn->is_valid);
+        sentry__dsn_decref(dsn);
     }
-    TEST_CHECK(!dsn->is_valid);
-    sentry__dsn_decref(dsn);
+
+    dsn = sentry__dsn_new("=https://foo@bar.ingest.sentry.io/"
+                          "1234567");
+    TEST_CHECK(!!dsn);
+    if (dsn) {
+        TEST_CHECK(!dsn->is_valid);
+        sentry__dsn_decref(dsn);
+    }
+
+    dsn = sentry__dsn_new("https://key@");
+    TEST_CHECK(!!dsn);
+    if (dsn) {
+        TEST_CHECK(!dsn->is_valid);
+        sentry__dsn_decref(dsn);
+    }
+
+    dsn = sentry__dsn_new("https://key@sentry.io");
+    TEST_CHECK(!!dsn);
+    if (dsn) {
+        TEST_CHECK(!dsn->is_valid);
+        sentry__dsn_decref(dsn);
+    }
+
+    dsn = sentry__dsn_new("https://sentry.io/1234567");
+    TEST_CHECK(!!dsn);
+    if (dsn) {
+        TEST_CHECK(!dsn->is_valid);
+        sentry__dsn_decref(dsn);
+    }
 }
 
 SENTRY_TEST(dsn_store_url_with_path)

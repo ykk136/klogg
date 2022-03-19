@@ -167,6 +167,7 @@ if(APPLE)
         misc/capture_context_mac.S
         misc/clock_mac.cc
         misc/paths_mac.cc
+        net/http_transport_mac.mm
         synchronization/semaphore_mac.cc
     )
     if(NOT IOS)
@@ -195,17 +196,33 @@ if(APPLE)
             mach/scoped_task_suspend.h
             mach/task_for_pid.cc
             mach/task_for_pid.h
-            net/http_transport_mac.mm
             posix/process_info_mac.cc
             process/process_memory_mac.cc
             process/process_memory_mac.h
         )
     else()
         target_sources(crashpad_util PRIVATE
-            ios/exception_processor.h
-            ios/exception_processor.mm
+            ios/ios_intermediate_dump_data.cc
+            ios/ios_intermediate_dump_data.h
+            ios/ios_intermediate_dump_format.h
+            ios/ios_intermediate_dump_interface.cc
+            ios/ios_intermediate_dump_interface.h
+            ios/ios_intermediate_dump_list.cc
+            ios/ios_intermediate_dump_list.h
+            ios/ios_intermediate_dump_map.cc
+            ios/ios_intermediate_dump_map.h
+            ios/ios_intermediate_dump_object.cc
+            ios/ios_intermediate_dump_object.h
+            ios/ios_intermediate_dump_reader.cc
+            ios/ios_intermediate_dump_reader.h
+            ios/ios_intermediate_dump_writer.cc
+            ios/ios_intermediate_dump_writer.h
             ios/ios_system_data_collector.h
             ios/ios_system_data_collector.mm
+            ios/raw_logging.cc
+            ios/raw_logging.h
+            ios/scoped_vm_read.cc
+            ios/scoped_vm_read.h
     )
     endif()
 endif()
@@ -324,9 +341,17 @@ if(WIN32)
         win/termination_codes.h
         win/traits.h
         win/xp_compat.h
-        misc/capture_context_win.asm
-        win/safe_terminate_process.asm
     )
+    if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+        target_sources(crashpad_util PRIVATE
+            misc/capture_context_win_arm64.asm
+        )
+    else()
+        target_sources(crashpad_util PRIVATE
+            misc/capture_context_win.asm
+            win/safe_terminate_process.asm
+        )
+    endif()
 endif()
 
 # Copied from: https://github.com/qedsoftware/crashpad/blob/3583c50a6575857abcf140f6ea3b8d11390205b3/util/CMakeLists.txt#L196-L233
@@ -429,7 +454,8 @@ if(APPLE)
     get_property(archs TARGET crashpad_util PROPERTY OSX_ARCHITECTURES)
     if (archs)
         list(TRANSFORM archs PREPEND "-arch ")
-        set(CMAKE_ASM_FLAGS "${CFLAGS} ${archs}")
+        list(JOIN archs " " archs_str)
+        set(CMAKE_ASM_FLAGS "${CFLAGS} ${archs_str}")
     endif()
 
     target_link_libraries(crashpad_util PRIVATE
@@ -458,6 +484,9 @@ if(WIN32)
     target_link_libraries(crashpad_util PRIVATE user32 version winhttp)
     if(MSVC)
         target_compile_options(crashpad_util PRIVATE "/wd4201")
+        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            set(CMAKE_ASM_MASM_FLAGS "${CMAKE_ASM_MASM_FLAGS} /safeseh")
+        endif()
     elseif(MINGW)
         target_compile_options(crashpad_util PRIVATE
             $<$<COMPILE_LANGUAGE:CXX>:-municode>

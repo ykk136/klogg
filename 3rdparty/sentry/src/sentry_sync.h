@@ -7,6 +7,25 @@
 #include <assert.h>
 #include <stdio.h>
 
+#ifdef _MSC_VER
+#    define THREAD_FUNCTION_API __stdcall
+#else
+#    define THREAD_FUNCTION_API
+#endif
+
+#if defined(__MINGW32__) && !defined(__MINGW64__)
+#    define UNSIGNED_MINGW unsigned
+#else
+#    define UNSIGNED_MINGW
+#endif
+
+// pthreads use `void *` return types, whereas windows uses `DWORD`
+#ifdef SENTRY_PLATFORM_WINDOWS
+#    define SENTRY_THREAD_FN static UNSIGNED_MINGW DWORD THREAD_FUNCTION_API
+#else
+#    define SENTRY_THREAD_FN static void *
+#endif
+
 // define a recursive mutex for all platforms
 #ifdef SENTRY_PLATFORM_WINDOWS
 #    if _WIN32_WINNT >= 0x0600
@@ -163,6 +182,7 @@ typedef struct sentry__winmutex_s sentry_mutex_t;
             *ThreadId == INVALID_HANDLE_VALUE ? 1 : 0)
 #    define sentry__thread_join(ThreadId)                                      \
         WaitForSingleObject(ThreadId, INFINITE)
+#    define sentry__thread_detach(ThreadId) (void)ThreadId
 #    define sentry__thread_free(ThreadId)                                      \
         do {                                                                   \
             if (*ThreadId != INVALID_HANDLE_VALUE) {                           \
@@ -199,10 +219,10 @@ typedef CONDITION_VARIABLE sentry_cond_t;
    we're restricted in what we can do.  In particular it's possible that
    we would end up dead locking ourselves.  While we cannot fully prevent
    races we have a logic here that while the signal handler is active we're
-   disabling our mutexes so that our signal handler can access what otherwise
-   would be protected by the mutex but everyone else needs to wait for the
-   signal handler to finish.  This is not without risk because another thread
-   might still access what the mutex protects.
+   disabling our mutexes so that our signal handler can access what
+   otherwise would be protected by the mutex but everyone else needs to wait
+   for the signal handler to finish.  This is not without risk because
+   another thread might still access what the mutex protects.
 
    We are thus taking care that whatever such mutexes protect will not make
    us crash under concurrent modifications.  The mutexes we're likely going
@@ -215,7 +235,39 @@ typedef pthread_t sentry_threadid_t;
 typedef pthread_mutex_t sentry_mutex_t;
 typedef pthread_cond_t sentry_cond_t;
 #    ifdef SENTRY_PLATFORM_LINUX
+#        ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+// In particular musl libc does not define a recursive initializer itself.
+// However, we can just define our own. Following the chain of how musl
+// initializes its mutex, the attributes are the first member:
+// https://git.musl-libc.org/cgit/musl/tree/src/thread/pthread_mutex_init.c#n6
+// https://git.musl-libc.org/cgit/musl/tree/src/internal/pthread_impl.h#n86
+// https://git.musl-libc.org/cgit/musl/tree/include/alltypes.h.in#n86
+#            define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP                     \
+                {                                                              \
+                    {                                                          \
+                        {                                                      \
+                            PTHREAD_MUTEX_RECURSIVE                            \
+                        }                                                      \
+                    }                                                          \
+                }
+#        endif
 #        define SENTRY__MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+#    elif defined(SENTRY_PLATFORM_AIX)
+// AIX lacks PTHREAD_RECURSIVE_MUTEX_INITIALIZER, though it does have at least
+// PTHREAD_MUTEX_INITIALIZER. Unfortunately, it means you must call the mutex
+// init function with an initialized mutexattrs set to recursive. This isn't
+// workable due to all the mutexes just sitting around not initialized but
+// immediately used. The fields are basically guesswork from what happens when
+// you initialize the mutex "properly" but changing the bare minimum from a
+// static initialization. (Don't ask me what these fields mean, the struct is
+// opaquely defined as long[n] fields.)
+#        define SENTRY__MUTEX_INIT                                             \
+            {                                                                  \
+                {                                                              \
+                    0, 0, 0, 0, /*_PTH_FLAGS_INIT64*/ 1,                       \
+                        PTHREAD_MUTEX_RECURSIVE                                \
+                }                                                              \
+            }
 #    else
 #        define SENTRY__MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER
 #    endif
@@ -257,6 +309,7 @@ typedef pthread_cond_t sentry_cond_t;
 #    define sentry__thread_spawn(ThreadId, Func, Data)                         \
         (pthread_create(ThreadId, NULL, Func, Data) == 0 ? 0 : 1)
 #    define sentry__thread_join(ThreadId) pthread_join(ThreadId, NULL)
+#    define sentry__thread_detach(ThreadId) pthread_detach(ThreadId)
 #    define sentry__thread_free sentry__thread_init
 #    define sentry__threadid_equal pthread_equal
 #    define sentry__current_thread pthread_self
@@ -340,6 +393,12 @@ void sentry__bgworker_decref(sentry_bgworker_t *bgw);
  * Returns 0 on success.
  */
 int sentry__bgworker_start(sentry_bgworker_t *bgw);
+
+/**
+ * This will try to flush the background worker thread queue, with a `timeout`.
+ * Returns 0 on success.
+ */
+int sentry__bgworker_flush(sentry_bgworker_t *bgw, uint64_t timeout);
 
 /**
  * This will try to shut down the background worker thread, with a `timeout`.

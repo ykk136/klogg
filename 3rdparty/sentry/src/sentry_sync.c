@@ -74,8 +74,11 @@ sentry__thread_setname(sentry_threadid_t thread_id, const char *thread_name)
         return 1;
     }
     return pthread_setname_np(thread_name);
-#    else
+#    elif defined(SENTRY_PLATFORM_LINUX) /* and possibly others (like BSDs) */
     return pthread_setname_np(thread_id, thread_name);
+#    else
+    /* XXX: AIX doesn't have it, but PASE does via ILE APIs. */
+    return 0;
 #    endif
 }
 #endif
@@ -207,24 +210,7 @@ sentry__bgworker_is_done(sentry_bgworker_t *bgw)
     return !bgw->first_task && !sentry__atomic_fetch(&bgw->running);
 }
 
-#ifdef _MSC_VER
-#    define THREAD_FUNCTION_API __stdcall
-#else
-#    define THREAD_FUNCTION_API
-#endif
-
-#if defined(__MINGW32__) && !defined(__MINGW64__)
-#    define UNSIGNED_MINGW unsigned
-#else
-#    define UNSIGNED_MINGW
-#endif
-
-// pthreads use `void *` return types, whereas windows uses `DWORD`
-#ifdef SENTRY_PLATFORM_WINDOWS
-static UNSIGNED_MINGW DWORD THREAD_FUNCTION_API
-#else
-static void *
-#endif
+SENTRY_THREAD_FN
 worker_thread(void *data)
 {
     sentry_bgworker_t *bgw = data;
@@ -284,22 +270,94 @@ int
 sentry__bgworker_start(sentry_bgworker_t *bgw)
 {
     SENTRY_TRACE("starting background worker thread");
-    sentry__atomic_fetch_and_add(&bgw->running, 1);
+    sentry__atomic_store(&bgw->running, 1);
     // this incref moves the reference into the background thread
     sentry__bgworker_incref(bgw);
     if (sentry__thread_spawn(&bgw->thread_id, &worker_thread, bgw) != 0) {
-        sentry__atomic_fetch_and_add(&bgw->running, -1);
+        sentry__atomic_store(&bgw->running, 0);
         sentry__bgworker_decref(bgw);
         return 1;
     }
     return 0;
 }
 
+typedef struct {
+    long refcount;
+    bool was_flushed;
+    sentry_cond_t signal;
+    sentry_mutex_t lock;
+} sentry_flush_task_t;
+
+static void
+sentry__flush_task(void *task_data, void *UNUSED(state))
+{
+    sentry_flush_task_t *flush_task = (sentry_flush_task_t *)task_data;
+
+    sentry__mutex_lock(&flush_task->lock);
+    flush_task->was_flushed = true;
+    sentry__cond_wake(&flush_task->signal);
+    sentry__mutex_unlock(&flush_task->lock);
+}
+
+static void
+sentry__flush_task_decref(sentry_flush_task_t *task)
+{
+    if (sentry__atomic_fetch_and_add(&task->refcount, -1) == 1) {
+        sentry__mutex_free(&task->lock);
+        sentry_free(task);
+    }
+}
+
+int
+sentry__bgworker_flush(sentry_bgworker_t *bgw, uint64_t timeout)
+{
+    if (!sentry__atomic_fetch(&bgw->running)) {
+        SENTRY_WARN("trying to flush non-running thread");
+        return 0;
+    }
+    SENTRY_TRACE("flushing background worker thread");
+
+    sentry_flush_task_t *flush_task
+        = sentry_malloc(sizeof(sentry_flush_task_t));
+    if (!flush_task) {
+        return 1;
+    }
+    memset(flush_task, 0, sizeof(sentry_flush_task_t));
+    flush_task->refcount = 2; // this thread + background worker
+    flush_task->was_flushed = false;
+    sentry__cond_init(&flush_task->signal);
+    sentry__mutex_init(&flush_task->lock);
+
+    sentry__mutex_lock(&flush_task->lock);
+
+    /* submit the task that triggers our condvar once it runs */
+    sentry__bgworker_submit(bgw, sentry__flush_task,
+        (void (*)(void *))sentry__flush_task_decref, flush_task);
+
+    uint64_t started = sentry__monotonic_time();
+    bool was_flushed = false;
+    while (true) {
+        was_flushed = flush_task->was_flushed;
+
+        uint64_t now = sentry__monotonic_time();
+        if (was_flushed || (now > started && now - started > timeout)) {
+            sentry__mutex_unlock(&flush_task->lock);
+            sentry__flush_task_decref(flush_task);
+
+            // return `0` on success
+            return !was_flushed;
+        }
+
+        // this will implicitly release the lock, and re-acquire on wake
+        sentry__cond_wait_timeout(&flush_task->signal, &flush_task->lock, 250);
+    }
+}
+
 static void
 shutdown_task(void *task_data, void *UNUSED(state))
 {
     sentry_bgworker_t *bgw = task_data;
-    sentry__atomic_fetch_and_add(&bgw->running, -1);
+    sentry__atomic_store(&bgw->running, 0);
 }
 
 int
@@ -325,6 +383,8 @@ sentry__bgworker_shutdown(sentry_bgworker_t *bgw, uint64_t timeout)
 
         uint64_t now = sentry__monotonic_time();
         if (now > started && now - started > timeout) {
+            sentry__atomic_store(&bgw->running, 0);
+            sentry__thread_detach(bgw->thread_id);
             sentry__mutex_unlock(&bgw->task_lock);
             SENTRY_WARN(
                 "background thread failed to shut down cleanly within timeout");

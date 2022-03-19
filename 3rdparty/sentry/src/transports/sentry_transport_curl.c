@@ -90,6 +90,13 @@ sentry__curl_transport_start(
 }
 
 static int
+sentry__curl_transport_flush(uint64_t timeout, void *transport_state)
+{
+    sentry_bgworker_t *bgworker = (sentry_bgworker_t *)transport_state;
+    return sentry__bgworker_flush(bgworker, timeout);
+}
+
+static int
 sentry__curl_transport_shutdown(uint64_t timeout, void *transport_state)
 {
     sentry_bgworker_t *bgworker = (sentry_bgworker_t *)transport_state;
@@ -144,8 +151,12 @@ sentry__curl_send_task(void *_envelope, void *_state)
     headers = curl_slist_append(headers, "expect:");
     for (size_t i = 0; i < req->headers_len; i++) {
         char buf[255];
-        snprintf(buf, sizeof(buf), "%s:%s", req->headers[i].key,
-            req->headers[i].value);
+        size_t written = (size_t)snprintf(buf, sizeof(buf), "%s:%s",
+            req->headers[i].key, req->headers[i].value);
+        if (written >= sizeof(buf)) {
+            continue;
+        }
+        buf[written] = '\0';
         headers = curl_slist_append(headers, buf);
     }
 
@@ -181,12 +192,17 @@ sentry__curl_send_task(void *_envelope, void *_state)
     CURLcode rv = curl_easy_perform(curl);
 
     if (rv == CURLE_OK) {
+        long response_code;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+
         if (info.x_sentry_rate_limits) {
             sentry__rate_limiter_update_from_header(
                 state->ratelimiter, info.x_sentry_rate_limits);
         } else if (info.retry_after) {
             sentry__rate_limiter_update_from_http_retry_after(
                 state->ratelimiter, info.retry_after);
+        } else if (response_code == 429) {
+            sentry__rate_limiter_update_from_429(state->ratelimiter);
         }
     } else {
         SENTRY_WARNF(
@@ -249,6 +265,7 @@ sentry__transport_new_default(void)
     sentry_transport_set_free_func(
         transport, (void (*)(void *))sentry__bgworker_decref);
     sentry_transport_set_startup_func(transport, sentry__curl_transport_start);
+    sentry_transport_set_flush_func(transport, sentry__curl_transport_flush);
     sentry_transport_set_shutdown_func(
         transport, sentry__curl_transport_shutdown);
     sentry__transport_set_dump_func(transport, sentry__curl_dump_queue);

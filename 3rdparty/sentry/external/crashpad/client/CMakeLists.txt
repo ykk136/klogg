@@ -30,6 +30,15 @@ if(IOS)
     target_sources(crashpad_client PRIVATE
         crash_report_database_mac.mm
         crashpad_client_ios.cc
+        ios_handler/exception_processor.h
+        ios_handler/exception_processor.mm
+        ios_handler/in_process_handler.cc
+        ios_handler/in_process_handler.h
+        ios_handler/in_process_intermediate_dump_handler.cc
+        ios_handler/in_process_intermediate_dump_handler.h
+        ios_handler/prune_intermediate_dumps_and_crash_reports_thread.cc
+        ios_handler/prune_intermediate_dumps_and_crash_reports_thread.h
+        simulate_crash_ios.h
     )
 endif()
 
@@ -39,8 +48,8 @@ if(LINUX OR ANDROID)
         simulate_crash_linux.h
         client_argv_handling.cc
         client_argv_handling.h
-        crashpad_info_note.S
         crash_report_database_generic.cc
+        crashpad_info_note.S
     )
 endif()
 
