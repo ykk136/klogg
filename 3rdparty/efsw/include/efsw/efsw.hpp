@@ -178,7 +178,7 @@ class EFSW_API FileWatcher
 class FileWatchListener
 {
 	public:
-		virtual ~FileWatchListener() = default;
+		virtual ~FileWatchListener() {}
 
 		/// Handles the action file action
 		/// @param watchid The watch id for the directory

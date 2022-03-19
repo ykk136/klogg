@@ -20,7 +20,7 @@ endif(KLOGG_USE_SENTRY)
 
 set(EFSW_INSTALL OFF CACHE INTERNAL "" FORCE)
 set(BUILD_TEST_APP OFF CACHE INTERNAL "" FORCE)
-add_subdirectory(efsw) #0d2492f on 25 Jan 2022
+add_subdirectory(efsw) #2e73f8e96779a2895c6242d66cadb3a15aa5e192 on 15 Mar 2022
 mark_as_advanced(BUILD_TEST_APP VERBOSE)
 mark_as_advanced(EFSW_INSTALL VERBOSE)
 
