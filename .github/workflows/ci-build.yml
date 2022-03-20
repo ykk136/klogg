@@ -230,14 +230,14 @@ jobs:
       matrix:
         config:
           - os: windows
-            os_version: latest
+            os_version: 2019
             qt_version: 5.15.2
             arch: x64
             ssl_arch: -x64
             cmake_opts:
 
           - os: windows
-            os_version: latest
+            os_version: 2019
             qt_version: 5.15.2
             arch: x86
             qt_arch: win32_msvc2019
@@ -345,6 +345,6 @@ jobs:
 # Final upload of all packages
       - uses: actions/upload-artifact@v2
         with:
-          name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}
+          name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}-${{ matrix.config.qt_version }}
           path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*'
           if-no-files-found: error
