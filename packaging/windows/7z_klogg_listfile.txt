@@ -3,7 +3,7 @@
 .\release\klogg_crashpad_handler.exe
 .\release\klogg_minidump_dump.exe
 .\release\documentation.html
-.\COPYING
-.\NOTICE
-.\README.md
-.\DOCUMENTATION.md
+.\release\COPYING
+.\release\NOTICE
+.\release\README.md
+.\release\DOCUMENTATION.md
