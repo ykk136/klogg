@@ -21,6 +21,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 
 namespace crashpad {
 
@@ -35,14 +36,12 @@ namespace crashpad {
 class ScopedTaskSuspend {
  public:
   explicit ScopedTaskSuspend(const zx::process& process);
-
-  ScopedTaskSuspend(const ScopedTaskSuspend&) = delete;
-  ScopedTaskSuspend& operator=(const ScopedTaskSuspend&) = delete;
-
   ~ScopedTaskSuspend() = default;
 
  private:
   zx::suspend_token suspend_token_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTaskSuspend);
 };
 
 }  // namespace crashpad

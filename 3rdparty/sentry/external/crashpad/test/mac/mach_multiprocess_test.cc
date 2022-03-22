@@ -16,6 +16,7 @@
 
 #include <unistd.h>
 
+#include "base/macros.h"
 #include "gtest/gtest.h"
 
 namespace crashpad {
@@ -26,9 +27,6 @@ class TestMachMultiprocess final : public MachMultiprocess {
  public:
   TestMachMultiprocess() : MachMultiprocess() {}
 
-  TestMachMultiprocess(const TestMachMultiprocess&) = delete;
-  TestMachMultiprocess& operator=(const TestMachMultiprocess&) = delete;
-
   ~TestMachMultiprocess() {}
 
  private:
@@ -37,6 +35,8 @@ class TestMachMultiprocess final : public MachMultiprocess {
   void MachMultiprocessParent() override {}
 
   void MachMultiprocessChild() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(TestMachMultiprocess);
 };
 
 TEST(MachMultiprocess, MachMultiprocess) {

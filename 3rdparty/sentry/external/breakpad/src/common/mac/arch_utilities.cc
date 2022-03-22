@@ -130,10 +130,7 @@ const NXArchInfo* BreakpadGetArchInfoFromCpuType(cpu_type_t cpu_type,
 
 }  // namespace google_breakpad
 
-// TODO(crbug.com/1242776): The "#ifndef __APPLE__" should be here, but the
-// system version of NXGetLocalArchInfo returns incorrect information on
-// x86_64 machines (treating them as just x86), so use the Breakpad version
-// all the time for now.
+#ifndef __APPLE__
 namespace {
 
 enum Architecture {
@@ -221,8 +218,6 @@ const NXArchInfo *NXGetLocalArchInfo(void) {
 #endif
   return &kKnownArchitectures[arch];
 }
-
-#ifndef __APPLE__
 
 const NXArchInfo *NXGetArchInfoFromName(const char *name) {
   for (int arch = 0; arch < kNumArchitectures; ++arch) {

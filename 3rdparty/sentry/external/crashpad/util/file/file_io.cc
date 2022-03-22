@@ -16,6 +16,7 @@
 
 #include "base/check_op.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace crashpad {
@@ -26,10 +27,6 @@ class FileIOReadExactly final : public internal::ReadExactlyInternal {
  public:
   explicit FileIOReadExactly(FileHandle file)
       : ReadExactlyInternal(), file_(file) {}
-
-  FileIOReadExactly(const FileIOReadExactly&) = delete;
-  FileIOReadExactly& operator=(const FileIOReadExactly&) = delete;
-
   ~FileIOReadExactly() {}
 
  private:
@@ -44,15 +41,13 @@ class FileIOReadExactly final : public internal::ReadExactlyInternal {
   }
 
   FileHandle file_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileIOReadExactly);
 };
 
 class FileIOWriteAll final : public internal::WriteAllInternal {
  public:
   explicit FileIOWriteAll(FileHandle file) : WriteAllInternal(), file_(file) {}
-
-  FileIOWriteAll(const FileIOWriteAll&) = delete;
-  FileIOWriteAll& operator=(const FileIOWriteAll&) = delete;
-
   ~FileIOWriteAll() {}
 
  private:
@@ -62,6 +57,8 @@ class FileIOWriteAll final : public internal::WriteAllInternal {
   }
 
   FileHandle file_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileIOWriteAll);
 };
 
 }  // namespace

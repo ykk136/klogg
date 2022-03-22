@@ -21,6 +21,7 @@
 #include <mach/mach.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "snapshot/mac/mach_o_image_segment_reader.h"
 #include "snapshot/mac/process_reader_mac.h"
 #include "snapshot/mac/process_types.h"
@@ -65,11 +66,6 @@ class MachOImageSymbolTableReader {
   using SymbolInformationMap = std::map<std::string, SymbolInformation>;
 
   MachOImageSymbolTableReader();
-
-  MachOImageSymbolTableReader(const MachOImageSymbolTableReader&) = delete;
-  MachOImageSymbolTableReader& operator=(const MachOImageSymbolTableReader&) =
-      delete;
-
   ~MachOImageSymbolTableReader();
 
   //! \brief Reads the symbol table from another process.
@@ -127,6 +123,8 @@ class MachOImageSymbolTableReader {
  private:
   SymbolInformationMap external_defined_symbols_;
   InitializationStateDcheck initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(MachOImageSymbolTableReader);
 };
 
 }  // namespace crashpad

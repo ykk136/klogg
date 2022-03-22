@@ -35,14 +35,13 @@
 #include "common/language.h"
 
 #include <stdlib.h>
-#include <array>
 
 #if !defined(__ANDROID__)
 #include <cxxabi.h>
 #endif
 
-#if defined(HAVE_RUSTC_DEMANGLE)
-#include <rustc_demangle.h>
+#if defined(HAVE_RUST_DEMANGLE)
+#include <rust_demangle.h>
 #endif
 
 #include <limits>
@@ -179,13 +178,13 @@ class RustLanguage: public Language {
     // abi_demangle doesn't produce stellar results due to them having
     // another layer of encoding.
     // If callers provide rustc-demangle, use that.
-#if defined(HAVE_RUSTC_DEMANGLE)
-    std::array<char, 1 * 1024 * 1024> rustc_demangled;
-    if (rustc_demangle(mangled.c_str(), rustc_demangled.data(),
-                       rustc_demangled.size()) == 0) {
+#if defined(HAVE_RUST_DEMANGLE)
+    char* rust_demangled = rust_demangle(mangled.c_str());
+    if (rust_demangled == nullptr) {
       return kDemangleFailure;
     }
-    demangled->assign(rustc_demangled.data());
+    demangled->assign(rust_demangled);
+    free_rust_demangled_name(rust_demangled);
 #else
     // Otherwise, pass through the mangled name so callers can demangle
     // after the fact.

@@ -20,6 +20,7 @@
 #include <map>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "util/linux/ptrace_connection.h"
 #include "util/misc/reinterpret_bytes.h"
 
@@ -29,10 +30,6 @@ namespace crashpad {
 class AuxiliaryVector {
  public:
   AuxiliaryVector();
-
-  AuxiliaryVector(const AuxiliaryVector&) = delete;
-  AuxiliaryVector& operator=(const AuxiliaryVector&) = delete;
-
   ~AuxiliaryVector();
 
   //! \brief Initializes this object with the auxiliary vector for the process
@@ -68,6 +65,8 @@ class AuxiliaryVector {
  private:
   template <typename ULong>
   bool Read(PtraceConnection* connection);
+
+  DISALLOW_COPY_AND_ASSIGN(AuxiliaryVector);
 };
 
 }  // namespace crashpad

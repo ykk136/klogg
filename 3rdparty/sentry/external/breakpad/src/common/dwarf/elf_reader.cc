@@ -108,7 +108,7 @@ const char kPLTFunctionSuffix[] = "@plt";
 
 }  // namespace
 
-namespace google_breakpad {
+namespace dwarf2reader {
 
 template <class ElfArch> class ElfReaderImpl;
 
@@ -1271,4 +1271,4 @@ bool ElfReader::IsNonStrippedELFBinary(const string& path) {
 bool ElfReader::IsNonDebugStrippedELFBinary(const string& path) {
   return IsNonStrippedELFBinaryHelper(path, true);
 }
-}  // namespace google_breakpad
+}  // namespace dwarf2reader

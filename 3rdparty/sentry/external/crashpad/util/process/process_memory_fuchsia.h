@@ -19,6 +19,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "util/misc/address_types.h"
 #include "util/misc/initialization_state_dcheck.h"
 #include "util/process/process_memory.h"
@@ -29,10 +30,6 @@ namespace crashpad {
 class ProcessMemoryFuchsia final : public ProcessMemory {
  public:
   ProcessMemoryFuchsia();
-
-  ProcessMemoryFuchsia(const ProcessMemoryFuchsia&) = delete;
-  ProcessMemoryFuchsia& operator=(const ProcessMemoryFuchsia&) = delete;
-
   ~ProcessMemoryFuchsia();
 
   //! \brief Initializes this object to read the memory of a process by handle.
@@ -53,6 +50,8 @@ class ProcessMemoryFuchsia final : public ProcessMemory {
 
   zx::unowned_process process_;
   InitializationStateDcheck initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessMemoryFuchsia);
 };
 
 }  // namespace crashpad

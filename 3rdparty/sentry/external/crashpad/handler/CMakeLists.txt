@@ -11,18 +11,14 @@ add_library(crashpad_handler_lib STATIC
     user_stream_data_source.h
 )
 
-if(APPLE)
-    target_sources(crashpad_handler_lib PRIVATE
-        mac/file_limit_annotation.cc
-        mac/file_limit_annotation.h
-    )
-endif()
 if(APPLE AND NOT IOS)
     target_sources(crashpad_handler_lib PRIVATE
         mac/crash_report_exception_handler.cc
         mac/crash_report_exception_handler.h
         mac/exception_handler_server.cc
         mac/exception_handler_server.h
+        mac/file_limit_annotation.cc
+        mac/file_limit_annotation.h
     )
 endif()
 
@@ -64,7 +60,6 @@ target_link_libraries(crashpad_handler_lib
 
 if(WIN32)
     if(MSVC)
-        target_link_libraries(crashpad_handler_lib PUBLIC crashpad_getopt)
         target_compile_options(crashpad_handler_lib PRIVATE "/wd4201")
     endif()
 endif()
@@ -115,7 +110,7 @@ if(NOT IOS)
         endif()
     endif()
 
-    set_property(TARGET crashpad_handler PROPERTY EXPORT_NAME crashpad_handler)
+    set_property(TARGET crashpad_handler PROPERTY EXPORT_NAME handler)
     add_executable(crashpad::handler ALIAS crashpad_handler)
 
     # install(TARGETS crashpad_handler EXPORT crashpad_export

@@ -43,10 +43,6 @@ bool UUID::operator==(const UUID& that) const {
   return memcmp(this, &that, sizeof(*this)) == 0;
 }
 
-bool UUID::operator<(const UUID& that) const {
-  return memcmp(this, &that, sizeof(*this)) < 0;
-}
-
 void UUID::InitializeToZero() {
   memset(this, 0, sizeof(*this));
 }

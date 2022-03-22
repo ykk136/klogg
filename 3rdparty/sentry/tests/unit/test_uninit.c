@@ -25,10 +25,11 @@ SENTRY_TEST(uninitialized)
     sentry_set_fingerprint("foo", "bar", NULL);
     sentry_remove_fingerprint();
     sentry_set_transaction("foo");
+    sentry_remove_transaction();
     sentry_set_level(SENTRY_LEVEL_DEBUG);
     sentry_start_session();
     sentry_end_session();
-    sentry_close();
+    sentry_shutdown();
 }
 
 SENTRY_TEST(empty_transport)
@@ -43,7 +44,7 @@ SENTRY_TEST(empty_transport)
     sentry_uuid_t id = sentry_capture_event(event);
     TEST_CHECK(!sentry_uuid_is_nil(&id));
 
-    sentry_close();
+    sentry_shutdown();
 }
 
 SENTRY_TEST(invalid_dsn)
@@ -58,7 +59,7 @@ SENTRY_TEST(invalid_dsn)
     sentry_uuid_t id = sentry_capture_event(event);
     TEST_CHECK(!sentry_uuid_is_nil(&id));
 
-    sentry_close();
+    sentry_shutdown();
 }
 
 SENTRY_TEST(invalid_proxy)
@@ -73,5 +74,5 @@ SENTRY_TEST(invalid_proxy)
     sentry_uuid_t id = sentry_capture_event(event);
     TEST_CHECK(!sentry_uuid_is_nil(&id));
 
-    sentry_close();
+    sentry_shutdown();
 }

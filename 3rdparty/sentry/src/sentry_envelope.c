@@ -41,9 +41,6 @@ envelope_add_item(sentry_envelope_t *envelope)
     if (envelope->contents.items.item_count >= SENTRY_MAX_ENVELOPE_ITEMS) {
         return NULL;
     }
-    // TODO: Envelopes may have at most one event item or one transaction item,
-    // and not one of both. Some checking should be done here or in
-    // `sentry__envelope_add_[transaction|event]` to ensure this can't happen.
 
     sentry_envelope_item_t *rv
         = &envelope->contents.items
@@ -200,39 +197,12 @@ sentry_envelope_get_event(const sentry_envelope_t *envelope)
         return sentry_value_new_null();
     }
     for (size_t i = 0; i < envelope->contents.items.item_count; i++) {
-
-#ifdef SENTRY_PERFORMANCE_MONITORING
-        if (!sentry_value_is_null(envelope->contents.items.items[i].event)
-            && !sentry__event_is_transaction(
-                envelope->contents.items.items[i].event)) {
-            return envelope->contents.items.items[i].event;
-        }
-#else
         if (!sentry_value_is_null(envelope->contents.items.items[i].event)) {
             return envelope->contents.items.items[i].event;
         }
-#endif
     }
     return sentry_value_new_null();
 }
-
-#ifdef SENTRY_PERFORMANCE_MONITORING
-sentry_value_t
-sentry_envelope_get_transaction(const sentry_envelope_t *envelope)
-{
-    if (envelope->is_raw) {
-        return sentry_value_new_null();
-    }
-    for (size_t i = 0; i < envelope->contents.items.item_count; i++) {
-        if (!sentry_value_is_null(envelope->contents.items.items[i].event)
-            && sentry__event_is_transaction(
-                envelope->contents.items.items[i].event)) {
-            return envelope->contents.items.items[i].event;
-        }
-    }
-    return sentry_value_new_null();
-}
-#endif
 
 sentry_envelope_item_t *
 sentry__envelope_add_event(sentry_envelope_t *envelope, sentry_value_t event)
@@ -242,17 +212,11 @@ sentry__envelope_add_event(sentry_envelope_t *envelope, sentry_value_t event)
         return NULL;
     }
 
-    sentry_jsonwriter_t *jw = sentry__jsonwriter_new(NULL);
-    if (!jw) {
-        return NULL;
-    }
-
     sentry_value_t event_id = sentry__ensure_event_id(event, NULL);
 
     item->event = event;
-    sentry__jsonwriter_write_value(jw, event);
-    item->payload = sentry__jsonwriter_into_string(jw, &item->payload_len);
-
+    item->payload = sentry_value_to_json(event);
+    item->payload_len = strlen(item->payload);
     sentry__envelope_item_set_header(
         item, "type", sentry_value_new_string("event"));
     sentry_value_t length = sentry_value_new_int32((int32_t)item->payload_len);
@@ -264,47 +228,6 @@ sentry__envelope_add_event(sentry_envelope_t *envelope, sentry_value_t event)
     return item;
 }
 
-#ifdef SENTRY_PERFORMANCE_MONITORING
-sentry_envelope_item_t *
-sentry__envelope_add_transaction(
-    sentry_envelope_t *envelope, sentry_value_t transaction)
-{
-    sentry_envelope_item_t *item = envelope_add_item(envelope);
-    if (!item) {
-        return NULL;
-    }
-
-    sentry_jsonwriter_t *jw = sentry__jsonwriter_new(NULL);
-    if (!jw) {
-        return NULL;
-    }
-
-    sentry_value_t event_id = sentry__ensure_event_id(transaction, NULL);
-
-    item->event = transaction;
-    sentry__jsonwriter_write_value(jw, transaction);
-    item->payload = sentry__jsonwriter_into_string(jw, &item->payload_len);
-
-    sentry__envelope_item_set_header(
-        item, "type", sentry_value_new_string("transaction"));
-    sentry_value_t length = sentry_value_new_int32((int32_t)item->payload_len);
-    sentry__envelope_item_set_header(item, "length", length);
-
-    sentry_value_incref(event_id);
-    sentry__envelope_set_header(envelope, "event_id", event_id);
-
-#    ifdef SENTRY_UNITTEST
-    sentry_value_t now = sentry_value_new_string("2021-12-16T05:53:59.343Z");
-#    else
-    sentry_value_t now = sentry__value_new_string_owned(
-        sentry__msec_time_to_iso8601(sentry__msec_time()));
-#    endif
-    sentry__envelope_set_header(envelope, "sent_at", now);
-
-    return item;
-}
-#endif
-
 sentry_envelope_item_t *
 sentry__envelope_add_session(
     sentry_envelope_t *envelope, const sentry_session_t *session)
@@ -312,7 +235,7 @@ sentry__envelope_add_session(
     if (!envelope || !session) {
         return NULL;
     }
-    sentry_jsonwriter_t *jw = sentry__jsonwriter_new(NULL);
+    sentry_jsonwriter_t *jw = sentry__jsonwriter_new_in_memory();
     if (!jw) {
         return NULL;
     }
@@ -358,27 +281,20 @@ static void
 sentry__envelope_serialize_headers_into_stringbuilder(
     const sentry_envelope_t *envelope, sentry_stringbuilder_t *sb)
 {
-    sentry_jsonwriter_t *jw = sentry__jsonwriter_new(sb);
-    if (jw) {
-        sentry__jsonwriter_write_value(jw, envelope->contents.items.headers);
-        sentry__jsonwriter_free(jw);
-    }
+    char *buf = sentry_value_to_json(envelope->contents.items.headers);
+    sentry__stringbuilder_append(sb, buf);
+    sentry_free(buf);
 }
 
 static void
 sentry__envelope_serialize_item_into_stringbuilder(
     const sentry_envelope_item_t *item, sentry_stringbuilder_t *sb)
 {
-    sentry_jsonwriter_t *jw = sentry__jsonwriter_new(sb);
-    if (!jw) {
-        return;
-    }
     sentry__stringbuilder_append_char(sb, '\n');
-
-    sentry__jsonwriter_write_value(jw, item->headers);
-    sentry__jsonwriter_free(jw);
-
+    char *buf = sentry_value_to_json(item->headers);
+    sentry__stringbuilder_append(sb, buf);
     sentry__stringbuilder_append_char(sb, '\n');
+    sentry_free(buf);
 
     sentry__stringbuilder_append_buf(sb, item->payload, item->payload_len);
 }
@@ -481,7 +397,7 @@ sentry_envelope_write_to_file(
     return rv;
 }
 
-#ifdef SENTRY_UNITTEST
+#if SENTRY_UNITTEST
 size_t
 sentry__envelope_get_item_count(const sentry_envelope_t *envelope)
 {

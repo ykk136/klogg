@@ -19,6 +19,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "minidump/minidump_context.h"
 #include "minidump/minidump_writable.h"
 
@@ -32,9 +33,6 @@ struct CPUContextX86_64;
 //!     files.
 class MinidumpContextWriter : public internal::MinidumpWritable {
  public:
-  MinidumpContextWriter(const MinidumpContextWriter&) = delete;
-  MinidumpContextWriter& operator=(const MinidumpContextWriter&) = delete;
-
   ~MinidumpContextWriter() override;
 
   //! \brief Creates a MinidumpContextWriter based on \a context_snapshot.
@@ -61,16 +59,15 @@ class MinidumpContextWriter : public internal::MinidumpWritable {
 
   // MinidumpWritable:
   size_t SizeOfObject() final;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MinidumpContextWriter);
 };
 
 //! \brief The writer for a MinidumpContextX86 structure in a minidump file.
 class MinidumpContextX86Writer final : public MinidumpContextWriter {
  public:
   MinidumpContextX86Writer();
-
-  MinidumpContextX86Writer(const MinidumpContextX86Writer&) = delete;
-  MinidumpContextX86Writer& operator=(const MinidumpContextX86Writer&) = delete;
-
   ~MinidumpContextX86Writer() override;
 
   //! \brief Initializes the MinidumpContextX86 based on \a context_snapshot.
@@ -103,17 +100,14 @@ class MinidumpContextX86Writer final : public MinidumpContextWriter {
 
  private:
   MinidumpContextX86 context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpContextX86Writer);
 };
 
 //! \brief The writer for a MinidumpContextAMD64 structure in a minidump file.
 class MinidumpContextAMD64Writer final : public MinidumpContextWriter {
  public:
   MinidumpContextAMD64Writer();
-
-  MinidumpContextAMD64Writer(const MinidumpContextAMD64Writer&) = delete;
-  MinidumpContextAMD64Writer& operator=(const MinidumpContextAMD64Writer&) =
-      delete;
-
   ~MinidumpContextAMD64Writer() override;
 
   // Ensure proper alignment of heap-allocated objects. This should not be
@@ -157,16 +151,14 @@ class MinidumpContextAMD64Writer final : public MinidumpContextWriter {
 
  private:
   MinidumpContextAMD64 context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpContextAMD64Writer);
 };
 
 //! \brief The writer for a MinidumpContextARM structure in a minidump file.
 class MinidumpContextARMWriter final : public MinidumpContextWriter {
  public:
   MinidumpContextARMWriter();
-
-  MinidumpContextARMWriter(const MinidumpContextARMWriter&) = delete;
-  MinidumpContextARMWriter& operator=(const MinidumpContextARMWriter&) = delete;
-
   ~MinidumpContextARMWriter() override;
 
   //! \brief Initializes the MinidumpContextARM based on \a context_snapshot.
@@ -199,17 +191,14 @@ class MinidumpContextARMWriter final : public MinidumpContextWriter {
 
  private:
   MinidumpContextARM context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpContextARMWriter);
 };
 
 //! \brief The writer for a MinidumpContextARM64 structure in a minidump file.
 class MinidumpContextARM64Writer final : public MinidumpContextWriter {
  public:
   MinidumpContextARM64Writer();
-
-  MinidumpContextARM64Writer(const MinidumpContextARM64Writer&) = delete;
-  MinidumpContextARM64Writer& operator=(const MinidumpContextARM64Writer&) =
-      delete;
-
   ~MinidumpContextARM64Writer() override;
 
   //! \brief Initializes the MinidumpContextARM64 based on \a context_snapshot.
@@ -242,17 +231,14 @@ class MinidumpContextARM64Writer final : public MinidumpContextWriter {
 
  private:
   MinidumpContextARM64 context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpContextARM64Writer);
 };
 
 //! \brief The writer for a MinidumpContextMIPS structure in a minidump file.
 class MinidumpContextMIPSWriter final : public MinidumpContextWriter {
  public:
   MinidumpContextMIPSWriter();
-
-  MinidumpContextMIPSWriter(const MinidumpContextMIPSWriter&) = delete;
-  MinidumpContextMIPSWriter& operator=(const MinidumpContextMIPSWriter&) =
-      delete;
-
   ~MinidumpContextMIPSWriter() override;
 
   //! \brief Initializes the MinidumpContextMIPS based on \a context_snapshot.
@@ -285,17 +271,14 @@ class MinidumpContextMIPSWriter final : public MinidumpContextWriter {
 
  private:
   MinidumpContextMIPS context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpContextMIPSWriter);
 };
 
 //! \brief The writer for a MinidumpContextMIPS64 structure in a minidump file.
 class MinidumpContextMIPS64Writer final : public MinidumpContextWriter {
  public:
   MinidumpContextMIPS64Writer();
-
-  MinidumpContextMIPS64Writer(const MinidumpContextMIPS64Writer&) = delete;
-  MinidumpContextMIPS64Writer& operator=(const MinidumpContextMIPS64Writer&) =
-      delete;
-
   ~MinidumpContextMIPS64Writer() override;
 
   //! \brief Initializes the MinidumpContextMIPS based on \a context_snapshot.
@@ -328,6 +311,8 @@ class MinidumpContextMIPS64Writer final : public MinidumpContextWriter {
 
  private:
   MinidumpContextMIPS64 context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpContextMIPS64Writer);
 };
 
 }  // namespace crashpad

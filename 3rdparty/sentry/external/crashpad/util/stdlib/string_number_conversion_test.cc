@@ -20,7 +20,7 @@
 #include <limits>
 #include <type_traits>
 
-#include "base/cxx17_backports.h"
+#include "base/stl_util.h"
 #include "gtest/gtest.h"
 
 #define STRINGIFY(a) STR(a)

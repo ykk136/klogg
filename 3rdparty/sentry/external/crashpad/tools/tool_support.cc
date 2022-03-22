@@ -19,7 +19,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "package.h"
 
@@ -93,7 +92,7 @@ int ToolSupport::Wmain(int argc, wchar_t* argv[], int (*entry)(int, char* [])) {
 base::FilePath::StringType ToolSupport::CommandLineArgumentToFilePathStringType(
     const base::StringPiece& path) {
 #if defined(OS_POSIX)
-  return std::string(path.data(), path.size());
+  return path.as_string();
 #elif defined(OS_WIN)
   return base::UTF8ToWide(path);
 #endif  // OS_POSIX

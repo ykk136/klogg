@@ -33,10 +33,6 @@
 #    include <windows.h>
 #endif
 
-#ifndef __has_builtin
-#    define __has_builtin(x) 0
-#endif
-
 #include <sentry.h>
 #include <stdbool.h>
 

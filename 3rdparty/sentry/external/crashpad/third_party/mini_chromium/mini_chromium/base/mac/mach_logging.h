@@ -8,6 +8,7 @@
 #include <mach/mach.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 
 // Use the MACH_LOG family of macros along with a mach_error_t (kern_return_t)
@@ -38,14 +39,12 @@ class MachLogMessage : public logging::LogMessage {
                  int line,
                  LogSeverity severity,
                  mach_error_t mach_err);
-
-  MachLogMessage(const MachLogMessage&) = delete;
-  MachLogMessage& operator=(const MachLogMessage&) = delete;
-
   ~MachLogMessage();
 
  private:
   mach_error_t mach_err_;
+
+  DISALLOW_COPY_AND_ASSIGN(MachLogMessage);
 };
 
 }  // namespace logging
@@ -102,14 +101,12 @@ class BootstrapLogMessage : public logging::LogMessage {
                       int line,
                       LogSeverity severity,
                       kern_return_t bootstrap_err);
-
-  BootstrapLogMessage(const BootstrapLogMessage&) = delete;
-  BootstrapLogMessage& operator=(const BootstrapLogMessage&) = delete;
-
   ~BootstrapLogMessage();
 
  private:
   kern_return_t bootstrap_err_;
+
+  DISALLOW_COPY_AND_ASSIGN(BootstrapLogMessage);
 };
 
 }  // namespace logging

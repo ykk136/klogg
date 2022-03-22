@@ -16,6 +16,7 @@
 #define CRASHPAD_UTIL_STREAM_FILE_ENCODER_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 
 namespace crashpad {
 
@@ -37,10 +38,6 @@ class FileEncoder {
   FileEncoder(Mode mode,
               const base::FilePath& input_path,
               const base::FilePath& output_path);
-
-  FileEncoder(const FileEncoder&) = delete;
-  FileEncoder& operator=(const FileEncoder&) = delete;
-
   ~FileEncoder();
 
   //! \brief Encode/decode the data from \a input_path_ file according work
@@ -53,6 +50,8 @@ class FileEncoder {
   Mode mode_;
   base::FilePath input_path_;
   base::FilePath output_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileEncoder);
 };
 
 }  // namespace crashpad

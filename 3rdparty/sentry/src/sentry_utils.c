@@ -1,13 +1,13 @@
 // According to http://lua-users.org/lists/lua-l/2016-04/msg00216.html we can
 // use `stdtod_l` on all platforms when defining `_GNU_SOURCE`.
 
-#include "sentry_boot.h"
+#define _GNU_SOURCE
 
+#include "sentry_utils.h"
 #include "sentry_alloc.h"
 #include "sentry_core.h"
 #include "sentry_string.h"
 #include "sentry_sync.h"
-#include "sentry_utils.h"
 #include <locale.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -15,7 +15,7 @@
 #include <string.h>
 #include <time.h>
 
-#ifdef SENTRY_PLATFORM_DARWIN
+#ifdef SENTRY_PLATFORM_MACOS
 #    include <xlocale.h>
 #elif defined(SENTRY_PLATFORM_LINUX) && !defined(SENTRY_PLATFORM_ANDROID)
 #    include "../vendor/stb_sprintf.h"
@@ -209,7 +209,6 @@ sentry__url_cleanup(sentry_url_t *url)
     sentry_free(url->fragment);
     sentry_free(url->username);
     sentry_free(url->password);
-    memset(url, 0, sizeof(sentry_url_t));
 }
 
 sentry_dsn_t *
@@ -267,10 +266,7 @@ sentry__dsn_new(const char *raw_dsn)
     *tmp = 0;
     dsn->path = url.path;
     url.path = NULL;
-
-    if (dsn->public_key && dsn->host && dsn->path) {
-        dsn->is_valid = true;
-    }
+    dsn->is_valid = true;
 
 exit:
     sentry__url_cleanup(&url);
@@ -361,8 +357,7 @@ sentry__dsn_get_minidump_url(const sentry_dsn_t *dsn)
 char *
 sentry__msec_time_to_iso8601(uint64_t time)
 {
-    char buf[64];
-    size_t buf_len = sizeof(buf);
+    char buf[255];
     time_t secs = time / 1000;
     struct tm *tm;
 #ifdef SENTRY_PLATFORM_WINDOWS
@@ -371,32 +366,14 @@ sentry__msec_time_to_iso8601(uint64_t time)
     struct tm tm_buf;
     tm = gmtime_r(&secs, &tm_buf);
 #endif
-    // It might as well be that the `time` parameter is broken in some way and
-    // would create a broken `tm` that then later causes formatting issues. We
-    // have seen super strange timestamps in some event payloads.
-    if (!tm || tm->tm_year > 9000) {
-        return NULL;
-    }
-    size_t written = strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%S", tm);
-    if (written == 0) {
-        return NULL;
-    }
+    size_t end = strftime(buf, sizeof buf, "%Y-%m-%dT%H:%M:%S", tm);
 
     int msecs = time % 1000;
     if (msecs) {
-        size_t rv = (size_t)snprintf(
-            buf + written, buf_len - written, ".%03d", msecs);
-        if (rv >= buf_len - written) {
-            return NULL;
-        }
-        written += rv;
+        snprintf(buf + end, 10, ".%03d", msecs);
     }
 
-    if (written + 2 > buf_len) {
-        return NULL;
-    }
-    buf[written] = 'Z';
-    buf[written + 1] = '\0';
+    strcat(buf, "Z");
     return sentry__string_clone(buf);
 }
 
@@ -437,29 +414,6 @@ sentry__iso8601_to_msec(const char *iso)
     tm.tm_sec = s;
 #ifdef SENTRY_PLATFORM_WINDOWS
     time_t time = _mkgmtime(&tm);
-#elif defined(SENTRY_PLATFORM_AIX)
-    /*
-     * timegm is a GNU extension that AIX doesn't support. We'll have to fake
-     * it by setting TZ instead w/ mktime, then unsets it. Changes global env.
-     */
-    time_t time;
-    char *tz_env;
-    tz_env = getenv("TZ");
-    if (tz_env) {
-        /* make a copy of it, since it'll change when we set it to UTC */
-        tz_env = strdup(tz_env);
-    }
-    setenv("TZ", "UTC", 1);
-    tzset();
-    time = mktime(&tm);
-    /* revert */
-    if (tz_env) {
-        setenv("TZ", tz_env, 1);
-        free(tz_env);
-    } else {
-        unsetenv("TZ");
-    }
-    tzset();
 #else
     time_t time = timegm(&tm);
 #endif
@@ -502,8 +456,7 @@ sentry__strtod_c(const char *ptr, char **endptr)
 {
 #ifdef SENTRY_PLATFORM_WINDOWS
     return _strtod_l(ptr, endptr, c_locale());
-#elif defined(SENTRY_PLATFORM_ANDROID) || defined(SENTRY_PLATFORM_IOS)         \
-    || defined(SENTRY_PLATFORM_AIX)
+#elif defined(SENTRY_PLATFORM_ANDROID) || defined(SENTRY_PLATFORM_IOS)
     return strtod(ptr, endptr);
 #else
     return strtod_l(ptr, endptr, c_locale());
@@ -519,10 +472,9 @@ sentry__snprintf_c(char *buf, size_t buf_size, const char *fmt, ...)
     int rv;
 #ifdef SENTRY_PLATFORM_WINDOWS
     rv = _vsnprintf_l(buf, buf_size, fmt, c_locale(), args);
-#elif defined(SENTRY_PLATFORM_ANDROID) || defined(SENTRY_PLATFORM_IOS)         \
-    || defined(SENTRY_PLATFORM_AIX)
+#elif defined(SENTRY_PLATFORM_ANDROID) || defined(SENTRY_PLATFORM_IOS)
     rv = vsnprintf(buf, buf_size, fmt, args);
-#elif defined(SENTRY_PLATFORM_DARWIN)
+#elif defined(SENTRY_PLATFORM_MACOS)
     rv = vsnprintf_l(buf, buf_size, c_locale(), fmt, args);
 #else
     rv = stbsp_vsnprintf(buf, buf_size, fmt, args);

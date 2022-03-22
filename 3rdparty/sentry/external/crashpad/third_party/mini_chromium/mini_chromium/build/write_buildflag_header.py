@@ -90,9 +90,6 @@ def WriteHeader(options):
 
     output_file.write('\n#endif  // %s\n' % options.header_guard)
 
-def main():
-  options = GetOptions()
-  WriteHeader(options)
 
-if __name__ == "__main__":
-  sys.exit(main())
+options = GetOptions()
+WriteHeader(options)

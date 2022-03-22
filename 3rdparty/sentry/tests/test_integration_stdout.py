@@ -20,11 +20,7 @@ from .assertions import (
 
 def test_capture_stdout(cmake):
     tmp_path = cmake(
-        ["sentry_example"],
-        {
-            "SENTRY_BACKEND": "none",
-            "SENTRY_TRANSPORT": "none",
-        },
+        ["sentry_example"], {"SENTRY_BACKEND": "none", "SENTRY_TRANSPORT": "none",},
     )
 
     output = check_output(
@@ -47,8 +43,7 @@ def test_multi_process(cmake):
     # NOTE: It would have been nice to do *everything* in a unicode-named
     # directory, but apparently cmake does not like that either.
     tmp_path = cmake(
-        ["sentry_example"],
-        {"SENTRY_BACKEND": "none", "SENTRY_TRANSPORT": "none"},
+        ["sentry_example"], {"SENTRY_BACKEND": "none", "SENTRY_TRANSPORT": "none"},
     )
 
     cwd = tmp_path.joinpath("unicode ❤️ Юля")
@@ -91,8 +86,7 @@ def test_multi_process(cmake):
 
 def test_inproc_crash_stdout(cmake):
     tmp_path = cmake(
-        ["sentry_example"],
-        {"SENTRY_BACKEND": "inproc", "SENTRY_TRANSPORT": "none"},
+        ["sentry_example"], {"SENTRY_BACKEND": "inproc", "SENTRY_TRANSPORT": "none"},
     )
 
     child = run(tmp_path, "sentry_example", ["attachment", "crash"])
@@ -118,8 +112,7 @@ def test_inproc_crash_stdout(cmake):
 @pytest.mark.skipif(not has_breakpad, reason="test needs breakpad backend")
 def test_breakpad_crash_stdout(cmake):
     tmp_path = cmake(
-        ["sentry_example"],
-        {"SENTRY_BACKEND": "breakpad", "SENTRY_TRANSPORT": "none"},
+        ["sentry_example"], {"SENTRY_BACKEND": "breakpad", "SENTRY_TRANSPORT": "none"},
     )
 
     child = run(tmp_path, "sentry_example", ["attachment", "crash"])

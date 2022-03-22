@@ -31,10 +31,6 @@ class Lock {
 #ifdef NDEBUG
    // Optimized wrapper implementation
   Lock() : lock_() {}
-
-  Lock(const Lock&) = delete;
-  Lock& operator=(const Lock&) = delete;
-
   ~Lock() {}
   void Acquire() { lock_.Lock(); }
   void Release() { lock_.Unlock(); }
@@ -96,6 +92,8 @@ class Lock {
 
   // Platform specific underlying lock implementation.
   internal::LockImpl lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(Lock);
 };
 
 // A helper class that acquires the given Lock while the AutoLock is in scope.
@@ -111,9 +109,6 @@ class AutoLock {
     lock_.AssertAcquired();
   }
 
-  AutoLock(const AutoLock&) = delete;
-  AutoLock& operator=(const AutoLock&) = delete;
-
   ~AutoLock() {
     lock_.AssertAcquired();
     lock_.Release();
@@ -121,6 +116,7 @@ class AutoLock {
 
  private:
   Lock& lock_;
+  DISALLOW_COPY_AND_ASSIGN(AutoLock);
 };
 
 // AutoUnlock is a helper that will Release() the |lock| argument in the
@@ -133,15 +129,13 @@ class AutoUnlock {
     lock_.Release();
   }
 
-  AutoUnlock(const AutoUnlock&) = delete;
-  AutoUnlock& operator=(const AutoUnlock&) = delete;
-
   ~AutoUnlock() {
     lock_.Acquire();
   }
 
  private:
   Lock& lock_;
+  DISALLOW_COPY_AND_ASSIGN(AutoUnlock);
 };
 
 }  // namespace base

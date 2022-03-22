@@ -19,19 +19,7 @@ typedef struct sentry_scope_s {
     sentry_value_t breadcrumbs;
     sentry_level_t level;
     sentry_value_t client_sdk;
-
-#ifdef SENTRY_PERFORMANCE_MONITORING
-    // The span attached to this scope, if any.
-    //
-    // Conceptually, every transaction is a span, so it should be possible to
-    // attach spans or transactions to a scope. But sentry_span_t and
-    // sentry_transaction_t are unrelated types in the native SDK, so we need
-    // two distinct pointers. At most one of them should ever be non-null.
-    // Whenever possible, `transaction` should pull its value from the
-    // `name` property nested in transaction_object or span.
-    sentry_transaction_t *transaction_object;
-    sentry_span_t *span;
-#endif
+    sentry_session_t *session;
 } sentry_scope_t;
 
 /**
@@ -66,11 +54,11 @@ void sentry__scope_unlock(void);
 void sentry__scope_cleanup(void);
 
 /**
- * This will notify any backend of scope changes.
- * This function must be called while holding the scope lock, and it will be
- * unlocked internally.
+ * This will notify any backend of scope changes, and persist session
+ * information to disk. This function must be called while holding the scope
+ * lock, and it will be unlocked internally.
  */
-void sentry__scope_flush_unlock();
+void sentry__scope_flush_unlock(const sentry_scope_t *scope);
 
 /**
  * This will merge the requested data which is in the given `scope` to the given
@@ -79,8 +67,13 @@ void sentry__scope_flush_unlock();
  * attached.
  */
 void sentry__scope_apply_to_event(const sentry_scope_t *scope,
-    const sentry_options_t *options, sentry_value_t event,
-    sentry_scope_mode_t mode);
+    sentry_value_t event, sentry_scope_mode_t mode);
+
+/**
+ * This will update a sessions `distinct_id`, which is generated out of other
+ * scope data.
+ */
+void sentry__scope_session_sync(sentry_scope_t *scope);
 
 /**
  * These are convenience macros to automatically lock/unlock a scope inside a
@@ -91,16 +84,9 @@ void sentry__scope_apply_to_event(const sentry_scope_t *scope,
          sentry__scope_unlock(), Scope = NULL)
 #define SENTRY_WITH_SCOPE_MUT(Scope)                                           \
     for (sentry_scope_t *Scope = sentry__scope_lock(); Scope;                  \
-         sentry__scope_flush_unlock(), Scope = NULL)
+         sentry__scope_flush_unlock(Scope), Scope = NULL)
 #define SENTRY_WITH_SCOPE_MUT_NO_FLUSH(Scope)                                  \
     for (sentry_scope_t *Scope = sentry__scope_lock(); Scope;                  \
          sentry__scope_unlock(), Scope = NULL)
 
-#endif
-
-#ifdef SENTRY_PERFORMANCE_MONITORING
-// this is only used in unit tests
-#ifdef SENTRY_UNITTEST
-sentry_value_t sentry__scope_get_span_or_transaction();
-#endif
 #endif

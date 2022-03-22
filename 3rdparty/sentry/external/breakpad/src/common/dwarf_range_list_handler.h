@@ -49,7 +49,7 @@ namespace google_breakpad {
 // A class for producing a vector of google_breakpad::Module::Range
 // instances from a parsed DWARF range list.
 
-class DwarfRangeListHandler: public RangeListHandler {
+class DwarfRangeListHandler: public dwarf2reader::RangeListHandler {
  public:
   DwarfRangeListHandler(vector<Module::Range>* ranges)
       : ranges_(ranges) { }

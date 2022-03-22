@@ -25,9 +25,6 @@ class SessionEndWatcherTest final : public SessionEndWatcher {
  public:
   SessionEndWatcherTest() : SessionEndWatcher(), called_(false) {}
 
-  SessionEndWatcherTest(const SessionEndWatcherTest&) = delete;
-  SessionEndWatcherTest& operator=(const SessionEndWatcherTest&) = delete;
-
   ~SessionEndWatcherTest() override {}
 
   void Run() {
@@ -47,6 +44,8 @@ class SessionEndWatcherTest final : public SessionEndWatcher {
   void SessionEnding() override { called_ = true; }
 
   bool called_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionEndWatcherTest);
 };
 
 TEST(SessionEndWatcher, SessionEndWatcher) {

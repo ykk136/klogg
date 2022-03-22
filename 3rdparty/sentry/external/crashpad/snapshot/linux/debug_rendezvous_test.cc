@@ -83,7 +83,8 @@ void TestAgainstTarget(PtraceConnection* connection) {
   ASSERT_EQ(exe_mappings->Count(), 1u);
   LinuxVMAddress elf_address = exe_mappings->Next()->range.Base();
 
-  ProcessMemoryLinux memory(connection);
+  ProcessMemoryLinux memory;
+  ASSERT_TRUE(memory.Initialize(connection->GetProcessID()));
   ProcessMemoryRange range;
   ASSERT_TRUE(range.Initialize(&memory, connection->Is64Bit()));
 
@@ -162,9 +163,7 @@ void TestAgainstTarget(PtraceConnection* connection) {
     ASSERT_GE(possible_mappings->Count(), 1u);
 
     std::unique_ptr<ElfImageReader> module_reader;
-#if !defined(OS_ANDROID)
     const MemoryMap::Mapping* module_mapping = nullptr;
-#endif
     const MemoryMap::Mapping* mapping = nullptr;
     while ((mapping = possible_mappings->Next())) {
       auto parsed_module = std::make_unique<ElfImageReader>();
@@ -174,9 +173,7 @@ void TestAgainstTarget(PtraceConnection* connection) {
           parsed_module->GetDynamicArrayAddress(&dynamic_address) &&
           dynamic_address == module.dynamic_array) {
         module_reader = std::move(parsed_module);
-#if !defined(OS_ANDROID)
         module_mapping = mapping;
-#endif
         break;
       }
     }
@@ -243,10 +240,6 @@ TEST(DebugRendezvous, Self) {
 class ChildTest : public Multiprocess {
  public:
   ChildTest() {}
-
-  ChildTest(const ChildTest&) = delete;
-  ChildTest& operator=(const ChildTest&) = delete;
-
   ~ChildTest() {}
 
  private:
@@ -258,6 +251,8 @@ class ChildTest : public Multiprocess {
   }
 
   void MultiprocessChild() { CheckedReadFileAtEOF(ReadPipeHandle()); }
+
+  DISALLOW_COPY_AND_ASSIGN(ChildTest);
 };
 
 TEST(DebugRendezvous, Child) {

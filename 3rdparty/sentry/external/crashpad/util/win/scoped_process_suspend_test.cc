@@ -75,10 +75,6 @@ bool SuspendCountMatches(HANDLE process, DWORD desired_suspend_count) {
 class ScopedProcessSuspendTest final : public WinChildProcess {
  public:
   ScopedProcessSuspendTest() : WinChildProcess() {}
-
-  ScopedProcessSuspendTest(const ScopedProcessSuspendTest&) = delete;
-  ScopedProcessSuspendTest& operator=(const ScopedProcessSuspendTest&) = delete;
-
   ~ScopedProcessSuspendTest() {}
 
  private:
@@ -89,6 +85,8 @@ class ScopedProcessSuspendTest final : public WinChildProcess {
     EXPECT_EQ(c, ' ');
     return EXIT_SUCCESS;
   }
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedProcessSuspendTest);
 };
 
 TEST(ScopedProcessSuspend, ScopedProcessSuspend) {

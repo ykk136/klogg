@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "minidump/minidump_extensions.h"
 #include "minidump/minidump_stream_writer.h"
 #include "minidump/minidump_writable.h"
@@ -40,10 +41,6 @@ class MinidumpUTF16StringWriter;
 class MinidumpSystemInfoWriter final : public internal::MinidumpStreamWriter {
  public:
   MinidumpSystemInfoWriter();
-
-  MinidumpSystemInfoWriter(const MinidumpSystemInfoWriter&) = delete;
-  MinidumpSystemInfoWriter& operator=(const MinidumpSystemInfoWriter&) = delete;
-
   ~MinidumpSystemInfoWriter() override;
 
   //! \brief Initializes MINIDUMP_SYSTEM_INFO based on \a system_snapshot.
@@ -191,6 +188,8 @@ class MinidumpSystemInfoWriter final : public internal::MinidumpStreamWriter {
  private:
   MINIDUMP_SYSTEM_INFO system_info_;
   std::unique_ptr<internal::MinidumpUTF16StringWriter> csd_version_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpSystemInfoWriter);
 };
 
 }  // namespace crashpad

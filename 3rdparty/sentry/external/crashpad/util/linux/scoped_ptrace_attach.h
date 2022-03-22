@@ -17,6 +17,7 @@
 
 #include <sys/types.h>
 
+#include "base/macros.h"
 
 namespace crashpad {
 
@@ -44,10 +45,6 @@ bool PtraceDetach(pid_t pid, bool can_log = true);
 class ScopedPtraceAttach {
  public:
   ScopedPtraceAttach();
-
-  ScopedPtraceAttach(const ScopedPtraceAttach&) = delete;
-  ScopedPtraceAttach& operator=(const ScopedPtraceAttach&) = delete;
-
   ~ScopedPtraceAttach();
 
   //! \brief Detaches from the process by calling `ptrace()`.
@@ -64,6 +61,8 @@ class ScopedPtraceAttach {
 
  private:
   pid_t pid_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPtraceAttach);
 };
 
 }  // namespace crashpad

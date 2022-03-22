@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "util/misc/initialization_state.h"
 #include "util/misc/initialization_state_dcheck.h"
@@ -41,10 +42,6 @@ namespace crashpad {
 class ProcessInfo {
  public:
   ProcessInfo();
-
-  ProcessInfo(const ProcessInfo&) = delete;
-  ProcessInfo& operator=(const ProcessInfo&) = delete;
-
   ~ProcessInfo();
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || DOXYGEN
@@ -192,6 +189,8 @@ class ProcessInfo {
   mutable InitializationState start_time_initialized_;
 #endif
   InitializationStateDcheck initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessInfo);
 };
 
 }  // namespace crashpad

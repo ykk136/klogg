@@ -31,9 +31,9 @@
 #include <string>
 #include <utility>
 
-#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/memory/free_deleter.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"
@@ -103,10 +103,6 @@ constexpr char kTestMemory[] = "Read me from another process";
 class BasicChildTest : public Multiprocess {
  public:
   BasicChildTest() : Multiprocess() {}
-
-  BasicChildTest(const BasicChildTest&) = delete;
-  BasicChildTest& operator=(const BasicChildTest&) = delete;
-
   ~BasicChildTest() {}
 
  private:
@@ -133,6 +129,8 @@ class BasicChildTest : public Multiprocess {
   }
 
   void MultiprocessChild() override { CheckedReadFileAtEOF(ReadPipeHandle()); }
+
+  DISALLOW_COPY_AND_ASSIGN(BasicChildTest);
 };
 
 TEST(ProcessReaderLinux, ChildBasic) {
@@ -152,9 +150,6 @@ class TestThreadPool {
   };
 
   TestThreadPool() : threads_() {}
-
-  TestThreadPool(const TestThreadPool&) = delete;
-  TestThreadPool& operator=(const TestThreadPool&) = delete;
 
   ~TestThreadPool() {
     for (const auto& thread : threads_) {
@@ -257,6 +252,8 @@ class TestThreadPool {
   }
 
   std::vector<std::unique_ptr<Thread>> threads_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestThreadPool);
 };
 
 using ThreadMap = std::map<pid_t, TestThreadPool::ThreadExpectation>;
@@ -291,12 +288,9 @@ void ExpectThreads(const ThreadMap& thread_map,
 #if !defined(ADDRESS_SANITIZER)
     // AddressSanitizer causes stack variables to be stored separately from the
     // call stack.
-    EXPECT_LE(
-        thread.stack_region_address,
-        connection->Memory()->PointerToAddress(iterator->second.stack_address));
-    EXPECT_GE(
-        thread.stack_region_address + thread.stack_region_size,
-        connection->Memory()->PointerToAddress(iterator->second.stack_address));
+    EXPECT_LE(thread.stack_region_address, iterator->second.stack_address);
+    EXPECT_GE(thread.stack_region_address + thread.stack_region_size,
+              iterator->second.stack_address);
 #endif  // !defined(ADDRESS_SANITIZER)
 
     if (iterator->second.max_stack_size) {
@@ -313,10 +307,6 @@ class ChildThreadTest : public Multiprocess {
  public:
   ChildThreadTest(size_t stack_size = 0)
       : Multiprocess(), stack_size_(stack_size) {}
-
-  ChildThreadTest(const ChildThreadTest&) = delete;
-  ChildThreadTest& operator=(const ChildThreadTest&) = delete;
-
   ~ChildThreadTest() {}
 
  private:
@@ -385,6 +375,8 @@ class ChildThreadTest : public Multiprocess {
 
   static constexpr size_t kThreadCount = 3;
   const size_t stack_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildThreadTest);
 };
 
 TEST(ProcessReaderLinux, ChildWithThreads) {
@@ -401,10 +393,6 @@ TEST(ProcessReaderLinux, ChildThreadsWithSmallUserStacks) {
 class ChildWithSplitStackTest : public Multiprocess {
  public:
   ChildWithSplitStackTest() : Multiprocess(), page_size_(getpagesize()) {}
-
-  ChildWithSplitStackTest(const ChildWithSplitStackTest&) = delete;
-  ChildWithSplitStackTest& operator=(const ChildWithSplitStackTest&) = delete;
-
   ~ChildWithSplitStackTest() {}
 
  private:
@@ -477,6 +465,8 @@ class ChildWithSplitStackTest : public Multiprocess {
   }
 
   const size_t page_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildWithSplitStackTest);
 };
 
 // AddressSanitizer with use-after-return detection causes stack variables to
@@ -597,10 +587,6 @@ TEST(ProcessReaderLinux, SelfModules) {
 class ChildModuleTest : public Multiprocess {
  public:
   ChildModuleTest() : Multiprocess(), module_soname_("test_module_soname") {}
-
-  ChildModuleTest(const ChildModuleTest&) = delete;
-  ChildModuleTest& operator=(const ChildModuleTest&) = delete;
-
   ~ChildModuleTest() = default;
 
  private:
@@ -634,6 +620,8 @@ class ChildModuleTest : public Multiprocess {
   }
 
   const std::string module_soname_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildModuleTest);
 };
 
 TEST(ProcessReaderLinux, ChildModules) {

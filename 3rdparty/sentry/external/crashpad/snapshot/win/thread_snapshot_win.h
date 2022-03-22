@@ -20,6 +20,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "snapshot/cpu_context.h"
 #include "snapshot/memory_snapshot.h"
@@ -39,10 +40,6 @@ namespace internal {
 class ThreadSnapshotWin final : public ThreadSnapshot {
  public:
   ThreadSnapshotWin();
-
-  ThreadSnapshotWin(const ThreadSnapshotWin&) = delete;
-  ThreadSnapshotWin& operator=(const ThreadSnapshotWin&) = delete;
-
   ~ThreadSnapshotWin() override;
 
   //! \brief Initializes the object.
@@ -90,6 +87,8 @@ class ThreadSnapshotWin final : public ThreadSnapshot {
   ProcessReaderWin::Thread thread_;
   InitializationStateDcheck initialized_;
   std::vector<std::unique_ptr<MemorySnapshotGeneric>> pointed_to_memory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadSnapshotWin);
 };
 
 }  // namespace internal

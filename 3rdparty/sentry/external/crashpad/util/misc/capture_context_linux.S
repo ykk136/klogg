@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/misc/arm64_bti_note.S"
-
 // namespace crashpad {
 // void CaptureContext(ucontext_t* context);
 // }  // namespace crashpad
@@ -40,7 +38,6 @@
 
 CAPTURECONTEXT_SYMBOL:
 CAPTURECONTEXT_SYMBOL2:
-  CRASHPAD_AARCH64_VALID_CALL_TARGET
 
 #if defined(__i386__)
 

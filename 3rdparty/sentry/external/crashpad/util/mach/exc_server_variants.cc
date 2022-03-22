@@ -20,7 +20,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/cxx17_backports.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "util/mac/mac_util.h"
 #include "util/mach/composite_mach_message_server.h"
@@ -230,9 +230,6 @@ class ExcServer : public MachMessageServer::Interface {
   explicit ExcServer(Interface* interface)
       : MachMessageServer::Interface(), interface_(interface) {}
 
-  ExcServer(const ExcServer&) = delete;
-  ExcServer& operator=(const ExcServer&) = delete;
-
   // MachMessageServer::Interface:
 
   bool MachMessageServerFunction(const mach_msg_header_t* in_header,
@@ -259,6 +256,8 @@ class ExcServer : public MachMessageServer::Interface {
 
  private:
   Interface* interface_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(ExcServer);
 };
 
 template <typename Traits>
@@ -454,9 +453,6 @@ class SimplifiedExcServer final : public ExcServer<Traits>,
         ExcServer<Traits>::Interface(),
         interface_(interface) {}
 
-  SimplifiedExcServer(const SimplifiedExcServer&) = delete;
-  SimplifiedExcServer& operator=(const SimplifiedExcServer&) = delete;
-
   // ExcServer::Interface:
 
   kern_return_t CatchExceptionRaise(exception_handler_t exception_port,
@@ -548,6 +544,8 @@ class SimplifiedExcServer final : public ExcServer<Traits>,
 
  private:
   Interface* interface_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(SimplifiedExcServer);
 };
 
 }  // namespace
@@ -570,10 +568,6 @@ class UniversalMachExcServerImpl final
     AddHandler(&exc_server_);
     AddHandler(&mach_exc_server_);
   }
-
-  UniversalMachExcServerImpl(const UniversalMachExcServerImpl&) = delete;
-  UniversalMachExcServerImpl& operator=(const UniversalMachExcServerImpl&) =
-      delete;
 
   ~UniversalMachExcServerImpl() {}
 
@@ -649,6 +643,8 @@ class UniversalMachExcServerImpl final
   SimplifiedExcServer<ExcTraits> exc_server_;
   SimplifiedExcServer<MachExcTraits> mach_exc_server_;
   UniversalMachExcServer::Interface* interface_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(UniversalMachExcServerImpl);
 };
 
 }  // namespace internal

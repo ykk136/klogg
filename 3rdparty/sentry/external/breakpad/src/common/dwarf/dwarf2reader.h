@@ -56,7 +56,7 @@
 #include "common/using_std_string.h"
 #include "common/dwarf/elf_reader.h"
 
-namespace google_breakpad {
+namespace dwarf2reader {
 struct LineStateMachine;
 class Dwarf2Handler;
 class LineInfoHandler;
@@ -277,12 +277,14 @@ class RangeListReader {
   RangeListReader(ByteReader* reader, CURangesInfo* cu_info,
                   RangeListHandler* handler) :
       reader_(reader), cu_info_(cu_info), handler_(handler),
-      offset_array_(0) { }
+      offset_array_(0), offset_entry_count_(0) { }
 
   // Read ranges from cu_info as specified by form and data.
   bool ReadRanges(enum DwarfForm form, uint64_t data);
 
  private:
+  bool SetRangesBase(uint64_t base);
+
   // Read dwarf4 .debug_ranges at offset.
   bool ReadDebugRanges(uint64_t offset);
   // Read dwarf5 .debug_rngslist at offset.
@@ -314,6 +316,7 @@ class RangeListReader {
   CURangesInfo* cu_info_;
   RangeListHandler* handler_;
   uint64_t offset_array_;
+  uint64_t offset_entry_count_;
 };
 
 // This class is the main interface between the reader and the
@@ -538,9 +541,9 @@ class CompilationUnit {
                                   enum DwarfForm form,
                                   uint64_t implicit_const);
 
-  // Special version of ProcessAttribute, for finding str_offsets_base and
-  // DW_AT_addr_base in DW_TAG_compile_unit, for DWARF v5.
-  const uint8_t* ProcessOffsetBaseAttribute(uint64_t dieoffset,
+  // Special version of ProcessAttribute, for finding str_offsets_base in
+  // DW_TAG_compile_unit, for DWARF v5.
+  const uint8_t* ProcessStrOffsetBaseAttribute(uint64_t dieoffset,
 					       const uint8_t* start,
 					       enum DwarfAttribute attr,
 					       enum DwarfForm form,
@@ -1489,6 +1492,6 @@ class CallFrameInfo::Reporter {
   string section_;
 };
 
-}  // namespace google_breakpad
+}  // namespace dwarf2reader
 
 #endif  // UTIL_DEBUGINFO_DWARF2READER_H__

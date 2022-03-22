@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "snapshot/cpu_context.h"
 #include "snapshot/memory_snapshot.h"
 #include "snapshot/thread_snapshot.h"
@@ -33,10 +34,6 @@ namespace test {
 class TestThreadSnapshot final : public ThreadSnapshot {
  public:
   TestThreadSnapshot();
-
-  TestThreadSnapshot(const TestThreadSnapshot&) = delete;
-  TestThreadSnapshot& operator=(const TestThreadSnapshot&) = delete;
-
   ~TestThreadSnapshot();
 
   //! \brief Obtains a pointer to the underlying mutable CPUContext structure.
@@ -100,6 +97,8 @@ class TestThreadSnapshot final : public ThreadSnapshot {
   int priority_;
   uint64_t thread_specific_data_address_;
   std::vector<std::unique_ptr<MemorySnapshot>> extra_memory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestThreadSnapshot);
 };
 
 }  // namespace test

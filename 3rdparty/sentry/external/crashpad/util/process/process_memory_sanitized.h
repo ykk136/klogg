@@ -20,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "util/misc/address_types.h"
 #include "util/misc/initialization_state_dcheck.h"
 #include "util/process/process_memory.h"
@@ -30,10 +31,6 @@ namespace crashpad {
 class ProcessMemorySanitized final : public ProcessMemory {
  public:
   ProcessMemorySanitized();
-
-  ProcessMemorySanitized(const ProcessMemorySanitized&) = delete;
-  ProcessMemorySanitized& operator=(const ProcessMemorySanitized&) = delete;
-
   ~ProcessMemorySanitized();
 
   //! \brief Initializes this object to read memory from the underlying
@@ -56,6 +53,8 @@ class ProcessMemorySanitized final : public ProcessMemory {
   const ProcessMemory* memory_;
   InitializationStateDcheck initialized_;
   std::vector<std::pair<VMAddress, VMAddress>> allowed_ranges_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessMemorySanitized);
 };
 
 }  // namespace crashpad

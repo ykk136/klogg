@@ -18,6 +18,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace logging {
 
@@ -31,14 +32,12 @@ class NtstatusLogMessage : public logging::LogMessage {
       int line,
       LogSeverity severity,
       DWORD ntstatus);
-
-  NtstatusLogMessage(const NtstatusLogMessage&) = delete;
-  NtstatusLogMessage& operator=(const NtstatusLogMessage&) = delete;
-
   ~NtstatusLogMessage();
 
  private:
   DWORD ntstatus_;
+
+  DISALLOW_COPY_AND_ASSIGN(NtstatusLogMessage);
 };
 
 }  // namespace logging

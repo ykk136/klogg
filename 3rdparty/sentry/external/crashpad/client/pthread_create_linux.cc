@@ -31,11 +31,10 @@ struct StartParams {
 void* InitializeSignalStackAndStart(StartParams* params) {
   crashpad::CrashpadClient::InitializeSignalStackForThread();
 
-  crashpad::NoCfiIcall<StartRoutineType> start_routine(params->start_routine);
-  void* arg = params->arg;
+  StartParams local_params = *params;
   delete params;
 
-  return start_routine(arg);
+  return local_params.start_routine(local_params.arg);
 }
 
 }  // namespace

@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "client/annotation.h"
 #include "client/annotation_list.h"
 #include "client/crashpad_info.h"
@@ -126,11 +127,6 @@ class TestMachOImageAnnotationsReader final
         break;
     }
   }
-
-  TestMachOImageAnnotationsReader(const TestMachOImageAnnotationsReader&) =
-      delete;
-  TestMachOImageAnnotationsReader& operator=(
-      const TestMachOImageAnnotationsReader&) = delete;
 
   ~TestMachOImageAnnotationsReader() {}
 
@@ -402,6 +398,7 @@ class TestMachOImageAnnotationsReader final
 
       case kCrashAbort: {
         abort();
+        break;
       }
 
       case kCrashModuleInitialization: {
@@ -414,6 +411,7 @@ class TestMachOImageAnnotationsReader final
         // the FAIL() will fail the test.
         ASSERT_NE(dl_handle, nullptr) << dlerror();
         FAIL();
+        break;
       }
 
       case kCrashDyld: {
@@ -446,6 +444,8 @@ class TestMachOImageAnnotationsReader final
   }
 
   TestType test_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMachOImageAnnotationsReader);
 };
 
 TEST(MachOImageAnnotationsReader, DontCrash) {

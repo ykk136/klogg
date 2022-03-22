@@ -28,9 +28,6 @@ class SettingsTest : public testing::Test {
  public:
   SettingsTest() = default;
 
-  SettingsTest(const SettingsTest&) = delete;
-  SettingsTest& operator=(const SettingsTest&) = delete;
-
   base::FilePath settings_path() {
     return temp_dir_.path().Append(FILE_PATH_LITERAL("settings"));
   }
@@ -58,6 +55,8 @@ class SettingsTest : public testing::Test {
  private:
   ScopedTempDir temp_dir_;
   Settings settings_;
+
+  DISALLOW_COPY_AND_ASSIGN(SettingsTest);
 };
 
 TEST_F(SettingsTest, ClientID) {

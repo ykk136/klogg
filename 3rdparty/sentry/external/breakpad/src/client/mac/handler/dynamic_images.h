@@ -207,8 +207,7 @@ class DynamicImageRef {
  public:
   explicit DynamicImageRef(DynamicImage* inP) : p(inP) {}
   // The copy constructor is required by STL
-  DynamicImageRef(const DynamicImageRef& inRef) = default;
-  DynamicImageRef& operator=(const DynamicImageRef& inRef) = default;
+  DynamicImageRef(const DynamicImageRef& inRef) : p(inRef.p) {}
 
   bool operator<(const DynamicImageRef& inRef) const {
     return (*const_cast<DynamicImageRef*>(this)->p)

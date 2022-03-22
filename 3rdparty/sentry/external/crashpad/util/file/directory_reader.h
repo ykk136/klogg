@@ -16,6 +16,7 @@
 #define CRASHPAD_UTIL_FILE_DIRECTORY_READER_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
@@ -47,10 +48,6 @@ class DirectoryReader {
   };
 
   DirectoryReader();
-
-  DirectoryReader(const DirectoryReader&) = delete;
-  DirectoryReader& operator=(const DirectoryReader&) = delete;
-
   ~DirectoryReader();
 
   //! \brief Opens the directory specified by \a path for reading.
@@ -81,6 +78,8 @@ class DirectoryReader {
   ScopedSearchHANDLE handle_;
   bool first_entry_;
 #endif  // OS_POSIX
+
+  DISALLOW_COPY_AND_ASSIGN(DirectoryReader);
 };
 
 }  // namespace crashpad

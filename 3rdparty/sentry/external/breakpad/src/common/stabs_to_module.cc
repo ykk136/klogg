@@ -90,8 +90,7 @@ bool StabsToModule::EndCompilationUnit(uint64_t address) {
 bool StabsToModule::StartFunction(const string& name,
                                   uint64_t address) {
   assert(!current_function_);
-  Module::Function* f =
-      new Module::Function(module_->AddStringToPool(Demangle(name)), address);
+  Module::Function *f = new Module::Function(Demangle(name), address);
   Module::Range r(address, 0); // We compute this in StabsToModule::Finalize().
   f->ranges.push_back(r);
   f->parameter_size = 0; // We don't provide this information.
@@ -193,8 +192,7 @@ void StabsToModule::Finalize() {
   }
   // Now that everything has a size, add our functions to the module, and
   // dispose of our private list.
-  for (Module::Function* func: functions_)
-    module_->AddFunction(func);
+  module_->AddFunctions(functions_.begin(), functions_.end());
   functions_.clear();
 }
 

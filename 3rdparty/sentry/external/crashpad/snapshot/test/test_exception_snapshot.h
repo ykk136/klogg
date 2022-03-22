@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "snapshot/cpu_context.h"
 #include "snapshot/exception_snapshot.h"
 
@@ -32,10 +33,6 @@ namespace test {
 class TestExceptionSnapshot final : public ExceptionSnapshot {
  public:
   TestExceptionSnapshot();
-
-  TestExceptionSnapshot(const TestExceptionSnapshot&) = delete;
-  TestExceptionSnapshot& operator=(const TestExceptionSnapshot&) = delete;
-
   ~TestExceptionSnapshot();
 
   //! \brief Obtains a pointer to the underlying mutable CPUContext structure.
@@ -88,6 +85,8 @@ class TestExceptionSnapshot final : public ExceptionSnapshot {
   uint64_t exception_address_;
   std::vector<uint64_t> codes_;
   std::vector<std::unique_ptr<MemorySnapshot>> extra_memory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestExceptionSnapshot);
 };
 
 }  // namespace test

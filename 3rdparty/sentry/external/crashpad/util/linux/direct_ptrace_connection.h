@@ -20,6 +20,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "util/linux/ptrace_connection.h"
 #include "util/linux/ptracer.h"
 #include "util/linux/scoped_ptrace_attach.h"
@@ -35,10 +36,6 @@ namespace crashpad {
 class DirectPtraceConnection : public PtraceConnection {
  public:
   DirectPtraceConnection();
-
-  DirectPtraceConnection(const DirectPtraceConnection&) = delete;
-  DirectPtraceConnection& operator=(const DirectPtraceConnection&) = delete;
-
   ~DirectPtraceConnection();
 
   //! \brief Initializes this connection for the process whose process ID is
@@ -58,16 +55,17 @@ class DirectPtraceConnection : public PtraceConnection {
   bool GetThreadInfo(pid_t tid, ThreadInfo* info) override;
   bool ReadFileContents(const base::FilePath& path,
                         std::string* contents) override;
-  ProcessMemoryLinux* Memory() override;
+  ProcessMemory* Memory() override;
   bool Threads(std::vector<pid_t>* threads) override;
-  ssize_t ReadUpTo(VMAddress, size_t size, void* buffer) override;
 
  private:
   std::vector<std::unique_ptr<ScopedPtraceAttach>> attachments_;
-  std::unique_ptr<ProcessMemoryLinux> memory_;
+  ProcessMemoryLinux memory_;
   pid_t pid_;
   Ptracer ptracer_;
   InitializationStateDcheck initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(DirectPtraceConnection);
 };
 
 }  // namespace crashpad

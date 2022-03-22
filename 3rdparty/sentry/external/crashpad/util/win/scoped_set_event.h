@@ -17,6 +17,7 @@
 
 #include <windows.h>
 
+#include "base/macros.h"
 
 namespace crashpad {
 
@@ -27,10 +28,6 @@ namespace crashpad {
 class ScopedSetEvent {
  public:
   explicit ScopedSetEvent(HANDLE event);
-
-  ScopedSetEvent(const ScopedSetEvent&) = delete;
-  ScopedSetEvent& operator=(const ScopedSetEvent&) = delete;
-
   ~ScopedSetEvent();
 
   //! \brief Calls `SetEvent()` immediately.
@@ -42,6 +39,8 @@ class ScopedSetEvent {
 
  private:
   HANDLE event_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetEvent);
 };
 
 }  // namespace crashpad

@@ -20,6 +20,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "util/stream/output_stream_interface.h"
 
 namespace crashpad {
@@ -29,10 +30,6 @@ namespace test {
 class TestOutputStream : public OutputStreamInterface {
  public:
   TestOutputStream();
-
-  TestOutputStream(const TestOutputStream&) = delete;
-  TestOutputStream& operator=(const TestOutputStream&) = delete;
-
   ~TestOutputStream() override;
 
   // OutputStreamInterface:
@@ -59,6 +56,8 @@ class TestOutputStream : public OutputStreamInterface {
   size_t write_count_;
   size_t flush_count_;
   bool flush_needed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOutputStream);
 };
 
 }  // namespace test

@@ -69,6 +69,7 @@
 
 #include <pthread.h>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
@@ -79,9 +80,6 @@ class ConditionVariable {
  public:
   // Construct a cv for use with ONLY one user lock.
   explicit ConditionVariable(Lock* user_lock);
-
-  ConditionVariable(const ConditionVariable&) = delete;
-  ConditionVariable& operator=(const ConditionVariable&) = delete;
 
   ~ConditionVariable();
 
@@ -101,6 +99,8 @@ class ConditionVariable {
 #ifndef NDEBUG
   base::Lock* user_lock_;  // Needed to adjust shadow lock state on wait.
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(ConditionVariable);
 };
 
 }  // namespace base

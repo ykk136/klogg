@@ -14,6 +14,7 @@
 
 #include "snapshot/memory_snapshot.h"
 
+#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "snapshot/test/test_memory_snapshot.h"
 

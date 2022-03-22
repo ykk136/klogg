@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-namespace google_breakpad {
+namespace dwarf2reader {
 
 inline uint8_t ByteReader::ReadOneByte(const uint8_t* buffer) const {
   return buffer[0];
@@ -176,6 +176,6 @@ inline void ByteReader::ClearFunctionBase() {
   have_function_base_ = false;
 }
 
-}  // namespace google_breakpad
+}  // namespace dwarf2reader
 
 #endif  // UTIL_DEBUGINFO_BYTEREADER_INL_H__

@@ -46,9 +46,6 @@ class ScopedSigprocmaskRestore {
     DPLOG_IF(ERROR, !mask_is_set_) << "sigprocmask";
   }
 
-  ScopedSigprocmaskRestore(const ScopedSigprocmaskRestore&) = delete;
-  ScopedSigprocmaskRestore& operator=(const ScopedSigprocmaskRestore&) = delete;
-
   ~ScopedSigprocmaskRestore() {
     if (mask_is_set_ &&
         sys_sigprocmask(SIG_SETMASK, &orig_mask_, nullptr) != 0) {
@@ -59,6 +56,8 @@ class ScopedSigprocmaskRestore {
  private:
   kernel_sigset_t orig_mask_;
   bool mask_is_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSigprocmaskRestore);
 };
 
 }  // namespace

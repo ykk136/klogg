@@ -16,6 +16,7 @@
 
 #include "base/auto_reset.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "client/crashpad_info.h"
@@ -62,11 +63,6 @@ class ScopedUnsetCrashpadInfoOptions {
       : crashpad_info_(crashpad_info) {
   }
 
-  ScopedUnsetCrashpadInfoOptions(const ScopedUnsetCrashpadInfoOptions&) =
-      delete;
-  ScopedUnsetCrashpadInfoOptions& operator=(
-      const ScopedUnsetCrashpadInfoOptions&) = delete;
-
   ~ScopedUnsetCrashpadInfoOptions() {
     crashpad_info_->set_crashpad_handler_behavior(TriState::kUnset);
     crashpad_info_->set_system_crash_reporter_forwarding(TriState::kUnset);
@@ -76,6 +72,8 @@ class ScopedUnsetCrashpadInfoOptions {
 
  private:
   CrashpadInfo* crashpad_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedUnsetCrashpadInfoOptions);
 };
 
 CrashpadInfoClientOptions SelfProcessSnapshotAndGetCrashpadOptions() {

@@ -108,7 +108,7 @@ bool
 sentry__run_write_session(
     const sentry_run_t *run, const sentry_session_t *session)
 {
-    sentry_jsonwriter_t *jw = sentry__jsonwriter_new(NULL);
+    sentry_jsonwriter_t *jw = sentry__jsonwriter_new_in_memory();
     if (!jw) {
         return false;
     }
@@ -167,14 +167,6 @@ sentry__process_old_runs(const sentry_options_t *options, uint64_t last_crash)
         // the file is locked by another process
         if (!did_lock) {
             sentry__filelock_free(lock);
-            continue;
-        }
-        // make sure we don't delete ourselves if the lock check fails
-#ifdef SENTRY_PLATFORM_WINDOWS
-        if (wcscmp(options->run->run_path->path, run_dir->path) == 0) {
-#else
-        if (strcmp(options->run->run_path->path, run_dir->path) == 0) {
-#endif
             continue;
         }
         sentry_pathiter_t *run_iter = sentry__path_iter_directory(run_dir);

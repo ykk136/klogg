@@ -14,6 +14,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "handler/handler_main.h"
 #include "minidump/test/minidump_user_extension_stream_util.h"
@@ -29,11 +30,11 @@ class TestUserStreamDataSource : public crashpad::UserStreamDataSource {
  public:
   TestUserStreamDataSource() {}
 
-  TestUserStreamDataSource(const TestUserStreamDataSource&) = delete;
-  TestUserStreamDataSource& operator=(const TestUserStreamDataSource&) = delete;
-
   std::unique_ptr<crashpad::MinidumpUserExtensionStreamDataSource>
   ProduceStreamData(crashpad::ProcessSnapshot* process_snapshot) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestUserStreamDataSource);
 };
 
 std::unique_ptr<crashpad::MinidumpUserExtensionStreamDataSource>

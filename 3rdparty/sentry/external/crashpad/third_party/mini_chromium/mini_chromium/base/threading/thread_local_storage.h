@@ -5,6 +5,7 @@
 #ifndef MINI_CHROMIUM_BASE_THREADING_THREAD_LOCAL_STORAGE_H_
 #define MINI_CHROMIUM_BASE_THREADING_THREAD_LOCAL_STORAGE_H_
 
+#include "base/macros.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -76,6 +77,7 @@ class PlatformThreadLocalStorage {
 // an API for portability.
 class ThreadLocalStorage {
  public:
+
   // Prototype for the TLS destructor function, which can be optionally used to
   // cleanup thread local storage on thread exit.  'value' is the data that is
   // stored in thread local storage.
@@ -120,9 +122,6 @@ class ThreadLocalStorage {
     int slot_;
   };
 
-  ThreadLocalStorage(const ThreadLocalStorage&) = delete;
-  ThreadLocalStorage& operator=(const ThreadLocalStorage&) = delete;
-
   // A convenience wrapper around StaticSlot with a constructor. Can be used
   // as a member variable.
   class Slot : public StaticSlot {
@@ -130,13 +129,15 @@ class ThreadLocalStorage {
     // Calls StaticSlot::Initialize().
     explicit Slot(TLSDestructorFunc destructor = NULL);
 
-    Slot(const Slot&) = delete;
-    Slot& operator=(const Slot&) = delete;
-
    private:
     using StaticSlot::initialized_;
     using StaticSlot::slot_;
+
+    DISALLOW_COPY_AND_ASSIGN(Slot);
   };
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ThreadLocalStorage);
 };
 
 }  // namespace base

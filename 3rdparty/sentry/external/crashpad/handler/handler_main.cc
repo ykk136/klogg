@@ -270,14 +270,12 @@ int ExitFailure() {
 class CallMetricsRecordNormalExit {
  public:
   CallMetricsRecordNormalExit() {}
-
-  CallMetricsRecordNormalExit(const CallMetricsRecordNormalExit&) = delete;
-  CallMetricsRecordNormalExit& operator=(const CallMetricsRecordNormalExit&) =
-      delete;
-
   ~CallMetricsRecordNormalExit() {
     MetricsRecordExit(Metrics::LifetimeMilestone::kExitedNormally);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CallMetricsRecordNormalExit);
 };
 
 #if defined(OS_APPLE) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
@@ -393,10 +391,6 @@ BOOL WINAPI ConsoleHandler(DWORD console_event) {
 class TerminateHandler final : public SessionEndWatcher {
  public:
   TerminateHandler() : SessionEndWatcher() {}
-
-  TerminateHandler(const TerminateHandler&) = delete;
-  TerminateHandler& operator=(const TerminateHandler&) = delete;
-
   ~TerminateHandler() override {}
 
  private:
@@ -404,6 +398,8 @@ class TerminateHandler final : public SessionEndWatcher {
   void SessionEnding() override {
     MetricsRecordExit(Metrics::LifetimeMilestone::kTerminated);
   }
+
+  DISALLOW_COPY_AND_ASSIGN(TerminateHandler);
 };
 
 void ReinstallCrashHandler() {
@@ -493,9 +489,6 @@ class ScopedStoppable {
  public:
   ScopedStoppable() = default;
 
-  ScopedStoppable(const ScopedStoppable&) = delete;
-  ScopedStoppable& operator=(const ScopedStoppable&) = delete;
-
   ~ScopedStoppable() {
     if (stoppable_) {
       stoppable_->Stop();
@@ -508,6 +501,8 @@ class ScopedStoppable {
 
  private:
   std::unique_ptr<Stoppable> stoppable_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedStoppable);
 };
 
 void InitCrashpadLogging() {

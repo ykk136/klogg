@@ -17,7 +17,7 @@
 #include <sys/mman.h>
 
 #include "base/check.h"
-#include "base/memory/page_size.h"
+#include "base/process/process_metrics.h"
 
 namespace crashpad {
 namespace test {

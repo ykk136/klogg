@@ -31,7 +31,7 @@
 #ifndef COMMON_DWARF_DWARF2ENUMS_H__
 #define COMMON_DWARF_DWARF2ENUMS_H__
 
-namespace google_breakpad {
+namespace dwarf2reader {
 
 // These enums do not follow the google3 style only because they are
 // known universally (specs, other implementations) by the names in
@@ -740,5 +740,5 @@ enum DwarfPointerEncoding
     DW_EH_PE_indirect	= 0x80
   };
 
-}  // namespace google_breakpad
+}  // namespace dwarf2reader
 #endif  // COMMON_DWARF_DWARF2ENUMS_H__

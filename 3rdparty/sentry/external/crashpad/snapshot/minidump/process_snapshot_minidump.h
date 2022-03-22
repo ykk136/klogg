@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "minidump/minidump_extensions.h"
 #include "snapshot/exception_snapshot.h"
 #include "snapshot/memory_snapshot.h"
@@ -53,10 +54,6 @@ class MemoryMapRegionSnapshotMinidump;
 class ProcessSnapshotMinidump final : public ProcessSnapshot {
  public:
   ProcessSnapshotMinidump();
-
-  ProcessSnapshotMinidump(const ProcessSnapshotMinidump&) = delete;
-  ProcessSnapshotMinidump& operator=(const ProcessSnapshotMinidump&) = delete;
-
   ~ProcessSnapshotMinidump() override;
 
   //! \brief Initializes the object.
@@ -116,10 +113,6 @@ class ProcessSnapshotMinidump final : public ProcessSnapshot {
   // Initialize().
   bool InitializeMemoryInfo();
 
-  // Initializes data carried in a MINIDUMP_MEMORY_LIST stream on behalf of
-  // Initialize().
-  bool InitializeExtraMemory();
-
   // Initializes data carried in a MINIDUMP_SYSTEM_INFO stream on behalf of
   // Initialize().
   bool InitializeSystemSnapshot();
@@ -151,7 +144,6 @@ class ProcessSnapshotMinidump final : public ProcessSnapshot {
   std::vector<std::unique_ptr<internal::MemoryMapRegionSnapshotMinidump>>
       mem_regions_;
   std::vector<const MemoryMapRegionSnapshot*> mem_regions_exposed_;
-  std::vector<std::unique_ptr<internal::MemorySnapshotMinidump>> extra_memory_;
   std::vector<std::unique_ptr<MinidumpStream>> custom_streams_;
   MinidumpCrashpadInfo crashpad_info_;
   internal::SystemSnapshotMinidump system_snapshot_;
@@ -165,6 +157,8 @@ class ProcessSnapshotMinidump final : public ProcessSnapshot {
   uint32_t user_time_;
   uint32_t kernel_time_;
   InitializationStateDcheck initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessSnapshotMinidump);
 };
 
 }  // namespace crashpad

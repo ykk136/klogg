@@ -13,7 +13,7 @@
 #include "../vendor/acutest.h"
 
 #define CONCAT(A, B) A##B
-#define SENTRY_TEST(Name) void CONCAT(test_sentry_, Name)(void)
+#define SENTRY_TEST(Name) void CONCAT(test_sentry_, Name)(void **UNUSED(state))
 #define SKIP_TEST() (void)0
 
 #define TEST_CHECK_STRING_EQUAL(Val, ReferenceVal)                             \

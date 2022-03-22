@@ -17,6 +17,7 @@
 
 #include <mach/mach.h>
 
+#include "base/macros.h"
 
 namespace crashpad {
 
@@ -31,14 +32,12 @@ namespace crashpad {
 class ScopedTaskSuspend {
  public:
   explicit ScopedTaskSuspend(task_t task);
-
-  ScopedTaskSuspend(const ScopedTaskSuspend&) = delete;
-  ScopedTaskSuspend& operator=(const ScopedTaskSuspend&) = delete;
-
   ~ScopedTaskSuspend();
 
  private:
   task_t task_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTaskSuspend);
 };
 
 }  // namespace crashpad

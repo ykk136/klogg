@@ -15,6 +15,7 @@
 #ifndef CRASHPAD_UTIL_THREAD_THREAD_H_
 #define CRASHPAD_UTIL_THREAD_THREAD_H_
 
+#include "base/macros.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
@@ -30,10 +31,6 @@ namespace crashpad {
 class Thread {
  public:
   Thread();
-
-  Thread(const Thread&) = delete;
-  Thread& operator=(const Thread&) = delete;
-
   virtual ~Thread();
 
   //! \brief Create a platform thread, and run ThreadMain() on that thread. Must
@@ -61,6 +58,8 @@ class Thread {
 #elif defined(OS_WIN)
   HANDLE platform_thread_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
 }  // namespace crashpad

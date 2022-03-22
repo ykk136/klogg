@@ -76,7 +76,7 @@ The SDK supports different features on the target platform:
   have the `curl` library available. On other platforms, library users need to
   implement their own transport, based on the `function transport` API.
 - **Crashpad Backend** is currently only supported on Linux, Windows and macOS.
-- **Client-side stackwalking** is currently only supported on Linux, Windows, and macOS.
+- **Breakpad Backend** is currently only supported on Linux and Windows.
 
 ## Building and Installation
 
@@ -179,8 +179,6 @@ using `cmake -D BUILD_SHARED_LIBS=OFF ..`.
   `OFF` will build `sentry` as a static library instead.
   If sentry is used as a subdirectory of another project, the value `BUILD_SHARED_LIBS` will be inherited by default.
 
-  When using `sentry` as a static library, make sure to `#define SENTRY_BUILD_STATIC 1` before including the sentry header.
-
 - `SENTRY_PIC` (Default: ON):
   By default, `sentry` is built as a position independent library.
 
@@ -262,15 +260,6 @@ Legend:
 - ✓ supported
 - unsupported
 
-- `SENTRY_FOLDER` (Default: not defined):
-  Sets the sentry-native projects folder name for generators which support project hierarchy (like Microsoft Visual Studio).
-  To use this feature you need to enable hierarchy via [`USE_FOLDERS` property](https://cmake.org/cmake/help/latest/prop_gbl/USE_FOLDERS.html) 
-
-- `CRASHPAD_ENABLE_STACKTRACE` (Default: OFF):
-  This enables client-side stackwalking when using the crashpad backend. Stack unwinding will happen on the client's machine
-  and the result will be submitted to Sentry attached to the generated minidump.
-  Note that this feature is still experimental.
-
 ### Build Targets
 
 - `sentry`: This is the main library and the only default build target.
@@ -294,7 +283,7 @@ sentry_init(options);
 
 // your application code …
 
-sentry_close();
+sentry_shutdown();
 ```
 
 Other important configuration options include:
@@ -306,7 +295,7 @@ Other important configuration options include:
 
 ## Known Limitations
 
-- The crashpad backend on macOS currently has no support for notifying the crashing
+- The crashpad backend currently has no support for notifying the crashing
   process, and can thus not properly terminate sessions or call the registered
   `before_send` hook. It will also lose any events that have been queued for
   sending at time of crash.

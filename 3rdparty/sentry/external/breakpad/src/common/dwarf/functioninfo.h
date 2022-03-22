@@ -43,7 +43,7 @@
 #include "common/using_std_string.h"
 
 
-namespace google_breakpad {
+namespace dwarf2reader {
 
 struct FunctionInfo {
   // Name of the function
@@ -187,5 +187,5 @@ class CUFunctionInfoHandler: public Dwarf2Handler {
   uint64_t current_compilation_unit_offset_;
 };
 
-}  // namespace google_breakpad
+}  // namespace dwarf2reader
 #endif  // COMMON_DWARF_FUNCTIONINFO_H__

@@ -44,27 +44,6 @@ extern "C" {
 #ifdef SENTRY_PLATFORM_LINUX
 #    define SIGNAL_STACK_SIZE 65536
 static stack_t g_signal_stack;
-
-#    include "util/posix/signals.h"
-
-// This list was taken from crashpad's util/posix/signals.cc file
-// and is used to know which signals we need to reset to default
-// when shutting down the backend
-constexpr int g_CrashSignals[] = {
-    SIGABRT,
-    SIGBUS,
-    SIGFPE,
-    SIGILL,
-    SIGQUIT,
-    SIGSEGV,
-    SIGSYS,
-    SIGTRAP,
-#    if defined(SIGEMT)
-    SIGEMT,
-#    endif // defined(SIGEMT)
-    SIGXCPU,
-    SIGXFSZ,
-};
 #endif
 
 typedef struct {
@@ -86,8 +65,7 @@ sentry__crashpad_backend_user_consent_changed(sentry_backend_t *backend)
 }
 
 static void
-sentry__crashpad_backend_flush_scope(
-    sentry_backend_t *backend, const sentry_options_t *options)
+sentry__crashpad_backend_flush_scope(sentry_backend_t *backend)
 {
     const crashpad_state_t *data = (crashpad_state_t *)backend->data;
     if (!data->event_path) {
@@ -100,7 +78,7 @@ sentry__crashpad_backend_flush_scope(
     sentry_value_t event = sentry_value_new_object();
     SENTRY_WITH_SCOPE (scope) {
         // we want the scope without any modules or breadcrumbs
-        sentry__scope_apply_to_event(scope, options, event, SENTRY_SCOPE_NONE);
+        sentry__scope_apply_to_event(scope, event, SENTRY_SCOPE_NONE);
     }
 
     size_t mpack_size;
@@ -135,14 +113,6 @@ sentry__crashpad_handler(int UNUSED(signum), siginfo_t *UNUSED(info),
 
     SENTRY_WITH_OPTIONS (options) {
         sentry__write_crash_marker(options);
-
-        sentry_value_t event = sentry_value_new_event();
-        if (options->before_send_func) {
-            SENTRY_TRACE("invoking `before_send` hook");
-            event = options->before_send_func(
-                event, NULL, options->before_send_data);
-        }
-        sentry_value_decref(event);
 
         sentry__record_errors_on_current_session(1);
         sentry_session_t *session = sentry__end_current_session_with_status(
@@ -302,15 +272,6 @@ sentry__crashpad_backend_startup(
 static void
 sentry__crashpad_backend_shutdown(sentry_backend_t *backend)
 {
-#ifdef SENTRY_PLATFORM_LINUX
-    // restore signal handlers to their default state
-    for (const auto signal : g_CrashSignals) {
-        if (crashpad::Signals::IsCrashSignal(signal)) {
-            crashpad::Signals::InstallDefaultHandler(signal);
-        }
-    }
-#endif
-
     crashpad_state_t *data = (crashpad_state_t *)backend->data;
     delete data->db;
     data->db = nullptr;
@@ -324,20 +285,16 @@ sentry__crashpad_backend_shutdown(sentry_backend_t *backend)
 }
 
 static void
-sentry__crashpad_backend_add_breadcrumb(sentry_backend_t *backend,
-    sentry_value_t breadcrumb, const sentry_options_t *options)
+sentry__crashpad_backend_add_breadcrumb(
+    sentry_backend_t *backend, sentry_value_t breadcrumb)
 {
     crashpad_state_t *data = (crashpad_state_t *)backend->data;
 
-    size_t max_breadcrumbs = options->max_breadcrumbs;
-    if (!max_breadcrumbs) {
-        return;
-    }
-
-    bool first_breadcrumb = data->num_breadcrumbs % max_breadcrumbs == 0;
+    bool first_breadcrumb = data->num_breadcrumbs % SENTRY_BREADCRUMBS_MAX == 0;
 
     const sentry_path_t *breadcrumb_file
-        = data->num_breadcrumbs % (max_breadcrumbs * 2) < max_breadcrumbs
+        = data->num_breadcrumbs % (SENTRY_BREADCRUMBS_MAX * 2)
+            < SENTRY_BREADCRUMBS_MAX
         ? data->breadcrumb1_path
         : data->breadcrumb2_path;
     data->num_breadcrumbs++;

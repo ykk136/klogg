@@ -87,9 +87,6 @@ class ChildPortHandshakeTest : public Multiprocess {
         test_type_(test_type) {
   }
 
-  ChildPortHandshakeTest(const ChildPortHandshakeTest&) = delete;
-  ChildPortHandshakeTest& operator=(const ChildPortHandshakeTest&) = delete;
-
   ~ChildPortHandshakeTest() {
   }
 
@@ -133,6 +130,7 @@ class ChildPortHandshakeTest : public Multiprocess {
       case TestType::kServerDies:
         // This was special-cased as an early return above.
         FAIL();
+        break;
     }
   }
 
@@ -257,6 +255,8 @@ class ChildPortHandshakeTest : public Multiprocess {
   ChildPortHandshake child_port_handshake_;
   ClientProcess client_process_;
   TestType test_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildPortHandshakeTest);
 };
 
 TEST(ChildPortHandshake, ChildClientChecksIn_ReceiveRight) {

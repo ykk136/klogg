@@ -57,12 +57,6 @@ class ElfImageReader::ProgramHeaderTableSpecific
     : public ElfImageReader::ProgramHeaderTable {
  public:
   ProgramHeaderTableSpecific<PhdrType>() {}
-
-  ProgramHeaderTableSpecific<PhdrType>(
-      const ProgramHeaderTableSpecific<PhdrType>&) = delete;
-  ProgramHeaderTableSpecific<PhdrType>& operator=(
-      const ProgramHeaderTableSpecific<PhdrType>&) = delete;
-
   ~ProgramHeaderTableSpecific<PhdrType>() {}
 
   bool Initialize(const ProcessMemoryRange& memory,
@@ -189,6 +183,8 @@ class ElfImageReader::ProgramHeaderTableSpecific
  private:
   std::vector<PhdrType> table_;
   InitializationStateDcheck initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProgramHeaderTableSpecific<PhdrType>);
 };
 
 ElfImageReader::NoteReader::~NoteReader() = default;

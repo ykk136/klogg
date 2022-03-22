@@ -36,14 +36,6 @@ sentry_uuid_t sentry__envelope_get_event_id(const sentry_envelope_t *envelope);
 sentry_envelope_item_t *sentry__envelope_add_event(
     sentry_envelope_t *envelope, sentry_value_t event);
 
-#ifdef SENTRY_PERFORMANCE_MONITORING
-/**
- * Add a transaction to this envelope.
- */
-sentry_envelope_item_t *sentry__envelope_add_transaction(
-    sentry_envelope_t *envelope, sentry_value_t transaction);
-#endif
-
 /**
  * Add a session to this envelope.
  */
@@ -94,7 +86,7 @@ MUST_USE int sentry_envelope_write_to_path(
     const sentry_envelope_t *envelope, const sentry_path_t *path);
 
 // these for now are only needed for tests
-#ifdef SENTRY_UNITTEST
+#if SENTRY_UNITTEST
 size_t sentry__envelope_get_item_count(const sentry_envelope_t *envelope);
 const sentry_envelope_item_t *sentry__envelope_get_item(
     const sentry_envelope_t *envelope, size_t idx);

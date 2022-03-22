@@ -11,36 +11,35 @@
 #include "sentry_utils.h"
 #include "sentry_value.h"
 
+#define DST_MODE_SB 1
+
 struct sentry_jsonwriter_s {
-    sentry_stringbuilder_t *sb;
+    union {
+        sentry_stringbuilder_t *sb;
+    } dst;
     uint64_t want_comma;
     uint32_t depth;
     bool last_was_key;
-    bool owns_sb;
+    char dst_mode;
 };
 
 sentry_jsonwriter_t *
-sentry__jsonwriter_new(sentry_stringbuilder_t *sb)
+sentry__jsonwriter_new_in_memory(void)
 {
-    bool owns_sb = false;
-    if (!sb) {
-        sb = SENTRY_MAKE(sentry_stringbuilder_t);
-        owns_sb = true;
-        sentry__stringbuilder_init(sb);
-    }
-    if (!sb) {
-        return NULL;
-    }
     sentry_jsonwriter_t *rv = SENTRY_MAKE(sentry_jsonwriter_t);
     if (!rv) {
         return NULL;
     }
-
-    rv->sb = sb;
+    rv->dst.sb = SENTRY_MAKE(sentry_stringbuilder_t);
+    if (!rv->dst.sb) {
+        sentry_free(rv);
+        return NULL;
+    }
+    sentry__stringbuilder_init(rv->dst.sb);
+    rv->dst_mode = DST_MODE_SB;
     rv->want_comma = 0;
     rv->depth = 0;
     rv->last_was_key = 0;
-    rv->owns_sb = owns_sb;
     return rv;
 }
 
@@ -50,22 +49,42 @@ sentry__jsonwriter_free(sentry_jsonwriter_t *jw)
     if (!jw) {
         return;
     }
-    if (jw->owns_sb) {
-        sentry__stringbuilder_cleanup(jw->sb);
-        sentry_free(jw->sb);
+    switch (jw->dst_mode) {
+    case DST_MODE_SB:
+        sentry__stringbuilder_cleanup(jw->dst.sb);
+        sentry_free(jw->dst.sb);
+        break;
     }
     sentry_free(jw);
+}
+
+size_t
+sentry__jsonwriter_get_length(const sentry_jsonwriter_t *jw)
+{
+    switch (jw->dst_mode) {
+    case DST_MODE_SB: {
+        const sentry_stringbuilder_t *sb = jw->dst.sb;
+        return sb->len;
+    }
+    default:
+        return 0;
+    }
 }
 
 char *
 sentry__jsonwriter_into_string(sentry_jsonwriter_t *jw, size_t *len_out)
 {
     char *rv = NULL;
-    sentry_stringbuilder_t *sb = jw->sb;
-    if (len_out) {
-        *len_out = sb->len;
+    switch (jw->dst_mode) {
+    case DST_MODE_SB: {
+        sentry_stringbuilder_t *sb = jw->dst.sb;
+        if (len_out) {
+            *len_out = sb->len;
+        }
+        rv = sentry__stringbuilder_into_string(sb);
+        break;
     }
-    rv = sentry__stringbuilder_into_string(sb);
+    }
     sentry__jsonwriter_free(jw);
     return rv;
 }
@@ -92,39 +111,20 @@ set_comma(sentry_jsonwriter_t *jw, bool val)
 static void
 write_char(sentry_jsonwriter_t *jw, char c)
 {
-    sentry__stringbuilder_append_char(jw->sb, c);
+    switch (jw->dst_mode) {
+    case DST_MODE_SB:
+        sentry__stringbuilder_append_char(jw->dst.sb, c);
+    }
 }
 
 static void
 write_str(sentry_jsonwriter_t *jw, const char *str)
 {
-    sentry__stringbuilder_append(jw->sb, str);
+    switch (jw->dst_mode) {
+    case DST_MODE_SB:
+        sentry__stringbuilder_append(jw->dst.sb, str);
+    }
 }
-
-// The Lookup table and algorithm below are adapted from:
-// https://github.com/serde-rs/json/blob/977975ee650829a1f3c232cd5f641a7011bdce1d/src/ser.rs#L2079-L2145
-
-// Lookup table of escape sequences. `0` means no need to escape, and `1` means
-// that escaping is needed.
-static unsigned char needs_escaping[256] = {
-    // 1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 1
-    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 2
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 3
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 4
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, // 5
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 6
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 7
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 8
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 9
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // A
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // B
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // C
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // D
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // E
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F
-};
 
 static void
 write_json_str(sentry_jsonwriter_t *jw, const char *str)
@@ -132,18 +132,7 @@ write_json_str(sentry_jsonwriter_t *jw, const char *str)
     // using unsigned here because utf-8 is > 127 :-)
     const unsigned char *ptr = (const unsigned char *)str;
     write_char(jw, '"');
-
-    const unsigned char *start = ptr;
     for (; *ptr; ptr++) {
-        if (!needs_escaping[*ptr]) {
-            continue;
-        }
-
-        size_t len = ptr - start;
-        if (len) {
-            sentry__stringbuilder_append_buf(jw->sb, (const char *)start, len);
-        }
-
         switch (*ptr) {
         case '\\':
             write_str(jw, "\\\\");
@@ -178,15 +167,7 @@ write_json_str(sentry_jsonwriter_t *jw, const char *str)
                 write_char(jw, *ptr);
             }
         }
-
-        start = ptr + 1;
     }
-
-    size_t len = ptr - start;
-    if (len) {
-        sentry__stringbuilder_append_buf(jw->sb, (const char *)start, len);
-    }
-
     write_char(jw, '"');
 }
 
@@ -238,7 +219,7 @@ void
 sentry__jsonwriter_write_double(sentry_jsonwriter_t *jw, double val)
 {
     if (can_write_item(jw)) {
-        char buf[24];
+        char buf[50];
         // The MAX_SAFE_INTEGER is 9007199254740991, which has 16 digits
         int written = sentry__snprintf_c(buf, sizeof(buf), "%.16g", val);
         // print `null` if we have printf issues or a non-finite double, which
@@ -298,9 +279,10 @@ sentry__jsonwriter_write_key(sentry_jsonwriter_t *jw, const char *val)
 void
 sentry__jsonwriter_write_list_start(sentry_jsonwriter_t *jw)
 {
-    if (can_write_item(jw)) {
-        write_char(jw, '[');
+    if (!can_write_item(jw)) {
+        return;
     }
+    write_char(jw, '[');
     jw->depth += 1;
     set_comma(jw, false);
 }
@@ -308,18 +290,17 @@ sentry__jsonwriter_write_list_start(sentry_jsonwriter_t *jw)
 void
 sentry__jsonwriter_write_list_end(sentry_jsonwriter_t *jw)
 {
+    write_char(jw, ']');
     jw->depth -= 1;
-    if (!at_max_depth(jw)) {
-        write_char(jw, ']');
-    }
 }
 
 void
 sentry__jsonwriter_write_object_start(sentry_jsonwriter_t *jw)
 {
-    if (can_write_item(jw)) {
-        write_char(jw, '{');
+    if (!can_write_item(jw)) {
+        return;
     }
+    write_char(jw, '{');
     jw->depth += 1;
     set_comma(jw, false);
 }
@@ -327,10 +308,8 @@ sentry__jsonwriter_write_object_start(sentry_jsonwriter_t *jw)
 void
 sentry__jsonwriter_write_object_end(sentry_jsonwriter_t *jw)
 {
+    write_char(jw, '}');
     jw->depth -= 1;
-    if (!at_max_depth(jw)) {
-        write_char(jw, '}');
-    }
 }
 
 static int32_t
@@ -542,10 +521,6 @@ sentry__value_from_json(const char *buf, size_t buflen)
     jsmntok_t *tokens = sentry_malloc(sizeof(jsmntok_t) * token_count);
     jsmn_init(&jsmn_p);
     token_count = jsmn_parse(&jsmn_p, buf, buflen, tokens, token_count);
-    if (token_count <= 0) {
-        sentry_free(tokens);
-        return sentry_value_new_null();
-    }
 
     sentry_value_t value_out;
     size_t tokens_consumed

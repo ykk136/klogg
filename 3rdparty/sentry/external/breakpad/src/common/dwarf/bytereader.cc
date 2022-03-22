@@ -33,7 +33,7 @@
 #include "common/dwarf/bytereader-inl.h"
 #include "common/dwarf/bytereader.h"
 
-namespace google_breakpad {
+namespace dwarf2reader {
 
 ByteReader::ByteReader(enum Endianness endian)
     :offset_reader_(NULL), address_reader_(NULL), endian_(endian),
@@ -247,4 +247,4 @@ Endianness ByteReader::GetEndianness() const {
   return endian_;
 }
 
-}  // namespace google_breakpad
+}  // namespace dwarf2reader

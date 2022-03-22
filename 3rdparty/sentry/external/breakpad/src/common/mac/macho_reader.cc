@@ -518,21 +518,12 @@ bool Reader::WalkSegmentSections(const Segment& segment,
       if (offset < size_t(segment.contents.start - buffer_.start) ||
           offset > size_t(segment.contents.end - buffer_.start) ||
           size > size_t(segment.contents.end - buffer_.start - offset)) {
-        if (offset > 0) {
-          reporter_->MisplacedSectionData(section.section_name,
-                                          section.segment_name);
-          return false;
-        } else {
-          // Mach-O files in .dSYM bundles have the contents of the loaded
-          // segments partially removed. The removed sections will have zero as
-          // their offset. MisplacedSectionData should not be called in this
-          // case.
-          section.contents.start = section.contents.end = NULL;
-        }
-      } else {
-        section.contents.start = buffer_.start + offset;
-        section.contents.end = section.contents.start + size;
+        reporter_->MisplacedSectionData(section.section_name,
+                                        section.segment_name);
+        return false;
       }
+      section.contents.start = buffer_.start + offset;
+      section.contents.end = section.contents.start + size;
     }
     if (!handler->HandleSection(section))
       return false;

@@ -24,6 +24,7 @@
 
 #include "base/atomicops.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/scoped_generic.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -344,11 +345,6 @@ class ScopedCallSetHandlerStartupState {
  public:
   ScopedCallSetHandlerStartupState() : successful_(false) {}
 
-  ScopedCallSetHandlerStartupState(const ScopedCallSetHandlerStartupState&) =
-      delete;
-  ScopedCallSetHandlerStartupState& operator=(
-      const ScopedCallSetHandlerStartupState&) = delete;
-
   ~ScopedCallSetHandlerStartupState() {
     SetHandlerStartupState(successful_ ? StartupState::kSucceeded
                                        : StartupState::kFailed);
@@ -358,6 +354,8 @@ class ScopedCallSetHandlerStartupState {
 
  private:
   bool successful_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCallSetHandlerStartupState);
 };
 
 bool StartHandlerProcess(

@@ -17,8 +17,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "gtest/gtest.h"
@@ -45,14 +45,14 @@ TEST(MinidumpStringWriter, MinidumpUTF16StringWriter) {
         MinidumpStringAtRVA(string_file.string(), 0);
     EXPECT_TRUE(minidump_string);
     EXPECT_EQ(MinidumpStringAtRVAAsString(string_file.string(), 0),
-              std::u16string());
+              base::string16());
   }
 
   static constexpr struct {
     size_t input_length;
     const char* input_string;
     size_t output_length;
-    char16_t output_string[10];
+    base::char16 output_string[10];
   } kTestData[] = {
       {0, "", 0, {}},
       {1, "a", 1, {'a'}},
@@ -95,7 +95,7 @@ TEST(MinidumpStringWriter, MinidumpUTF16StringWriter) {
     const MINIDUMP_STRING* minidump_string =
         MinidumpStringAtRVA(string_file.string(), 0);
     EXPECT_TRUE(minidump_string);
-    std::u16string expect_string = std::u16string(
+    base::string16 expect_string = base::string16(
         kTestData[index].output_string, kTestData[index].output_length);
     EXPECT_EQ(MinidumpStringAtRVAAsString(string_file.string(), 0),
               expect_string);
@@ -135,10 +135,10 @@ TEST(MinidumpStringWriter, ConvertInvalidUTF8ToUTF16) {
     EXPECT_EQ(
         minidump_string->Length,
         string_file.string().size() - sizeof(*tmp) - sizeof(tmp->Buffer[0]));
-    std::u16string output_string =
+    base::string16 output_string =
         MinidumpStringAtRVAAsString(string_file.string(), 0);
     EXPECT_FALSE(output_string.empty());
-    EXPECT_NE(output_string.find(0xfffd), std::u16string::npos);
+    EXPECT_NE(output_string.find(0xfffd), base::string16::npos);
   }
 }
 
@@ -201,10 +201,10 @@ TEST(MinidumpStringWriter, MinidumpUTF8StringWriter) {
 
 struct MinidumpUTF16StringListWriterTraits {
   using MinidumpStringListWriterType = MinidumpUTF16StringListWriter;
-  static std::u16string ExpectationForUTF8(const std::string& utf8) {
+  static base::string16 ExpectationForUTF8(const std::string& utf8) {
     return base::UTF8ToUTF16(utf8);
   }
-  static std::u16string ObservationAtRVA(const std::string& file_contents,
+  static base::string16 ObservationAtRVA(const std::string& file_contents,
                                          RVA rva) {
     return MinidumpStringAtRVAAsString(file_contents, rva);
   }

@@ -19,6 +19,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "snapshot/cpu_context.h"
 #include "util/numeric/checked_range.h"
 
@@ -64,10 +65,6 @@ class CaptureMemory {
         const CheckedRange<uint64_t, uint64_t>& range) = 0;
   };
 
-  CaptureMemory() = delete;
-  CaptureMemory(const CaptureMemory&) = delete;
-  CaptureMemory& operator=(const CaptureMemory&) = delete;
-
   //! \brief For all registers that appear to be pointer-like in \a context,
   //!     captures a small amount of memory near their pointed to location.
   //!
@@ -91,6 +88,9 @@ class CaptureMemory {
   //!     process and adding new ranges.
   static void PointedToByMemoryRange(const MemorySnapshot& memory,
                                      Delegate* delegate);
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureMemory);
 };
 
 }  // namespace internal

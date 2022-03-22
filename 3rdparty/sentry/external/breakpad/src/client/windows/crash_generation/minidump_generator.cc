@@ -432,7 +432,7 @@ bool MinidumpGenerator::WriteMinidump() {
         full_dump_file_,
         static_cast<MINIDUMP_TYPE>((dump_type_ & (~MiniDumpNormal))
                                     | MiniDumpWithHandleData),
-        dump_exception_pointers,
+        exception_pointers_ ? &dump_exception_info : NULL,
         &user_streams,
         NULL) != FALSE;
   }
@@ -449,7 +449,7 @@ bool MinidumpGenerator::WriteMinidump() {
       dump_file_,
       static_cast<MINIDUMP_TYPE>((dump_type_ & (~MiniDumpWithFullMemory))
                                   | MiniDumpNormal),
-      dump_exception_pointers,
+      exception_pointers_ ? &dump_exception_info : NULL,
       &user_streams,
       callback_info_) != FALSE;
 

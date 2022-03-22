@@ -17,7 +17,7 @@
 #include <string>
 #include <utility>
 
-#include "base/cxx17_backports.h"
+#include "base/stl_util.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_context.h"
 #include "minidump/minidump_context_writer.h"

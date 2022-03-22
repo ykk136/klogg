@@ -42,7 +42,9 @@
 #include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 
-namespace google_breakpad {
+using google_breakpad::scoped_ptr;
+
+namespace dwarf2reader {
 
 CULineInfoHandler::CULineInfoHandler(std::vector<SourceFileInfo>* files,
                                      std::vector<string>* dirs,
@@ -225,4 +227,4 @@ void CUFunctionInfoHandler::EndDIE(uint64_t offset) {
                                                 current_function_info_));
 }
 
-}  // namespace google_breakpad
+}  // namespace dwarf2reader

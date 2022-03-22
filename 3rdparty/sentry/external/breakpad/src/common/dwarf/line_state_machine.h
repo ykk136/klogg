@@ -30,9 +30,7 @@
 #ifndef COMMON_DWARF_LINE_STATE_MACHINE_H__
 #define COMMON_DWARF_LINE_STATE_MACHINE_H__
 
-#include <stdint.h>
-
-namespace google_breakpad {
+namespace dwarf2reader {
 
 // This is the format of a DWARF2/3 line state machine that we process
 // opcodes using.  There is no need for anything outside the lineinfo
@@ -57,7 +55,7 @@ struct LineStateMachine {
   bool end_sequence;
 };
 
-}  // namespace google_breakpad
+}  // namespace dwarf2reader
 
 
 #endif  // COMMON_DWARF_LINE_STATE_MACHINE_H__

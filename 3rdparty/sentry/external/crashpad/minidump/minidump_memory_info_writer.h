@@ -22,6 +22,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "minidump/minidump_stream_writer.h"
 #include "minidump/minidump_writable.h"
 
@@ -38,11 +39,6 @@ class MinidumpMemoryInfoListWriter final
     : public internal::MinidumpStreamWriter {
  public:
   MinidumpMemoryInfoListWriter();
-
-  MinidumpMemoryInfoListWriter(const MinidumpMemoryInfoListWriter&) = delete;
-  MinidumpMemoryInfoListWriter& operator=(const MinidumpMemoryInfoListWriter&) =
-      delete;
-
   ~MinidumpMemoryInfoListWriter() override;
 
   //! \brief Initializes a MINIDUMP_MEMORY_INFO_LIST based on \a memory_map.
@@ -67,6 +63,8 @@ class MinidumpMemoryInfoListWriter final
  private:
   MINIDUMP_MEMORY_INFO_LIST memory_info_list_base_;
   std::vector<MINIDUMP_MEMORY_INFO> items_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpMemoryInfoListWriter);
 };
 
 }  // namespace crashpad

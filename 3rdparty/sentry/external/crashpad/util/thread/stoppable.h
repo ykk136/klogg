@@ -15,6 +15,7 @@
 #ifndef CRASHPAD_UTIL_THREAD_STOPPABLE_H_
 #define CRASHPAD_UTIL_THREAD_STOPPABLE_H_
 
+#include "base/macros.h"
 
 namespace crashpad {
 

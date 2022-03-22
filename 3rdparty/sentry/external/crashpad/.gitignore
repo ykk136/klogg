@@ -19,7 +19,6 @@
 *.xcodeproj
 *~
 .*.sw?
-.cache
 .DS_Store
 .gdb_history
 .gdbinit
@@ -35,6 +34,7 @@
 /third_party/linux/.cipd
 /third_party/linux/clang
 /third_party/linux/sysroot
+/third_party/lss/lss
 /third_party/gyp/gyp
 /xcodebuild
 tags

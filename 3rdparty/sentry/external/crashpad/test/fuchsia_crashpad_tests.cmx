@@ -2,16 +2,16 @@
     "facets": {
         "fuchsia.test": {
             "injected-services": {
-                "fuchsia.net.name.Lookup": "fuchsia-pkg://fuchsia.com/crashpad-test#meta/dns-resolver.cmx",
-                "fuchsia.posix.socket.Provider": "fuchsia-pkg://fuchsia.com/crashpad-test#meta/netstack.cmx"
+                "fuchsia.net.NameLookup": "fuchsia-pkg://fuchsia.com/dns-resolver#meta/dns-resolver.cmx",
+                "fuchsia.posix.socket.Provider": "fuchsia-pkg://fuchsia.com/netstack#meta/netstack.cmx"
             }
         }
     },
     "include": [
-        "syslog/client.shard.cmx"
+        "sdk/lib/diagnostics/syslog/client.shard.cmx"
     ],
     "program": {
-        "binary": "bin/crashpad_tests"
+        "binary": "test/crashpad_tests"
     },
     "sandbox": {
         "features": [
@@ -19,7 +19,7 @@
             "isolated-temp"
         ],
         "services": [
-            "fuchsia.net.name.Lookup",
+            "fuchsia.net.NameLookup",
             "fuchsia.posix.socket.Provider",
             "fuchsia.process.Launcher"
         ]

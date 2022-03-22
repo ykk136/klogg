@@ -122,9 +122,6 @@ class DumpSymbols {
   // module object and must delete it when finished.
   bool ReadSymbolData(Module** module);
 
-  // Return an identifier string for the file this DumpSymbols is dumping.
-  std::string Identifier();
-
  private:
   // Used internally.
   class DumperLineToModule;
@@ -135,6 +132,10 @@ class DumpSymbols {
   // SuperFatArch.
   SuperFatArch* FindBestMatchForArchitecture(
       cpu_type_t cpu_type, cpu_subtype_t cpu_subtype);
+
+  // Return an identifier string for the file this DumpSymbols is dumping.
+  std::string Identifier();
+
 
   // Creates an empty module object.
   bool CreateEmptyModule(scoped_ptr<Module>& module);

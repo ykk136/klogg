@@ -96,19 +96,7 @@ struct FunctorTraits<R (*)(Args..., ...)> {
     return std::forward<Function>(function)(std::forward<RunArgs>(args)...);
   }
 };
-
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
-template <typename R, typename... Args>
-struct FunctorTraits<R(__stdcall*)(Args...)> {
-  template <typename... RunArgs>
-  DISABLE_CFI_ICALL static R Invoke(R(__stdcall* function)(Args...),
-                                    RunArgs&&... args) {
-    return function(std::forward<RunArgs>(args)...);
-  }
-};
-#endif  // OS_WIN && ARCH_CPU_X86
-
-#endif  // __cplusplus >= 201703L
+#endif
 
 }  // namespace
 
@@ -136,9 +124,6 @@ class NoCfiIcall {
   explicit NoCfiIcall(Functor function) : function_(function) {}
 
   //! \see NoCfiIcall
-  NoCfiIcall() : function_(static_cast<Functor>(nullptr)) {}
-
-  //! \see NoCfiIcall
   template <typename PointerType,
             typename = std::enable_if_t<
                 std::is_same<typename std::remove_cv<PointerType>::type,
@@ -156,20 +141,6 @@ class NoCfiIcall {
 #endif  // OS_WIN
 
   ~NoCfiIcall() = default;
-
-  //! \brief Updates the pointer to the function to be called.
-  //!
-  //! \param function A pointer to the function to be called.
-  void SetPointer(Functor function) { function_ = function; }
-
-  //! \see SetPointer
-  template <typename PointerType,
-            typename = std::enable_if_t<
-                std::is_same<typename std::remove_cv<PointerType>::type,
-                             void*>::value>>
-  void SetPointer(PointerType function) {
-    function_ = reinterpret_cast<Functor>(function);
-  }
 
   //! \brief Calls the function without sanitization by cfi-icall.
   template <typename... RunArgs>

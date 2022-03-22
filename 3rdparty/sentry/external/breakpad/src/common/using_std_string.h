@@ -55,7 +55,6 @@
 #ifdef HAS_GLOBAL_STRING
   typedef ::string google_breakpad_string;
 #else
-#include <string>
   using std::string;
   typedef std::string google_breakpad_string;
 #endif

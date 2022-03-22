@@ -28,10 +28,6 @@ namespace {
 class SameBitnessTest : public Multiprocess {
  public:
   SameBitnessTest() : Multiprocess() {}
-
-  SameBitnessTest(const SameBitnessTest&) = delete;
-  SameBitnessTest& operator=(const SameBitnessTest&) = delete;
-
   ~SameBitnessTest() {}
 
  private:
@@ -69,6 +65,8 @@ class SameBitnessTest : public Multiprocess {
 
     CheckedReadFileAtEOF(ReadPipeHandle());
   }
+
+  DISALLOW_COPY_AND_ASSIGN(SameBitnessTest);
 };
 
 TEST(Ptracer, SameBitness) {

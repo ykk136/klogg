@@ -80,10 +80,6 @@ elseif(LINUX OR ANDROID)
 	sentry_target_sources_cwd(sentry
 		modulefinder/sentry_modulefinder_linux.c
 	)
-elseif(AIX)
-	sentry_target_sources_cwd(sentry
-		modulefinder/sentry_modulefinder_aix.c
-	)
 endif()
 
 # transport
@@ -149,13 +145,5 @@ if(SENTRY_INTEGRATION_QT)
 	sentry_target_sources_cwd(sentry
 		integrations/sentry_integration_qt.cpp
 		integrations/sentry_integration_qt.h
-	)
-endif()
-
-if(SENTRY_BUILD_EXAMPLES)
-	target_compile_definitions(sentry PRIVATE SENTRY_PERFORMANCE_MONITORING)
-	sentry_target_sources_cwd(sentry
-	sentry_tracing.c
-	sentry_tracing.h
 	)
 endif()

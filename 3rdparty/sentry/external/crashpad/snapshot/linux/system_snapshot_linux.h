@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "snapshot/linux/process_reader_linux.h"
 #include "snapshot/system_snapshot.h"
@@ -36,10 +37,6 @@ namespace internal {
 class SystemSnapshotLinux final : public SystemSnapshot {
  public:
   SystemSnapshotLinux();
-
-  SystemSnapshotLinux(const SystemSnapshotLinux&) = delete;
-  SystemSnapshotLinux& operator=(const SystemSnapshotLinux&) = delete;
-
   ~SystemSnapshotLinux() override;
 
   //! \brief Initializes the object.
@@ -106,6 +103,8 @@ class SystemSnapshotLinux final : public SystemSnapshot {
   uint32_t target_cpu_;
   uint8_t cpu_count_;
   InitializationStateDcheck initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemSnapshotLinux);
 };
 
 }  // namespace internal

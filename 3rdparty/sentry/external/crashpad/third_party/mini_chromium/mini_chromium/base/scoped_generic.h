@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace base {
 
@@ -37,9 +38,6 @@ class ScopedGeneric {
   ScopedGeneric(ScopedGeneric<T, Traits>&& rvalue)
       : data_(rvalue.release(), rvalue.get_traits()) {
   }
-
-  ScopedGeneric(const ScopedGeneric&) = delete;
-  ScopedGeneric& operator=(const ScopedGeneric&) = delete;
 
   ~ScopedGeneric() {
     FreeIfNecessary();
@@ -97,6 +95,8 @@ class ScopedGeneric {
       const ScopedGeneric<T2, Traits2>& p2) const;
 
   Data data_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedGeneric);
 };
 
 template<class T, class Traits>

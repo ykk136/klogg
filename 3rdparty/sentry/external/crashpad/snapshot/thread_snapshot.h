@@ -17,9 +17,6 @@
 
 #include <stdint.h>
 
-#ifdef CLIENT_STACKTRACES_ENABLED
-#include <string>
-#endif
 #include <vector>
 
 namespace crashpad {
@@ -27,29 +24,10 @@ namespace crashpad {
 struct CPUContext;
 class MemorySnapshot;
 
-#ifdef CLIENT_STACKTRACES_ENABLED
-class FrameSnapshot {
- public:
-  FrameSnapshot(uint64_t instruction_addr, std::string symbol)
-      : instruction_addr_(instruction_addr), symbol_(symbol) {}
-
-  uint64_t InstructionAddr() const { return instruction_addr_; };
-  const std::string& Symbol() const { return symbol_; };
-
- private:
-  uint64_t instruction_addr_;
-  std::string symbol_;
-};
-#endif
-
 //! \brief An abstract interface to a snapshot representing a thread
 //!     (lightweight process) present in a snapshot process.
 class ThreadSnapshot {
  public:
-#ifdef CLIENT_STACKTRACES_ENABLED
-  ThreadSnapshot() : frames_() {}
-#endif
-
   virtual ~ThreadSnapshot() {}
 
   //! \brief Returns a CPUContext object corresponding to the thread’s CPU
@@ -95,13 +73,6 @@ class ThreadSnapshot {
   //!     are scoped to the lifetime of the ThreadSnapshot object that they
   //!     were obtained from.
   virtual std::vector<const MemorySnapshot*> ExtraMemory() const = 0;
-
-#ifdef CLIENT_STACKTRACES_ENABLED
-  const std::vector<FrameSnapshot>& StackTrace() const { return frames_; }
-
- protected:
-  std::vector<FrameSnapshot> frames_;
-#endif
 };
 
 }  // namespace crashpad

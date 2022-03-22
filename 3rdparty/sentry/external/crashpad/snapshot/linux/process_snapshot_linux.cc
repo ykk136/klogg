@@ -39,10 +39,7 @@ bool ProcessSnapshotLinux::Initialize(PtraceConnection* connection) {
     return false;
   }
 
-  client_id_.InitializeToZero();
   system_.Initialize(&process_reader_, &snapshot_time_);
-
-  GetCrashpadOptionsInternal((&options_));
 
   InitializeThreads();
   InitializeModules();
@@ -103,14 +100,9 @@ bool ProcessSnapshotLinux::InitializeException(
 
       auto exc_thread_snapshot =
           std::make_unique<internal::ThreadSnapshotLinux>();
-      if (!exc_thread_snapshot->Initialize(&process_reader_, thread, nullptr)) {
+      if (!exc_thread_snapshot->Initialize(&process_reader_, thread)) {
         return false;
       }
-
-#ifdef CLIENT_STACKTRACES_ENABLED
-      exc_thread_snapshot->TrimStackTrace(
-          exception_->Context()->InstructionPointer());
-#endif
 
       for (auto& thread_snapshot : threads_) {
         if (thread_snapshot->ThreadID() ==
@@ -132,11 +124,7 @@ bool ProcessSnapshotLinux::InitializeException(
 void ProcessSnapshotLinux::GetCrashpadOptions(
     CrashpadInfoClientOptions* options) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  *options = options_;
-}
 
-void ProcessSnapshotLinux::GetCrashpadOptionsInternal(
-    CrashpadInfoClientOptions* options) {
   CrashpadInfoClientOptions local_options;
 
   for (const auto& module : modules_) {
@@ -274,17 +262,10 @@ const ProcessMemory* ProcessSnapshotLinux::Memory() const {
 void ProcessSnapshotLinux::InitializeThreads() {
   const std::vector<ProcessReaderLinux::Thread>& process_reader_threads =
       process_reader_.Threads();
-  uint32_t* budget_remaining_pointer = nullptr;
-  uint32_t budget_remaining = options_.indirectly_referenced_memory_cap;
-  if (options_.gather_indirectly_referenced_memory == TriState::kEnabled) {
-    budget_remaining_pointer = &budget_remaining;
-  }
   for (const ProcessReaderLinux::Thread& process_reader_thread :
        process_reader_threads) {
     auto thread = std::make_unique<internal::ThreadSnapshotLinux>();
-    if (thread->Initialize(&process_reader_,
-                           process_reader_thread,
-                           budget_remaining_pointer)) {
+    if (thread->Initialize(&process_reader_, process_reader_thread)) {
       threads_.push_back(std::move(thread));
     }
   }
