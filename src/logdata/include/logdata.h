@@ -105,7 +105,6 @@ class LogData : public AbstractLogData {
 
     struct RawLines {
         LineNumber startLine;
-        LinesCount numberOfLines;
 
         std::vector<char> buffer;
         std::vector<qint64> endOfLines;

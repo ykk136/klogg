@@ -105,9 +105,9 @@ class IndexingDataAccessor {
 
     // Get the position (in byte from the beginning of the file)
     // of the end of the passed line.
-    LineOffset getPosForLine( LineNumber line ) const
+    LineOffset getEndOfLineOffset( LineNumber line ) const
     {
-        return data_->getPosForLine( line );
+        return data_->getEndOfLineOffset( line );
     }
 
     // Get the guessed encoding for the content.
@@ -195,7 +195,7 @@ class IndexingData {
 
     // Get the position (in byte from the beginning of the file)
     // of the end of the passed line.
-    LineOffset getPosForLine( LineNumber line ) const;
+    LineOffset getEndOfLineOffset( LineNumber line ) const;
 
     // Get the guessed encoding for the content.
     QTextCodec* getEncodingGuess() const;

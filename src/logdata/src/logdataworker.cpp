@@ -87,7 +87,7 @@ LinesCount IndexingData::getNbLines() const
     return LinesCount( linePosition_.size() );
 }
 
-LineOffset IndexingData::getPosForLine( LineNumber line ) const
+LineOffset IndexingData::getEndOfLineOffset( LineNumber line ) const
 {
     return linePosition_.at( line.get(), &linePositionCache_.local() );
 }

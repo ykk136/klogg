@@ -125,11 +125,11 @@ TEST_CASE( "Logdata decoding lines", "[logdata]" )
 
     const auto rawLines = logData.getLinesRaw( 200_lnum, 200_lcount );
     REQUIRE( rawLines.startLine == 200_lnum );
-    REQUIRE( rawLines.numberOfLines == 200_lcount );
+    REQUIRE( rawLines.endOfLines.size() == 200 );
 
     const auto utf8View = rawLines.buildUtf8View();
 
-    REQUIRE( rawLines.numberOfLines.get() == utf8View.size() );
+    REQUIRE( rawLines.endOfLines.size() == utf8View.size() );
 }
 
 TEST_CASE( "Logdata reading changing file", "[logdata]" )

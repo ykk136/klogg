@@ -38,6 +38,7 @@
 
 // This file implements LogData, the content of a log file.
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <iostream>
@@ -348,12 +349,11 @@ LogData::RawLines LogData::getLinesRaw( LineNumber firstLine, LinesCount number 
 {
     RawLines rawLines;
     rawLines.startLine = firstLine;
-    rawLines.numberOfLines = number;
 
     try {
-        const auto lastLine = firstLine + number - 1_lcount;
-
         rawLines.endOfLines.reserve( number.get() );
+        std::vector<LineNumber> lineNumbers{ static_cast<size_t>( number.get() ) };
+        std::iota( lineNumbers.begin(), lineNumbers.end(), firstLine );
 
         IndexingData::ConstAccessor scopedAccessor{ indexing_data_.get() };
         rawLines.prefilterPattern
@@ -361,28 +361,31 @@ LogData::RawLines LogData::getLinesRaw( LineNumber firstLine, LinesCount number 
                   prefilterPattern_, QRegularExpression::CaseInsensitiveOption )
                                            : QRegularExpression{};
 
-        if ( lastLine >= scopedAccessor.getNbLines() ) {
+        if ( lineNumbers.back() >= scopedAccessor.getNbLines() ) {
             LOG_WARNING << "Lines out of bound asked for";
             return {}; /* exception? */
         }
 
-        ScopedFileHolder<FileHolder> locker( attached_file_.get() );
+        ScopedFileHolder<FileHolder> fileHolder( attached_file_.get() );
 
-        const auto firstByte = ( firstLine.get() == 0 )
-                                   ? 0
-                                   : scopedAccessor.getPosForLine( firstLine - 1_lcount ).get();
-        const auto lastByte = scopedAccessor.getPosForLine( lastLine ).get();
+        const auto firstByte
+            = ( firstLine == 0_lnum )
+                  ? 0
+                  : scopedAccessor.getEndOfLineOffset( firstLine - 1_lcount ).get();
+        const auto lastByte = scopedAccessor.getEndOfLineOffset( lineNumbers.back() ).get();
 
-        for ( LineNumber line = firstLine; ( line <= lastLine ); ++line ) {
-            rawLines.endOfLines.push_back( scopedAccessor.getPosForLine( line ).get() - firstByte );
-        }
+        std::transform( lineNumbers.begin(), lineNumbers.end(),
+                        std::back_inserter( rawLines.endOfLines ),
+                        [ &scopedAccessor, firstByte ]( const LineNumber& line ) {
+                            return scopedAccessor.getEndOfLineOffset( line ).get() - firstByte;
+                        } );
 
         const auto bytesToRead = lastByte - firstByte;
         LOG_DEBUG << "will try to read:" << bytesToRead << " bytes";
         rawLines.buffer.resize( static_cast<std::size_t>( bytesToRead ) );
 
-        locker.getFile()->seek( firstByte );
-        const auto bytesRead = locker.getFile()->read( rawLines.buffer.data(), bytesToRead );
+        fileHolder.getFile()->seek( firstByte );
+        const auto bytesRead = fileHolder.getFile()->read( rawLines.buffer.data(), bytesToRead );
 
         if ( bytesRead != bytesToRead ) {
             LOG_DEBUG << "failed to read " << bytesToRead << " bytes, got " << bytesRead;
@@ -396,7 +399,6 @@ LogData::RawLines LogData::getLinesRaw( LineNumber firstLine, LinesCount number 
         LOG_ERROR << "not enough memory";
         rawLines.endOfLines.clear();
         rawLines.buffer.clear();
-        rawLines.numberOfLines = 0_lcount;
         return rawLines;
     }
 }
@@ -450,27 +452,21 @@ void LogData::doDetachReader() const
 
 std::vector<QString> LogData::RawLines::decodeLines() const
 {
-
-    if ( numberOfLines.get() == 0 ) {
+    if ( this->endOfLines.empty() ) {
         return std::vector<QString>();
     }
 
     std::vector<QString> decodedLines;
-    decodedLines.reserve( numberOfLines.get() );
-
-    const auto lastLine = startLine + numberOfLines - 1_lcount;
+    decodedLines.reserve( this->endOfLines.size() );
 
     try {
         qint64 lineStart = 0;
-        size_t currentLine = 0;
+        size_t currentLineIndex = 0;
         const auto lineFeedWidth = textDecoder.encodingParams.lineFeedWidth;
-
-        for ( LineNumber line = startLine; ( line <= lastLine ); ++line, ++currentLine ) {
-            const auto lineEnd = endOfLines[ currentLine ];
-
+        for ( const auto& lineEnd : this->endOfLines ) {
             const auto length = lineEnd - lineStart - lineFeedWidth;
-
-            LOG_DEBUG << "line " << line << ", length " << length;
+            LOG_DEBUG << "line " << this->startLine.get() + currentLineIndex << ", length "
+                      << length;
 
             if ( length >= std::numeric_limits<LineLength::UnderlyingType>::max() / 2 ) {
                 decodedLines.emplace_back( "KLOGG WARNING: this line is too long" );
@@ -499,8 +495,8 @@ std::vector<QString> LogData::RawLines::decodeLines() const
         decodedLines.emplace_back( "KLOGG WARNING: not enough memory" );
     }
 
-    while ( decodedLines.size() < numberOfLines.get() ) {
-        decodedLines.emplace_back( "KLOGG WARNING: failed to read some lines before this one" );
+    while ( decodedLines.size() < this->endOfLines.size() ) {
+        decodedLines.emplace_back( "KLOGG WARNING: failed to decode some lines before this one" );
     }
 
     return decodedLines;
@@ -509,7 +505,7 @@ std::vector<QString> LogData::RawLines::decodeLines() const
 std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
 {
     std::vector<std::string_view> lines;
-    if ( numberOfLines == 0_lcount || textDecoder.decoder == nullptr ) {
+    if ( this->endOfLines.empty() || textDecoder.decoder == nullptr ) {
         return lines;
     }
 
@@ -517,7 +513,7 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
         const auto optimizeForNotLatinEncodings
             = Configuration::get().optimizeForNotLatinEncodings();
 
-        lines.reserve( numberOfLines.get() );
+        lines.reserve( endOfLines.size() );
 
         std::string_view wholeString;
 
@@ -570,7 +566,7 @@ std::vector<std::string_view> LogData::RawLines::buildUtf8View() const
         LOG_ERROR << "failed to transform lines to utf8 " << e.what();
         const auto lastLineOffset = utf8Data_.size();
         utf8Data_.append( "KLOGG WARNING: not enough memory, try decrease search buffer" );
-        while ( lines.size() < numberOfLines.get() ) {
+        while ( lines.size() < this->endOfLines.size() ) {
             lines.emplace_back( utf8Data_.data() + lastLineOffset,
                                 utf8Data_.size() - lastLineOffset );
         }

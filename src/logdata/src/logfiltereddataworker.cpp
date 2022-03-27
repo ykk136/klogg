@@ -99,7 +99,7 @@ PartialSearchResults filterLines( const PatternMatcher& matcher, const LogData::
     LOG_DEBUG << "Filter lines at " << chunkStart;
     PartialSearchResults results;
     results.chunkStart = chunkStart;
-    results.processedLines = rawLines.numberOfLines;
+    results.processedLines = LinesCount{ rawLines.endOfLines.size() };
 
     const auto& lines = rawLines.buildUtf8View();
 
@@ -365,7 +365,8 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
                         LOG_INFO << "Matcher " << index << " interrupted";
                         auto results = std::make_shared<PartialSearchResults>();
                         blockData->searchResults.chunkStart = blockData->chunkStart;
-                        blockData->searchResults.processedLines = blockData->lines.numberOfLines;
+                        blockData->searchResults.processedLines
+                            = LinesCount{ blockData->lines.endOfLines.size() };
                         return blockData;
                     }
 
