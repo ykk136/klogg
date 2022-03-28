@@ -41,6 +41,7 @@
 // load/save the settings on opening/closing of the app
 
 #include "configuration.h"
+#include "log.h"
 #include <QNetworkReply>
 #include <cassert>
 #include <exception>
@@ -161,8 +162,8 @@ MainWindow::MainWindow( WindowSession session )
     signalMux_.connect( SIGNAL( saveCurrentSearchAsPredefinedFilter( QString ) ), this,
                         SLOT( newPredefinedFilterHandler( QString ) ) );
 
-    signalMux_.connect( SIGNAL( sendToScratchpad( QString ) ), &scratchPad_,
-                        SLOT( addData( QString ) ) );
+    signalMux_.connect( SIGNAL( sendToScratchpad( QString ) ), this,
+                        SLOT( sendToScratchpad( QString ) ) );
 
     // Register for progress status bar
     signalMux_.connect( SIGNAL( loadingProgressed( int ) ), this,
@@ -1044,6 +1045,12 @@ void MainWindow::showScratchPad()
 
     scratchPad_.show();
     scratchPad_.activateWindow();
+}
+
+void MainWindow::sendToScratchpad( QString newData )
+{
+    scratchPad_.addData( newData );
+    showScratchPad();
 }
 
 void MainWindow::encodingChanged( QAction* action )

@@ -155,9 +155,7 @@ void ScratchPad::addData( QString newData )
         return;
     }
 
-    auto cursor = textEdit_->textCursor();
-    cursor.insertText( newData );
-    cursor.insertText( QString{ QChar::LineFeed } );
+    textEdit_->appendPlainText(newData);
 }
 
 QString ScratchPad::transformText( const std::function<QString( QString )>& transform )
