@@ -36,6 +36,7 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <exception>
@@ -50,6 +51,7 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QThreadPool>
+#include <tuple>
 
 #include "configuration.h"
 #include "dispatch_to.h"
@@ -378,16 +380,24 @@ findNextLineFeed( const QByteArray& block, int posWithinBlock, const IndexingSta
     const auto nextLineFeed = findNextDelimeter( state.encodingParams, blockView, '\n' );
 
     const auto isEndOfBlock = nextLineFeed == std::string_view::npos;
+    const auto isZeroBlock
+        = isEndOfBlock ? blockView.find_first_not_of( "\0" ) != std::string_view::npos : false;
 
     const auto nextLineSize = !isEndOfBlock ? nextLineFeed : searchLineSize;
-    const auto additionalSpaces
-        = expandTabsInLine( block, blockView.substr( 0, nextLineSize ), posWithinBlock,
-                            state.encodingParams, findNextDelimeter, state.additional_spaces );
 
-    posWithinBlock
-        = charOffsetWithinBlock( block.data(), searchStart + nextLineSize, state.encodingParams );
+    if ( !isZeroBlock ) {
+        posWithinBlock = charOffsetWithinBlock( block.data(), searchStart + nextLineSize,
+                                                state.encodingParams );
 
-    return std::make_tuple( isEndOfBlock, posWithinBlock, additionalSpaces );
+        const auto additionalSpaces
+            = expandTabsInLine( block, blockView.substr( 0, nextLineSize ), posWithinBlock,
+                                state.encodingParams, findNextDelimeter, state.additional_spaces );
+
+        return std::make_tuple( isEndOfBlock, posWithinBlock, additionalSpaces );
+    }
+    else {
+        return std::make_tuple( false, block.size() - state.encodingParams.lineFeedWidth, 0 );
+    }
 }
 } // namespace parse_data_block
 
