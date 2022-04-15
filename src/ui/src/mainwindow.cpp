@@ -550,12 +550,12 @@ void MainWindow::createMenus()
     fileMenu->addAction( closeAllAction );
     fileMenu->addSeparator();
 
+    fileMenu->addAction( optionsAction );
+    fileMenu->addSeparator();
+
     for ( auto i = 0u; i < recentFileActions.size(); ++i ) {
         fileMenu->addAction( recentFileActions[ i ] );
     }
-
-    fileMenu->addSeparator();
-    fileMenu->addAction( optionsAction );
 
     fileMenu->addSeparator();
     fileMenu->addAction( exitAction );
