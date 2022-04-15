@@ -269,12 +269,12 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}\openssl-1.1
-          key: OpensslCache-1-1-1l
+          key: OpensslCache-1-1-1n
 
       - name: Download openssl
         if: ${{ steps.cache-openssl.outputs.cache-hit != 'true' }} 
         run: |
-          Invoke-WebRequest -Uri "https://mirror.firedaemon.com/OpenSSL/openssl-1.1.1l.zip" -OutFile openssl.zip
+          Invoke-WebRequest -Uri "https://mirror.firedaemon.com/OpenSSL/openssl-1.1.1n.zip" -OutFile openssl.zip
           7z x openssl.zip 
 
       - name: Set openssl paths
