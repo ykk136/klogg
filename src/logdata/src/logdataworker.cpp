@@ -380,8 +380,9 @@ findNextLineFeed( const QByteArray& block, int posWithinBlock, const IndexingSta
     const auto nextLineFeed = findNextDelimeter( state.encodingParams, blockView, '\n' );
 
     const auto isEndOfBlock = nextLineFeed == std::string_view::npos;
-    const auto isZeroBlock
-        = isEndOfBlock ? blockView.find_first_not_of( "\0" ) != std::string_view::npos : false;
+    const auto isZeroBlock = isEndOfBlock ? std::all_of( blockView.begin(), blockView.end(),
+                                                         []( const auto c ) { return c == '\0'; } )
+                                          : false;
 
     const auto nextLineSize = !isEndOfBlock ? nextLineFeed : searchLineSize;
 
@@ -396,6 +397,7 @@ findNextLineFeed( const QByteArray& block, int posWithinBlock, const IndexingSta
         return std::make_tuple( isEndOfBlock, posWithinBlock, additionalSpaces );
     }
     else {
+        LOG_INFO << "Found zero block at " << state.pos << " of size " << blockView.size();
         return std::make_tuple( false, block.size() - state.encodingParams.lineFeedWidth, 0 );
     }
 }
