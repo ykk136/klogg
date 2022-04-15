@@ -21,9 +21,11 @@
 #ifndef KLOGG_FONTUTILS
 #define KLOGG_FONTUTILS
 
+#include "log.h"
 #include <numeric>
 
 #include <QFontDatabase>
+#include <vector>
 
 class FontUtils {
   public:
@@ -31,7 +33,7 @@ class FontUtils {
     {
         QFontDatabase database;
 
-        // We only show the fixed fonts 
+        // We only show the fixed fonts
         QStringList fixedFamiles;
         auto families = database.families();
         for ( const auto& family : qAsConst( families ) ) {
@@ -50,6 +52,15 @@ class FontUtils {
             sizes = QFontDatabase::standardSizes();
         }
 
+        std::vector<int> additionalSizes(10);
+        std::iota( additionalSizes.begin(), additionalSizes.end(), 10 );
+        for ( int size : additionalSizes ) {
+            if ( !sizes.contains( size ) ) {
+                sizes.append( size );
+            }
+        }
+
+        std::sort( sizes.begin(), sizes.end() );
         return sizes;
     }
 };
