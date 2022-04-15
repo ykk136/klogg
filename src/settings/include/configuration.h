@@ -417,6 +417,15 @@ class Configuration final : public Persistable<Configuration> {
         qfBackColor_ = color;
     }
 
+    bool qfIgnoreCase() const
+    {
+        return qfIgnoreCase_;
+    }
+    void setQfIgnoreCase( bool ignore )
+    {
+        qfIgnoreCase_ = ignore;
+    }
+
     std::map<std::string, QStringList> shortcuts() const
     {
         return shortcuts_;
@@ -552,6 +561,8 @@ class Configuration final : public Persistable<Configuration> {
     bool hideAnsiColorSequences_ = false;
 
     int defaultEncodingMib_ = -1;
+
+    bool qfIgnoreCase_ = false;
 
     std::map<std::string, QStringList> shortcuts_;
 

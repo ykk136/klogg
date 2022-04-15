@@ -149,6 +149,9 @@ void Configuration::retrieveFromStorage( QSettings& settings )
                     DefaultConfiguration.qfBackColor_.name( QColor::HexArgb ) )
             .toString() );
 
+    qfIgnoreCase_
+        = settings.value( "quickfind.ignore_case", DefaultConfiguration.qfIgnoreCase_ ).toBool();
+
     autoRunSearchOnPatternChange_ = settings
                                         .value( "regexpType.autoRunSearch",
                                                 DefaultConfiguration.autoRunSearchOnPatternChange_ )
@@ -338,6 +341,7 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "regexpType.quickfindBackColor", qfBackColor_.name( QColor::HexArgb ) );
 
     settings.setValue( "quickfind.incremental", quickfindIncremental_ );
+    settings.setValue( "quickfind.ignore_case", qfIgnoreCase_ );
 
     settings.setValue( "filewatch.useNative", nativeFileWatchEnabled_ );
     settings.setValue( "filewatch.usePolling", pollingEnabled_ );

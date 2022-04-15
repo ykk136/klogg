@@ -43,7 +43,10 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QToolButton>
+#include <qcheckbox.h>
 #include <qkeysequence.h>
+#include <qlineedit.h>
+#include <qpushbutton.h>
 #include <qregularexpression.h>
 
 #include "configuration.h"
@@ -78,6 +81,7 @@ QuickFindWidget::QuickFindWidget( QWidget* parent )
     layout->addWidget( editQuickFind_ );
 
     ignoreCaseCheck_ = new QCheckBox( "Ignore &case" );
+    ignoreCaseCheck_->setChecked( Configuration::get().qfIgnoreCase() );
     layout->addWidget( ignoreCaseCheck_ );
 
     previousButton_
@@ -99,17 +103,18 @@ QuickFindWidget::QuickFindWidget( QWidget* parent )
     setMinimumWidth( minimumSizeHint().width() );
 
     // Behaviour
-    connect( closeButton_, SIGNAL( clicked() ), SLOT( closeHandler() ) );
-    connect( editQuickFind_, SIGNAL( textEdited( QString ) ), this, SLOT( textChanged() ) );
-    connect( ignoreCaseCheck_, SIGNAL( stateChanged( int ) ), this, SLOT( textChanged() ) );
-    /*
-    connect( editQuickFind_. SIGNAL( textChanged( QString ) ), this,
-            SLOT( updateButtons() ) );
-    */
+    connect( closeButton_, &QToolButton::clicked, this, &QuickFindWidget::closeHandler );
+    connect( editQuickFind_, &QLineEdit::textEdited, this, &QuickFindWidget::textChanged );
+    connect( editQuickFind_, &QLineEdit::returnPressed, this, &QuickFindWidget::returnHandler );
 
-    connect( editQuickFind_, SIGNAL( returnPressed() ), this, SLOT( returnHandler() ) );
-    connect( previousButton_, SIGNAL( clicked() ), this, SLOT( doSearchBackward() ) );
-    connect( nextButton_, SIGNAL( clicked() ), this, SLOT( doSearchForward() ) );
+    connect( ignoreCaseCheck_, &QCheckBox::stateChanged, this, [ this ] {
+        textChanged();
+        Configuration::get().setQfIgnoreCase( ignoreCaseCheck_->isChecked() );
+        Configuration::get().save();
+    } );
+
+    connect( previousButton_, &QToolButton::clicked, this, &QuickFindWidget::doSearchBackward );
+    connect( nextButton_, &QToolButton::clicked, this, &QuickFindWidget::doSearchForward );
 
     // Notification timer:
     notificationTimer_ = new QTimer( this );
