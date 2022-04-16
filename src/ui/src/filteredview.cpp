@@ -87,7 +87,7 @@ LineNumber FilteredView::maxDisplayLineNumber() const
 
 void FilteredView::doRegisterShortcuts()
 {
-
+    LOG_INFO << "Registering shortcuts for filtered view";
     AbstractLogView::doRegisterShortcuts();
     registerShortcut( ShortcutAction::LogViewNextMark, [ this ] {
         using LineTypeFlags = LogFilteredData::LineTypeFlags;

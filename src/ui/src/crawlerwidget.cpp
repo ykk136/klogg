@@ -909,6 +909,7 @@ void CrawlerWidget::clearSearchLimits()
 // the data are attached.
 void CrawlerWidget::setup()
 {
+    LOG_INFO << "Setup crawler widget";
     setOrientation( Qt::Vertical );
 
     assert( logData_ );
@@ -1277,6 +1278,8 @@ void CrawlerWidget::setup()
 
 void CrawlerWidget::registerShortcuts()
 {
+    LOG_INFO << "registering shortcuts for crawler widget";
+    
     for ( auto& shortcut : shortcuts_ ) {
         shortcut.second->deleteLater();
     }
@@ -1495,6 +1498,8 @@ void CrawlerWidget::updateEncoding()
 
     QString encodingPrefix = encodingMib_ ? "Displayed as %1" : "Detected as %1";
     encodingText_ = tr( encodingPrefix.arg( textCodec->name().constData() ).toLatin1() );
+
+    logData_->interruptLoading();
 
     logData_->setDisplayEncoding( textCodec->name().constData() );
     logMainView_->forceRefresh();

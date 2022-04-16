@@ -656,12 +656,13 @@ void AbstractLogView::registerShortcut( const std::string& action, std::function
 
 void AbstractLogView::registerShortcuts()
 {
-    LOG_INFO << "Reloading shortcuts";
     doRegisterShortcuts();
 }
 
 void AbstractLogView::doRegisterShortcuts()
 {
+    LOG_INFO << "Reloading shortcuts";
+
     for ( auto& shortcut : shortcuts_ ) {
         shortcut.second->deleteLater();
     }

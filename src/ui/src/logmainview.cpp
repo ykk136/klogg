@@ -44,6 +44,7 @@
 #include "logmainview.h"
 
 #include "abstractlogdata.h"
+#include "log.h"
 #include "logfiltereddata.h"
 #include "overview.h"
 
@@ -78,6 +79,7 @@ AbstractLogData::LineType LogMainView::lineType( LineNumber lineNumber ) const
 
 void LogMainView::doRegisterShortcuts()
 {
+    LOG_INFO << "Registering shortcuts for main view";
     AbstractLogView::doRegisterShortcuts();
     registerShortcut( ShortcutAction::LogViewNextMark, [ this ] {
         const auto line = filteredData_->getMarkAfter( getViewPosition() );
