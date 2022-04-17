@@ -56,14 +56,14 @@ class Logger {
         }
         
         const auto formattedMessage = qFormatLogMessage( type, context, msg );
-        const auto messageToPrint = qPrintable( formattedMessage );
+        const auto messageToPrint = formattedMessage.toUtf8();
 
         ScopedLock lock( mutex_ );
         QTextStream ts( logFile_.get() );
         ts << messageToPrint << '\n';
 
         if ( isConsoleLogEnabled_ ) {
-            std::cout << messageToPrint << std::endl;
+            std::cout << messageToPrint.constData() << std::endl;
         }
     }
 
@@ -75,10 +75,10 @@ class Logger {
         }
 
         const auto formattedMessage = qFormatLogMessage( type, context, msg );
-        const auto messageToPrint = qPrintable( formattedMessage );
+        const auto messageToPrint = formattedMessage.toUtf8();
 
         ScopedLock lock( mutex_ );
-        std::cout << messageToPrint << std::endl;
+        std::cout << messageToPrint.constData() << std::endl;
     }
 
     void enableLogging( bool isEnabled, uint8_t logLevel )
