@@ -35,6 +35,7 @@ class TabbedScratchPad : public QWidget {
 
   public slots:
     void addData( QString data );
+    void replaceData( QString data );
 
   protected:
     void keyPressEvent( QKeyEvent* event ) override;

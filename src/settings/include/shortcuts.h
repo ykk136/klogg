@@ -98,6 +98,7 @@ struct ShortcutAction {
     static constexpr auto LogViewAddNextColorLabel = "logview.add_next_color_label";
 
     static constexpr auto LogViewSendSelectionToScratchpad = "logview.send_selection_to_scratchpad";
+        static constexpr auto LogViewReplaceScratchpadWithSelection = "logview.replace_scratchpad_with_selection";
 
     static constexpr auto LogViewAddToSearch = "logview.add_to_search";
     static constexpr auto LogViewExcludeFromSearch = "logview.exclude_from_search";

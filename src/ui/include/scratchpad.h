@@ -40,6 +40,7 @@ class ScratchPad : public QWidget {
 
   public slots:
     void addData( QString data );
+    void replaceData( QString data );
 
   signals:
     void updateTransformation();

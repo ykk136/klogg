@@ -122,6 +122,7 @@ class MainWindow : public QMainWindow {
     void documentation();
     void showScratchPad();
     void sendToScratchpad(QString);
+    void replaceDataInScratchpad(QString);
     void encodingChanged( QAction* action );
     void addToFavorites();
     void removeFromFavorites();

@@ -155,7 +155,16 @@ void ScratchPad::addData( QString newData )
         return;
     }
 
-    textEdit_->appendPlainText(newData);
+    textEdit_->appendPlainText( newData );
+}
+
+void ScratchPad::replaceData( QString newData )
+{
+    if ( newData.isEmpty() ) {
+        return;
+    }
+
+    textEdit_->setPlainText( newData );
 }
 
 QString ScratchPad::transformText( const std::function<QString( QString )>& transform )

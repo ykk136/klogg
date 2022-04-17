@@ -165,6 +165,9 @@ MainWindow::MainWindow( WindowSession session )
     signalMux_.connect( SIGNAL( sendToScratchpad( QString ) ), this,
                         SLOT( sendToScratchpad( QString ) ) );
 
+    signalMux_.connect( SIGNAL( replaceDataInScratchpad( QString ) ), this,
+                        SLOT( replaceDataInScratchpad( QString ) ) );
+
     // Register for progress status bar
     signalMux_.connect( SIGNAL( loadingProgressed( int ) ), this,
                         SLOT( updateLoadingProgress( int ) ) );
@@ -1050,6 +1053,12 @@ void MainWindow::showScratchPad()
 void MainWindow::sendToScratchpad( QString newData )
 {
     scratchPad_.addData( newData );
+    showScratchPad();
+}
+
+void MainWindow::replaceDataInScratchpad( QString newData )
+{
+    scratchPad_.replaceData( newData );
     showScratchPad();
 }
 

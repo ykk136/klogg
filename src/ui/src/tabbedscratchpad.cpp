@@ -119,3 +119,11 @@ void TabbedScratchPad::addData( QString newData )
         curretScratchPad->addData( std::move(newData) );
     }
 }
+
+void TabbedScratchPad::replaceData( QString newData )
+{
+    auto curretScratchPad = qobject_cast<ScratchPad*>( tabWidget_->currentWidget() );
+    if ( curretScratchPad ) {
+        curretScratchPad->replaceData( std::move(newData) );
+    }
+}

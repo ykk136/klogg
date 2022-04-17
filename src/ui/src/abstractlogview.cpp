@@ -721,6 +721,9 @@ void AbstractLogView::doRegisterShortcuts()
     registerShortcut( ShortcutAction::LogViewSendSelectionToScratchpad,
                       [ this ]() { emit sendSelectionToScratchpad(); } );
 
+    registerShortcut( ShortcutAction::LogViewReplaceScratchpadWithSelection,
+                      [ this ]() { emit replaceScratchpadWithSelection(); } );
+
     registerShortcut( ShortcutAction::LogViewAddToSearch, [ this ]() { addToSearch(); } );
     registerShortcut( ShortcutAction::LogViewExcludeFromSearch,
                       [ this ]() { excludeFromSearch(); } );
@@ -1810,6 +1813,10 @@ void AbstractLogView::createMenu()
     connect( sendToScratchpadAction_, &QAction::triggered, this,
              [ this ]( auto ) { emit sendSelectionToScratchpad(); } );
 
+    replaceInScratchpadAction_ = new QAction( tr( "Replace scratchpad" ), this );
+    connect( replaceInScratchpadAction_, &QAction::triggered, this,
+             [ this ]( auto ) { emit replaceScratchpadWithSelection(); } );
+
     popupMenu_ = new QMenu( this );
     highlightersMenu_ = popupMenu_->addMenu( "Highlighters" );
     colorLabelsMenu_ = popupMenu_->addMenu( "Color labels" );
@@ -1819,6 +1826,7 @@ void AbstractLogView::createMenu()
     popupMenu_->addSeparator();
     popupMenu_->addAction( copyAction_ );
     popupMenu_->addAction( sendToScratchpadAction_ );
+    popupMenu_->addAction( replaceInScratchpadAction_ );
     popupMenu_->addSeparator();
     popupMenu_->addAction( findNextAction_ );
     popupMenu_->addAction( findPreviousAction_ );
@@ -2086,7 +2094,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 #endif
             const auto expandedPrefixLength
                 = static_cast<LineLength::UnderlyingType>( untabify( prefix.toString() ).length() );
-            auto startDelta = static_cast<LineLength::UnderlyingType>(expandedPrefixLength - prefix.length());
+            auto startDelta
+                = static_cast<LineLength::UnderlyingType>( expandedPrefixLength - prefix.length() );
 
 #if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
             const auto matchPart = logLine.midRef( match.startColumn(), match.length() );
@@ -2097,7 +2106,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             const auto expandedMatchLength = static_cast<LineLength::UnderlyingType>(
                 untabify( matchPart.toString(), expandedPrefixLength ).length() );
 
-            const auto lengthDelta = static_cast<LineLength::UnderlyingType>(expandedMatchLength - matchPart.length());
+            const auto lengthDelta = static_cast<LineLength::UnderlyingType>(
+                expandedMatchLength - matchPart.length() );
 
             return HighlightedMatch{ match.startColumn() + startDelta, match.length() + lengthDelta,
                                      match.foreColor(), match.backColor() };

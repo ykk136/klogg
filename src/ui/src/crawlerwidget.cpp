@@ -1269,6 +1269,11 @@ void CrawlerWidget::setup()
              [ this ]() { emit sendToScratchpad( logMainView_->getSelection() ); } );
     connect( filteredView_, &AbstractLogView::sendSelectionToScratchpad, this,
              [ this ]() { emit sendToScratchpad( filteredView_->getSelection() ); } );
+    
+    connect( logMainView_, &AbstractLogView::replaceScratchpadWithSelection, this,
+             [ this ]() { emit replaceDataInScratchpad( logMainView_->getSelection() ); } );
+    connect( filteredView_, &AbstractLogView::replaceScratchpadWithSelection, this,
+             [ this ]() { emit replaceDataInScratchpad( filteredView_->getSelection() ); } );
 
     const auto defaultEncodingMib = config.defaultEncodingMib();
     if ( defaultEncodingMib >= 0 ) {
@@ -1279,7 +1284,7 @@ void CrawlerWidget::setup()
 void CrawlerWidget::registerShortcuts()
 {
     LOG_INFO << "registering shortcuts for crawler widget";
-    
+
     for ( auto& shortcut : shortcuts_ ) {
         shortcut.second->deleteLater();
     }

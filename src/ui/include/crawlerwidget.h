@@ -163,7 +163,8 @@ class CrawlerWidget : public QSplitter,
     // Sent up when user wants to save new predefined filter from current search
     void saveCurrentSearchAsPredefinedFilter( QString newFilter );
 
-    void sendToScratchpad(QString data);
+    void sendToScratchpad(QString);
+    void replaceDataInScratchpad(QString);
 
     // "auto-refresh" check has been changed
     void searchRefreshChanged( bool isRefreshing );
