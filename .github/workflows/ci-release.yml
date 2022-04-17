@@ -2,18 +2,29 @@ name: "Make CI Release"
 
 on:
   workflow_dispatch:
+    inputs:
+      ci-run-id:
+        description: "Run ID of CI workflow"
+        required: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Download artifact
+    - name: Download artifacts for last successful CI workflow
+      if: ${{ !github.event.inputs.ci-run-id }}
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: ci-build.yml
         workflow_conclusion: success
-        branch: master
+
+    - name: Download artifacts for CI workflow with provided run id
+      if: ${{ github.event.inputs.ci-run-id }}
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: ci-build.yml
+        run_id: ${{ github.event.inputs.ci-run-id }}
 
     - name: Initialize version
       run: echo "KLOGG_VERSION=`cat klogg_version/klogg_version.txt`" >> $GITHUB_ENV
