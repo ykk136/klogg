@@ -16,7 +16,7 @@ file to open as an argument, or via the desktop environment's menu or
 file association. If no file name is passed, *klogg* will initially open
 the most recent file.
 
-The main window is divided into three parts : the top displays the log
+The main window is divided into three parts: the top displays the log
 file. The bottom part, called the "filtered view", displays the results of
 the search. The line separating the two contains the regular expression
 used as a filter.
@@ -68,9 +68,9 @@ Following logic operations are supported:
 |`not`           |Logical NOT, Negate the logical sense of the input. Input must be enclosed in `()` (eg: `not("x")`)|
 
 *klogg* keeps track of used search patterns and provides autocomplete
-for them. This history can be cleared from the search text box context menu.
+for them. This history can be edited or cleared from the search text box context menu.
 Autocomplete is case-sensitive if this option is selected for matching 
-regular expressions.
+regular expressions. The size of autocomplete history is configured in general options.
 
 In addition to the filtered window, the match overview on the right-hand
 side of the screen offers a view of the position of matches in the log
@@ -82,8 +82,18 @@ the left margin in front of the line that needs to be marked. Or, select
 the line and press the `'m'` hotkey.
 To mark several lines at once select them and use the `'m'` hotkey or context menu.
 
-Marks are combined with matches and are always visible
-in the filtered window. They also appear as blue lines in the match overview.
+By default, filtered view always shows all marked lines. It is possible to switch filtered
+view mode to show either only the lines matching search pattern or only marked lines.
+
+Marks also appear as blue lines in the match overview.
+
+It is possible to quickly jump to a specific line using `Ctrl+L` shortcut.
+
+*klogg* uses Hyperscan library to perform regular expressions search. Hyperscan is very
+fast, but it doesn't support some patterns, most notably any lookahead is not supported 
+(check [hyperscan documentation](https://intel.github.io/hyperscan/dev-reference/compilation.html#pattern-support) for 
+supported syntax). To overcome this *klogg* will switch to Qt regular expression engine with full PCRE syntax support
+if Hyperscan can't handle the search pattern. However, in this case search will be significantly slower.
 
 ### Opening files
 
@@ -144,6 +154,20 @@ which displays special dialogue to choose between opened files.
 *klogg* tries to guess the encoding of an opened file. If that guess happens to
 be wrong, then the desired encoding can be selected from the `Encoding` menu.
 
+### Predefined filters
+
+If some search patterns are used very often they can be saved as predefined filters.
+Predefined filters are configured from the `Tools` menu.
+
+Predefined filters are added to a dropdown near the search input and allow to 
+add several patterns to regular expression. Predefined filter has a name
+which is displayed in the dropdown, a pattern to add to search regular expression
+and a setting to treat pattern as a regular expression
+or simple text search.
+
+It is possible to save the current search pattern as a predefined filter from
+search input context menu.
+
 ### Using highlighters
 
 *Highlighters* can colorize some lines of the log being displayed
@@ -158,6 +182,7 @@ Any number of highlighters can be defined in a single set.
 Highlighter configuration includes a regular expression to match
 as well as color options. Another option is to use plain text patterns
 in cases when complex regular expression are unnecessary.
+Highlighters don't have support for logical search pattern combinations.
 
 Each highlighter can be configured to apply foreground and 
 background colors either to the whole line that matched its regular
@@ -165,13 +190,35 @@ expression or only to matching parts of the line. In the latter case,
 if the regular expression contains capture groups then only the captured
 parts of the matching line are highlighted.
 
-The order of highlighters in the set is crucial. For each line all
-highlighters are tried from bottom to top. Each new matching 
+It is possible to set a color variance. In that case different strings
+that match the same regular expression will have slightly different color.
+
+Any number of highlighters set can be applied to opened file using either 
+the context menu or the main menu.
+
+The order of highlighters in the set and the order of sets in configuration is important.
+For each line all highlighters are tried from bottom to top. Each new matching 
 highlighter overrides colors for the current line. 
 
 Highlighter configuration can be exported to a file and 
 imported on another machine. Each set is identified
 by unique id. Only new sets are imported from the file.
+
+### Color labels
+
+In addition to predefined highlighters sets it is possible to create quick highlight rules
+from selected text. These are called color labels. By default, *klogg* has 9
+color labels enabled. Adding color label to selected text is done either
+via context menu or with shortcuts `Ctrl+Shift+1-9`. Any number of 
+strings can be marked with a single color label. Also the is `Ctrl+D` shortcut
+that applies the next color label to selected text.
+
+To remove color label from selected text either select the text and use 
+context menu to set color label to `None` or use `Ctrl+Shift+0` shortcut that
+will remove all color labels.
+
+The colors that are used for text highlight can be configured from the color labels
+tab of highlighters configuration dialog.
 
 ### Browsing changing log files
 
@@ -207,6 +254,8 @@ following file mode is also disabled.
 Sometimes in log files there are text in base64 encoding, unformatted
 xml/json, etc. For such cases *klogg* provides Scratchpad tool. Text can
 be copied to this window and transformed to human-readable form.
+Use context menu to either add data to the current scratchpad tab or 
+replace its content with selected text. There are shortcuts `Ctrl+Z` and `Ctrl+Shit+Z` for these actions.
 
 New tabs can be opened in Scratchpad using the `Ctrl+N` hotkey.
 
@@ -225,8 +274,18 @@ filtering lines for the bottom window, and when using QuickFind.
     character is special
 
 If incremental quickfind is selected, *klogg* will automatically restart
-quickfind search when the search pattern changes. For performance reasons,
-incremental quickfind can use only fixed strings patterns.
+quickfind search when the search pattern changes.
+
+Turning on highlight of matched text will cause the text that matched the
+search pattern to be highlighted in both main view and filtered view.
+Enabling color variation will cause the highlight color of different strings
+that match the same pattern be slightly different.
+
+Search size history controls the number of patterns that are saved for autocompletion
+in the search input box.
+
+Turning on option to run search on add or replace pattern will cause *klogg* to
+immediately perform search when pattern is update from context menu.
 
 #### Session options
 
@@ -261,8 +320,11 @@ The font used to display the log file. A clear, monospace font (like the
 free, open source, [DejaVu Mono](http://www.dejavu-fonts.org) for
 example, is recommended.
 
-Font antialiasing can be forced if autodetected options result in low-quality
+Font antialiasing can be forced if auto-detected options result in low-quality
 text rendering.
+
+Font size can be changed from either main or filtered view using `Ctrl+Mouse wheel`
+to zoom in/out.
 
 #### Style
 
@@ -273,8 +335,8 @@ Other styles can be chosen from the dropdown menu.
 *klogg* will try to respect current display manager theme and to
 use white icons for dark themes. 
 
-Another option is to select Dark style. In this case *klogg*
-will use a custom dark mode stylesheet.
+Another option is to select Dark or Windows Dark style. In this case *klogg*
+will use a custom dark mode stylesheet. 
 
 #### High DPI
 
@@ -282,6 +344,13 @@ Options in this group can be used in case *klogg* window looks
 bad on High DPI monitors. Usually, Qt detects the correct settings.
 However, these options may be useful, especially for non-integer
 scale factors manual overrides.
+
+#### Miscellaneous
+
+Some log files contain ANSI color codes to be displayed by terminals with
+color support. These color codes create visual noise, so *klogg* provides
+an option to hide them from both main and filtered view. However, enabling
+this option will cause regular expression search to be slower.
 
 ### File
 
@@ -301,6 +370,15 @@ large files and network filesystems. If fast modification detection
 is enabled *klogg* will check hash for the first and last parts of
 changed files. This is faster but can skip over changes in the middle of
 the file. This feature should be used with caution.
+
+It is possible to enable follow file mode by scrolling past the end of file.
+This behavior can be disabled.
+
+#### Encoding
+
+*klogg* tries to detect file encoding automatically. If encoding detection
+is not required then it is possible to specify the encoding that will be
+used for all new opened files.
 
 #### Archives
 
@@ -325,17 +403,20 @@ These options refer to the customization of performance related settings.
 If parallel search is enabled, *klogg* will try to use several CPU cores
 for regular expression matching. This does not work with quickfind.
 
+*klogg* has several strategies for regular expression search based on file 
+encoding. By default, it is optimized for files with UTF8 or single-byte
+encodings. If most of the files are in multi-byte encodings then enabling
+search optimization for non-latin encodings could improve performance.
+
 If search results cache is enabled, *klogg* will store numbers of lines
 that matched the search pattern in its memory. Repeating searches for the same
 pattern will not go through all files but will use cached line numbers
 instead.
 
-When using *klogg* to monitor updating files, this option should be
-disabled.
-
 In case there is an issue with *klogg*, logging can be enabled with
 a desired level of verbosity. Log files are saved to a temporary directory.
-A log level of 4 or 5 is usually enough.
+A log level of 4 or 5 is usually enough. Enabling logging can slow down 
+regular expressions search.
 
 ## Crash reporting
 
@@ -345,7 +426,7 @@ if these files should be sent to developers.
 
 Crash report provides information about:
 
-* operating system: name, version, architecture
+* operating system: name, version, architecture, cpu features, system memory
 * Qt version
 * modules that were loaded into *klogg* process: filename, size and hashes for symbols
 * stacktraces for all running threads in *klogg* process
@@ -385,6 +466,13 @@ The main commands are:
 |F5              |reload current file                                               |
 |Ctrl+S          |Set focus to search string edit box                               |
 |Ctrl+Shift+O    |Open dialog to switch to another file                             |
+
+All shortucts can be configured from the shortcuts tab in options dialog.
+
+## Mouse navigation
+
+Holding `Alt` while scrolling will scroll horizontally.
+Holding `Shift` while scrolling will scroll faster.
 
 ## Command line options
 

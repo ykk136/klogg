@@ -120,9 +120,11 @@ Current release is 20.12. Binaries for all platforms can be downloaded from GitH
 [ ![Release](https://img.shields.io/github/v/release/variar/klogg?style=flat)](https://github.com/variar/klogg/releases/tag/v20.12)
 
 #### Windows
-Windows installer is also available from Chocolatey:
+Windows installer is also available from:
 
-[ ![Chocolatey](https://img.shields.io/chocolatey/v/klogg?style=flat)](https://chocolatey.org/packages/klogg)
+* [ ![Chocolatey](https://img.shields.io/chocolatey/v/klogg?style=flat)](https://chocolatey.org/packages/klogg)
+* [Scoop Extras bucket](https://scoopsearch.github.io/#/apps?q=klogg)
+* [Winget package](https://winget.run/pkg/variar/klogg) 
 
 #### Mac OS
 Package for Mac can be installed from Homebrew
