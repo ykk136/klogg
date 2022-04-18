@@ -122,11 +122,16 @@ if (efsw_ADDED)
     target_compile_definitions(efsw PRIVATE EFSW_FSEVENTS_NOT_SUPPORTED)
 endif()
 
+if(WIN32)
 SET(BUILD_SHARED_LIBS ON)
+endif()
 CPMAddPackage(NAME tbb GITHUB_REPOSITORY oneapi-src/oneTBB VERSION 2021.5.0 EXCLUDE_FROM_ALL YES
-    OPTIONS "TBB_TEST=OFF" "TBB_EXAMPLES=OFF" "TBB_STRICT=OFF" "BUILD_SHARED_LIBS=ON"
+    OPTIONS "TBB_TEST=OFF" "TBB_EXAMPLES=OFF" "TBB_STRICT=OFF"
 )
+if(WIN32)
 SET(BUILD_SHARED_LIBS OFF)
+endif()
+
 if (tbb_ADDED)
     add_library(tbbmalloc_proxy_wrapper ALIAS tbbmalloc_proxy)
 else()
