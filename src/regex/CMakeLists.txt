@@ -21,7 +21,7 @@ target_link_libraries(klogg_regex PUBLIC
 )
 
 if(KLOGG_USE_HYPERSCAN)
-target_link_libraries(klogg_regex PUBLIC hs)
+target_link_libraries(klogg_regex PUBLIC hyperscan_wrapper)
 target_compile_definitions(klogg_regex PUBLIC KLOGG_HAS_HS)
 endif()
 
