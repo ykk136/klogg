@@ -42,7 +42,11 @@
 #include <QObject>
 
 #include <roaring.hh>
+#include <roaring64map.hh>
+
+#ifndef Q_MOC_RUN
 #include <tbb/task_group.h>
+#endif
 
 #include "atomicflag.h"
 #include "regularexpression.h"
@@ -131,7 +135,7 @@ class SearchOperation : public QObject {
     // and false if it has been cancelled (results not copied)
     virtual void run( SearchData& result ) = 0;
 
-  signals:
+  Q_SIGNALS:
     void searchProgressed( LinesCount nbMatches, int percent, LineNumber initialLine );
     void searchFinished();
 
@@ -203,7 +207,7 @@ class LogFilteredDataWorker : public QObject {
     // get the current indexing data
     SearchResults getSearchResults() const;
 
-  signals:
+  Q_SIGNALS:
     // Sent during the indexing process to signal progress
     // percent being the percentage of completion.
     void searchProgressed( LinesCount nbMatches, int percent, LineNumber initialLine );

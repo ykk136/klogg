@@ -67,7 +67,7 @@ void SearchingNotifier::sendNotification( LineNumber current_line, LinesCount nb
         backward ? ( ( nb_lines.get() - current_line.get() ) / nb_lines.get() * 100 )
                  : ( current_line.get() / nb_lines.get() ) * 100 );
 
-    emit notify( QFNotificationProgress( progress ) );
+    Q_EMIT notify( QFNotificationProgress( progress ) );
     startTime_ = QTime::currentTime().addMSecs( -800 );
 }
 
@@ -169,13 +169,13 @@ void QuickFind::onSearchFutureReady()
     auto selection = operationFuture_.result();
 
     if ( selection.isValid() ) {
-        emit searchDone( true, selection );
+        Q_EMIT searchDone( true, selection );
     }
     else if ( incrementalSearchStatus_.direction() != None ) {
-        emit searchDone( false, Portion{ incrementalSearchStatus_.position().line(), 0, 0 } );
+        Q_EMIT searchDone( false, Portion{ incrementalSearchStatus_.position().line(), 0, 0 } );
     }
     else {
-        emit searchDone( false, selection );
+        Q_EMIT searchDone( false, selection );
     }
 }
 
@@ -339,7 +339,7 @@ Portion QuickFind::doSearchForward( const FilePosition& start_position, const Se
 
     if ( found ) {
         // Clear any notification
-        emit clearNotification();
+        Q_EMIT clearNotification();
 
         return Portion{ line, found_start_col, found_end_col };
     }
@@ -429,7 +429,7 @@ Portion QuickFind::doSearchBackward( const FilePosition& start_position, const S
 
     if ( found ) {
         // Clear any notification
-        emit clearNotification();
+        Q_EMIT clearNotification();
 
         return Portion{ line, start_col, end_col };
     }

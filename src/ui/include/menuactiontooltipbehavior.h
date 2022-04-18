@@ -47,7 +47,7 @@ class MenuActionToolTipBehavior : public QObject
     void timerEvent(QTimerEvent *event) override;
     void showToolTip(const QPoint &position);
 
- private slots:
+ private Q_SLOTS:
     void onActionHovered();
 
  private:

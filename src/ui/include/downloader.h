@@ -32,11 +32,11 @@ class Downloader : public QObject {
 
     QString lastError() const;
 
-  signals:
+  Q_SIGNALS:
     void downloadProgress( qint64 bytesReceived, qint64 bytesTotal );
     void finished( bool );
 
-  private slots:
+  private Q_SLOTS:
     void downloadFinished();
     void downloadReadyRead();
 

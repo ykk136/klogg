@@ -131,7 +131,7 @@ void QuickFindWidget::userActivate()
 }
 
 //
-// SLOTS
+// Q_SLOTS:
 //
 
 void QuickFindWidget::changeDisplayedPattern( const QString& newPattern, bool isRegex )
@@ -167,8 +167,8 @@ void QuickFindWidget::doSearchForward()
     // the widget to stay visible.
     userRequested_ = true;
 
-    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
-    emit searchForward();
+    Q_EMIT patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
+    Q_EMIT searchForward();
 }
 
 // User clicks backward arrow
@@ -180,18 +180,18 @@ void QuickFindWidget::doSearchBackward()
     // the widget to stay visible.
     userRequested_ = true;
 
-    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
-    emit searchBackward();
+    Q_EMIT patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
+    Q_EMIT searchBackward();
 }
 
 // Close and search when the user presses Return
 void QuickFindWidget::returnHandler()
 {
-    emit patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
+    Q_EMIT patternConfirmed( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
     // Close the widget
     userRequested_ = false;
     this->hide();
-    emit close();
+    Q_EMIT close();
 }
 
 // Close and reset flag when the user clicks 'close'
@@ -199,8 +199,8 @@ void QuickFindWidget::closeHandler()
 {
     userRequested_ = false;
     this->hide();
-    emit close();
-    emit cancelSearch();
+    Q_EMIT close();
+    Q_EMIT cancelSearch();
 }
 
 void QuickFindWidget::notificationTimeout()
@@ -213,7 +213,7 @@ void QuickFindWidget::notificationTimeout()
 void QuickFindWidget::textChanged()
 {
     patternCursorPosition_ = editQuickFind_->cursorPosition();
-    emit patternUpdated( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
+    Q_EMIT patternUpdated( editQuickFind_->text(), isIgnoreCase(), isRegexSearch() );
 }
 
 //

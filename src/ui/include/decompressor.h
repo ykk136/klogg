@@ -39,7 +39,7 @@ class Decompressor : public QObject {
 
     static DecompressAction action( const QString& archiveFilePath );
 
-  signals:
+  Q_SIGNALS:
     void finished( bool );
 
   private:

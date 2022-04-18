@@ -122,7 +122,7 @@ void QuickFindPattern::changeSearchPattern( const QString& pattern, bool isRegex
     else
         active_ = false;
 
-    emit patternUpdated();
+    Q_EMIT patternUpdated();
 }
 
 void QuickFindPattern::changeSearchPattern( const QString& pattern, bool ignoreCase, bool isRegex )

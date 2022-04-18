@@ -39,7 +39,7 @@ class OverviewWidget : public QWidget {
         overview_ = overview;
     }
 
-  public slots:
+  public Q_SLOTS:
     // Sent when a match at the line passed must be highlighted in
     // the overview
     void highlightLine( LineNumber line );
@@ -51,7 +51,7 @@ class OverviewWidget : public QWidget {
     void mouseMoveEvent( QMouseEvent* mouseEvent ) override;
     void timerEvent( QTimerEvent* event ) override;
 
-  signals:
+  Q_SIGNALS:
     // Sent when the user click on a line in the Overview.
     void lineClicked( LineNumber line );
 

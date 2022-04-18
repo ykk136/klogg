@@ -290,7 +290,7 @@ void MainWindow::createActions()
 
     newWindowAction = new QAction( tr( "&New window" ), this );
     newWindowAction->setStatusTip( tr( "Create new klogg window" ) );
-    connect( newWindowAction, &QAction::triggered, [ = ] { emit newWindow(); } );
+    connect( newWindowAction, &QAction::triggered, [ = ] { Q_EMIT newWindow(); } );
     newWindowAction->setVisible( config.allowMultipleWindows() );
 
     openAction = new QAction( tr( "&Open..." ), this );
@@ -708,7 +708,7 @@ void MainWindow::createTrayIcon()
     }
 }
 //
-// Slots
+// Q_SLOTS:
 //
 
 // Opens the file selection dialog to select a new log file
@@ -1082,7 +1082,7 @@ void MainWindow::toggleOverviewVisibility( bool isVisible )
     auto& config = Configuration::get();
     config.setOverviewVisible( isVisible );
     config.save();
-    emit optionsChanged();
+    Q_EMIT optionsChanged();
 }
 
 void MainWindow::toggleMainLineNumbersVisibility( bool isVisible )
@@ -1091,7 +1091,7 @@ void MainWindow::toggleMainLineNumbersVisibility( bool isVisible )
 
     config.setMainLineNumbersVisible( isVisible );
     config.save();
-    emit optionsChanged();
+    Q_EMIT optionsChanged();
 }
 
 void MainWindow::toggleFilteredLineNumbersVisibility( bool isVisible )
@@ -1100,7 +1100,7 @@ void MainWindow::toggleFilteredLineNumbersVisibility( bool isVisible )
 
     config.setFilteredLineNumbersVisible( isVisible );
     config.save();
-    emit optionsChanged();
+    Q_EMIT optionsChanged();
 }
 
 void MainWindow::changeFollowMode( bool follow )
@@ -1235,7 +1235,7 @@ void MainWindow::currentTabChanged( int index )
         quickFindMux_.registerSelector( crawler_widget );
 
         // New tab is set up with fonts etc...
-        emit optionsChanged();
+        Q_EMIT optionsChanged();
 
         updateMenuBarFromDocument( crawler_widget );
         updateTitleBar( session_.getFilename( crawler_widget ) );
@@ -1326,7 +1326,7 @@ void MainWindow::closeEvent( QCloseEvent* event )
 
         closeAll( ActionInitiator::App );
         trayIcon_->hide();
-        emit windowClosed();
+        Q_EMIT windowClosed();
 
         event->accept();
     }
@@ -1383,7 +1383,7 @@ void MainWindow::dropEvent( QDropEvent* event )
 bool MainWindow::event( QEvent* event )
 {
     if ( event->type() == QEvent::WindowActivate ) {
-        emit windowActivated();
+        Q_EMIT windowActivated();
     }
     else if ( event->type() == QEvent::Show ) {
         if ( this->windowHandle() ) {
@@ -1981,7 +1981,7 @@ void MainWindow::displayQuickFindBar( QuickFindMux::QFDirection direction )
 
     // Warn crawlers so they can save the position of the focus in order
     // to do incremental search in the right view.
-    emit enteringQuickFind();
+    Q_EMIT enteringQuickFind();
 
     const auto crawler = currentCrawlerWidget();
     if ( crawler != nullptr && crawler->isPartialSelection() ) {

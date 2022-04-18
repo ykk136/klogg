@@ -369,7 +369,7 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
 
         if ( line.has_value() && mouseEvent->modifiers() & Qt::ShiftModifier ) {
             selection_.selectRangeFromPrevious( *line );
-            emit updateLineNumber( *line );
+            Q_EMIT updateLineNumber( *line );
             update();
         }
         else if ( line.has_value() ) {
@@ -383,8 +383,8 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                 // Select the line, and start a selection
                 if ( *line < logData_->getNbLine() ) {
                     selection_.selectLine( *line );
-                    emit updateLineNumber( *line );
-                    emit newSelection( *line );
+                    Q_EMIT updateLineNumber( *line );
+                    Q_EMIT newSelection( *line );
                 }
 
                 // Remember the click in case we're starting a selection
@@ -404,9 +404,9 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
         if ( line.has_value()
              && !selection_.isPortionSelected( *line, filePos.column, filePos.column ) ) {
             selection_.selectLine( *line );
-            emit updateLineNumber( *line );
+            Q_EMIT updateLineNumber( *line );
             textAreaCache_.invalid_ = true;
-            emit newSelection( *line );
+            Q_EMIT newSelection( *line );
         }
 
         if ( selection_.isSingleLine() ) {
@@ -512,7 +512,7 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
         colorLablesActionGroup->deleteLater();
     }
 
-    emit activity();
+    Q_EMIT activity();
 }
 
 void AbstractLogView::mouseMoveEvent( QMouseEvent* mouseEvent )
@@ -532,7 +532,7 @@ void AbstractLogView::mouseMoveEvent( QMouseEvent* mouseEvent )
                 if ( thisEndPos.line != selectionCurrentEndPos_.line ) {
                     // This is a 'range' selection
                     selection_.selectRange( selectionStartPos_.line, lineNumber );
-                    emit updateLineNumber( lineNumber );
+                    Q_EMIT updateLineNumber( lineNumber );
                     update();
                 }
             }
@@ -547,7 +547,7 @@ void AbstractLogView::mouseMoveEvent( QMouseEvent* mouseEvent )
             else {
                 // This is a 'line' selection
                 selection_.selectLine( lineNumber );
-                emit updateLineNumber( lineNumber );
+                Q_EMIT updateLineNumber( lineNumber );
                 update();
             }
             selectionCurrentEndPos_ = thisEndPos;
@@ -574,7 +574,7 @@ void AbstractLogView::mouseReleaseEvent( QMouseEvent* mouseEvent )
             // Invalidate our cache
             textAreaCache_.invalid_ = true;
 
-            emit markLines( { *line } );
+            Q_EMIT markLines( { *line } );
         }
     }
     else {
@@ -595,7 +595,7 @@ void AbstractLogView::mouseDoubleClickEvent( QMouseEvent* mouseEvent )
         selectWordAtPosition( pos );
     }
 
-    emit activity();
+    Q_EMIT activity();
 }
 
 void AbstractLogView::timerEvent( QTimerEvent* timerEvent )
@@ -691,8 +691,8 @@ void AbstractLogView::doRegisterShortcuts()
         disableFollow();
         const auto line = LineNumber( logData_->getNbLine().get() ) - 1_lcount;
         selection_.selectLine( line );
-        emit updateLineNumber( line );
-        emit newSelection( line );
+        Q_EMIT updateLineNumber( line );
+        Q_EMIT newSelection( line );
         jumpToBottom();
     } );
 
@@ -702,8 +702,8 @@ void AbstractLogView::doRegisterShortcuts()
     registerShortcut( ShortcutAction::LogViewJumpToRightOfScreen,
                       [ this ]() { jumpToRightOfScreen(); } );
 
-    registerShortcut( ShortcutAction::LogViewQfForward, [ this ]() { emit searchNext(); } );
-    registerShortcut( ShortcutAction::LogViewQfBackward, [ this ]() { emit searchPrevious(); } );
+    registerShortcut( ShortcutAction::LogViewQfForward, [ this ]() { Q_EMIT searchNext(); } );
+    registerShortcut( ShortcutAction::LogViewQfBackward, [ this ]() { Q_EMIT searchPrevious(); } );
     registerShortcut( ShortcutAction::LogViewQfSelectedForward,
                       [ this ]() { findNextSelected(); } );
     registerShortcut( ShortcutAction::LogViewQfSelectedBackward,
@@ -716,13 +716,13 @@ void AbstractLogView::doRegisterShortcuts()
         trySelectLine( LineNumber( newLine ) );
     } );
 
-    registerShortcut( ShortcutAction::LogViewExitView, [ this ]() { emit exitView(); } );
+    registerShortcut( ShortcutAction::LogViewExitView, [ this ]() { Q_EMIT exitView(); } );
 
     registerShortcut( ShortcutAction::LogViewSendSelectionToScratchpad,
-                      [ this ]() { emit sendSelectionToScratchpad(); } );
+                      [ this ]() { Q_EMIT sendSelectionToScratchpad(); } );
 
     registerShortcut( ShortcutAction::LogViewReplaceScratchpadWithSelection,
-                      [ this ]() { emit replaceScratchpadWithSelection(); } );
+                      [ this ]() { Q_EMIT replaceScratchpadWithSelection(); } );
 
     registerShortcut( ShortcutAction::LogViewAddToSearch, [ this ]() { addToSearch(); } );
     registerShortcut( ShortcutAction::LogViewExcludeFromSearch,
@@ -754,7 +754,7 @@ void AbstractLogView::keyPressEvent( QKeyEvent* keyEvent )
     }
 
     if ( keyEvent->isAccepted() ) {
-        emit activity();
+        Q_EMIT activity();
     }
     else {
         // Only pass bare keys to the superclass this is so that
@@ -768,7 +768,7 @@ void AbstractLogView::keyPressEvent( QKeyEvent* keyEvent )
 
 void AbstractLogView::wheelEvent( QWheelEvent* wheelEvent )
 {
-    emit activity();
+    Q_EMIT activity();
 
     int yDelta = 0;
     const auto pixelDelta = wheelEvent->pixelDelta();
@@ -787,7 +787,7 @@ void AbstractLogView::wheelEvent( QWheelEvent* wheelEvent )
     }
 
     if ( wheelEvent->modifiers().testFlag( Qt::ControlModifier ) ) {
-        emit changeFontSize( yDelta > 0 );
+        Q_EMIT changeFontSize( yDelta > 0 );
         return;
     }
 
@@ -1066,7 +1066,7 @@ void AbstractLogView::setQuickFindResult( bool hasMatch, Portion portion )
         LOG_DEBUG << "search " << portion.line();
         displayLine( portion.line() );
         selection_.selectPortion( portion );
-        emit updateLineNumber( portion.line() );
+        Q_EMIT updateLineNumber( portion.line() );
     }
     else if ( !hasMatch ) {
         selection_.clear();
@@ -1096,7 +1096,7 @@ void AbstractLogView::incrementallySearchBackward()
 void AbstractLogView::incrementalSearchAbort()
 {
     selection_ = quickFind_->incrementalSearchAbort();
-    emit changeQuickFind( "", QuickFindMux::Forward );
+    Q_EMIT changeQuickFind( "", QuickFindMux::Forward );
 }
 
 void AbstractLogView::incrementalSearchStop()
@@ -1164,7 +1164,7 @@ void AbstractLogView::addToSearch()
 {
     if ( selection_.isPortion() ) {
         LOG_DEBUG << "AbstractLogView::addToSearch()";
-        emit addToSearch( selection_.getSelectedText( logData_ ) );
+        Q_EMIT addToSearch( selection_.getSelectedText( logData_ ) );
     }
     else {
         LOG_ERROR << "AbstractLogView::addToSearch called for a wrong type of selection";
@@ -1176,7 +1176,7 @@ void AbstractLogView::replaceSearch()
 {
     if ( selection_.isPortion() ) {
         LOG_DEBUG << "AbstractLogView::replaceSearch()";
-        emit replaceSearch( selection_.getSelectedText( logData_ ) );
+        Q_EMIT replaceSearch( selection_.getSelectedText( logData_ ) );
     }
     else {
         LOG_ERROR << "AbstractLogView::replaceSearch called for a wrong type of selection";
@@ -1187,7 +1187,7 @@ void AbstractLogView::excludeFromSearch()
 {
     if ( selection_.isPortion() ) {
         LOG_DEBUG << "AbstractLogView::excludeFromSearch()";
-        emit excludeFromSearch( selection_.getSelectedText( logData_ ) );
+        Q_EMIT excludeFromSearch( selection_.getSelectedText( logData_ ) );
     }
     else {
         LOG_ERROR << "AbstractLogView::excludeFromSearch called for a wrong type of selection";
@@ -1199,8 +1199,8 @@ void AbstractLogView::findNextSelected()
 {
     // Use the selected 'word' and search forward
     if ( selection_.isPortion() ) {
-        emit changeQuickFind( selection_.getSelectedText( logData_ ), QuickFindMux::Forward );
-        emit searchNext();
+        Q_EMIT changeQuickFind( selection_.getSelectedText( logData_ ), QuickFindMux::Forward );
+        Q_EMIT searchNext();
     }
 }
 
@@ -1208,8 +1208,8 @@ void AbstractLogView::findNextSelected()
 void AbstractLogView::findPreviousSelected()
 {
     if ( selection_.isPortion() ) {
-        emit changeQuickFind( selection_.getSelectedText( logData_ ), QuickFindMux::Backward );
-        emit searchNext();
+        Q_EMIT changeQuickFind( selection_.getSelectedText( logData_ ), QuickFindMux::Backward );
+        Q_EMIT searchNext();
     }
 }
 
@@ -1230,7 +1230,7 @@ void AbstractLogView::markSelected()
 {
     auto lines = selection_.getLines();
     if ( !lines.empty() ) {
-        emit markLines( lines );
+        Q_EMIT markLines( lines );
     }
 }
 
@@ -1348,7 +1348,7 @@ void AbstractLogView::updateSearchLimits()
 {
     forceRefresh();
 
-    emit changeSearchLimits( searchStart_, searchEnd_ );
+    Q_EMIT changeSearchLimits( searchStart_, searchEnd_ );
 }
 
 void AbstractLogView::setSearchStart()
@@ -1499,8 +1499,8 @@ void AbstractLogView::selectAndDisplayLine( LineNumber line )
     disableFollow();
     selection_.selectLine( line );
     displayLine( line );
-    emit updateLineNumber( line );
-    emit newSelection( line );
+    Q_EMIT updateLineNumber( line );
+    Q_EMIT newSelection( line );
 }
 
 // The difference between this function and displayLine() is quite
@@ -1639,8 +1639,8 @@ void AbstractLogView::moveSelection( LinesCount delta, bool isDeltaNegative )
     // Select and display the new line
     selection_.selectLine( newLine );
     displayLine( newLine );
-    emit updateLineNumber( newLine );
-    emit newSelection( newLine );
+    Q_EMIT updateLineNumber( newLine );
+    Q_EMIT newSelection( newLine );
 }
 
 // Make the start of the lines visible
@@ -1807,15 +1807,15 @@ void AbstractLogView::createMenu()
 
     saveDefaultSplitterSizesAction_ = new QAction( tr( "Save splitter position" ), this );
     connect( saveDefaultSplitterSizesAction_, &QAction::triggered, this,
-             [ this ]( auto ) { emit saveDefaultSplitterSizes(); } );
+             [ this ]( auto ) { Q_EMIT saveDefaultSplitterSizes(); } );
 
     sendToScratchpadAction_ = new QAction( tr( "Send to scratchpad" ), this );
     connect( sendToScratchpadAction_, &QAction::triggered, this,
-             [ this ]( auto ) { emit sendSelectionToScratchpad(); } );
+             [ this ]( auto ) { Q_EMIT sendSelectionToScratchpad(); } );
 
     replaceInScratchpadAction_ = new QAction( tr( "Replace scratchpad" ), this );
     connect( replaceInScratchpadAction_, &QAction::triggered, this,
-             [ this ]( auto ) { emit replaceScratchpadWithSelection(); } );
+             [ this ]( auto ) { Q_EMIT replaceScratchpadWithSelection(); } );
 
     popupMenu_ = new QMenu( this );
     highlightersMenu_ = popupMenu_->addMenu( "Highlighters" );
@@ -1854,13 +1854,13 @@ void AbstractLogView::considerMouseHovering( int xPos, int yPos )
         // (possibly to highlight the overview)
         if ( line != lastHoveredLine_ ) {
             LOG_DEBUG << "Mouse moved in margin line: " << line;
-            emit mouseHoveredOverLine( *line );
+            Q_EMIT mouseHoveredOverLine( *line );
             lastHoveredLine_ = line;
         }
     }
     else {
         if ( lastHoveredLine_.has_value() ) {
-            emit mouseLeftHoveringZone();
+            Q_EMIT mouseLeftHoveringZone();
             lastHoveredLine_ = {};
         }
     }
@@ -2282,7 +2282,7 @@ QPixmap AbstractLogView::drawPullToFollowBar( int width, qreal pixelRatio )
 
 void AbstractLogView::disableFollow()
 {
-    emit followModeChanged( false );
+    Q_EMIT followModeChanged( false );
     followElasticHook_.hook( false );
 }
 
@@ -2295,10 +2295,10 @@ void AbstractLogView::setHighlighterSet( QAction* action )
 void AbstractLogView::setColorLabel( QAction* action )
 {
     if ( action->data().isValid() ) {
-        emit addColorLabel( static_cast<size_t>( action->data().toInt() ) );
+        Q_EMIT addColorLabel( static_cast<size_t>( action->data().toInt() ) );
     }
     else {
-        emit clearColorLabels();
+        Q_EMIT clearColorLabels();
     }
 }
 

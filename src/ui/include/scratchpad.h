@@ -38,14 +38,14 @@ class ScratchPad : public QWidget {
     ScratchPad( const ScratchPad& ) = delete;
     ScratchPad& operator=( const ScratchPad& ) = delete;
 
-  public slots:
+  public Q_SLOTS:
     void addData( QString data );
     void replaceData( QString data );
 
-  signals:
+  Q_SIGNALS:
     void updateTransformation();
 
-  private slots:
+  private Q_SLOTS:
     void crc32Hex();
     void crc32Dec();
     void unixTime();

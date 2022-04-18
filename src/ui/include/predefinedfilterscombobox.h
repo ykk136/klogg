@@ -59,7 +59,7 @@ class PredefinedFiltersComboBox final : public QComboBox {
 
     void populatePredefinedFilters();
 
-  signals:
+  Q_SIGNALS:
     void filterChanged( const QList<PredefinedFilter>& selectedFilters);
 
   private:

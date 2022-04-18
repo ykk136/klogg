@@ -53,7 +53,7 @@ class PredefinedFiltersDialog : public QDialog, public Ui::PredefinedFiltersDial
     PredefinedFiltersDialog( QWidget* parent = nullptr );
     PredefinedFiltersDialog( const QString& newFilter, QWidget* parent = nullptr );
 
-  private slots:
+  private Q_SLOTS:
     void addFilter();
     void removeFilter();
 
@@ -68,7 +68,7 @@ class PredefinedFiltersDialog : public QDialog, public Ui::PredefinedFiltersDial
     void onCurrentCellChanged( int currentRow, int currentColumn, int previousRow,
                                int previousColumn );
 
-  signals:
+  Q_SIGNALS:
     void optionsChanged();
 
   private:

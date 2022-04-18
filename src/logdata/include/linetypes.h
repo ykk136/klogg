@@ -26,7 +26,7 @@
 #include <qglobal.h>
 #include <string_view>
 
-#include <named_type/named_type.hpp>
+#include <named_type.hpp>
 
 #include <QMetaType>
 #include <QString>
@@ -34,15 +34,15 @@
 #include "log.h"
 
 using LineOffset
-    = fluent::NamedType<int64_t, struct line_offset, fluent::Addable, fluent::Incrementable,
+    = fluent::NamedType<int64_t, struct line_offset, fluent::Addable, fluent::Incrementable, fluent::PreIncrementable,
                         fluent::Subtractable, fluent::Comparable, fluent::Printable>;
 
-using LineNumber = fluent::NamedType<uint64_t, struct line_number, fluent::Incrementable,
-                                     fluent::Decrementable, fluent::Comparable, fluent::Printable>;
+using LineNumber = fluent::NamedType<uint64_t, struct line_number, fluent::Incrementable, fluent::PreIncrementable,
+                                     fluent::PreDecrementable, fluent::Comparable, fluent::Printable>;
 
-using LinesCount = fluent::NamedType<uint64_t, struct lines_count, fluent::Addable,
-                                     fluent::Incrementable, fluent::Subtractable,
-                                     fluent::Decrementable, fluent::Comparable, fluent::Printable>;
+using LinesCount = fluent::NamedType<uint64_t, struct lines_count, fluent::Addable, fluent::Incrementable,
+                                     fluent::PreIncrementable, fluent::Subtractable,
+                                     fluent::PreDecrementable, fluent::Comparable, fluent::Printable>;
 
 using LineLength
     = fluent::NamedType<int, struct line_length, fluent::Comparable, fluent::Printable>;

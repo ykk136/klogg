@@ -123,17 +123,10 @@ class LinePosition {
     template <typename>
     friend class LinePosition;
 
-    // Default constructor
-    LinePosition()
-        : fakeFinalLF_{ false }
-    {
-    }
-
-    // Copy constructor (slow: deleted)
+    LinePosition() = default;
     LinePosition( const LinePosition& ) = delete;
     LinePosition& operator=( const LinePosition& ) = delete;
 
-    // Move assignement
     LinePosition( LinePosition&& orig ) noexcept
     {
         *this = std::move( orig );
@@ -207,7 +200,7 @@ class LinePosition {
 
   private:
     Storage array;
-    bool fakeFinalLF_;
+    bool fakeFinalLF_ = false;
 };
 
 // Use the non-optimised storage

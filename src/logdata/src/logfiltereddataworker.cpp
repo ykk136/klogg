@@ -434,7 +434,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
                 if ( percentage > reportedPercentage || nbMatches > reportedMatches ) {
 
-                    emit searchProgressed( nbMatches, std::min( 99, percentage ), initialLine );
+                    Q_EMIT searchProgressed( nbMatches, std::min( 99, percentage ), initialLine );
 
                     reportedPercentage = percentage;
                     reportedMatches = nbMatches;
@@ -486,8 +486,8 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
                     / ( 1024 * 1024 )
              << " MiB/s";
 
-    emit searchProgressed( nbMatches, 100, initialLine );
-    emit searchFinished();
+    Q_EMIT searchProgressed( nbMatches, 100, initialLine );
+    Q_EMIT searchFinished();
 }
 
 // Called in the worker thread's context

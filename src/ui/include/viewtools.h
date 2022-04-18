@@ -63,7 +63,7 @@ class ElasticHook : public QObject {
         allowHook_ = allow;
         if ( !allow ) {
             hooked_ = false;
-            emit hooked( false );
+            Q_EMIT hooked( false );
         }
     }
 
@@ -80,7 +80,7 @@ class ElasticHook : public QObject {
   protected:
     void timerEvent( QTimerEvent* event ) override;
 
-  signals:
+  Q_SIGNALS:
     // Sent when the length has changed
     void lengthChanged();
     // Sent when the hooked status has changed

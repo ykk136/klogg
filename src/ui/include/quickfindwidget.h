@@ -65,7 +65,7 @@ class QuickFindWidget : public QWidget
     // when requested by the user (the widget won't timeout)
     void userActivate();
 
-  public slots:
+  public Q_SLOTS:
     // Instructs the widget to change the pattern displayed
     void changeDisplayedPattern( const QString& newPattern, bool isRegex );
 
@@ -74,7 +74,7 @@ class QuickFindWidget : public QWidget
     // Clear the notification
     void clearNotification();
 
-  private slots:
+  private Q_SLOTS:
     void doSearchForward();
     void doSearchBackward();
     void returnHandler();
@@ -82,7 +82,7 @@ class QuickFindWidget : public QWidget
     void notificationTimeout();
     void textChanged();
 
-  signals:
+  Q_SIGNALS:
     // Sent when Return is pressed to confirm the pattern
     // (pattern and ignor_case flag)
     void patternConfirmed( const QString&, bool, bool );

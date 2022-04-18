@@ -261,7 +261,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     virtual void doRegisterShortcuts();
     void registerShortcut( const std::string& action, std::function<void()> func );
 
-  signals:
+  Q_SIGNALS:
     // Sent when a new line has been selected by the user.
     void newSelection( LineNumber line );
     // Sent up to the MainWindow to enable/disable the follow mode
@@ -307,7 +307,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void addNextColorLabel();
     void clearColorLabels();
 
-  public slots:
+  public Q_SLOTS:
     // Makes the widget select and display the passed line.
     // Scrolling as necessary
     void trySelectLine( LineNumber newLine );
@@ -334,7 +334,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void refreshOverview();
 
     // Make the view jump to the specified line, regardless of it
-    // being on the screen or not. (does NOT emit followDisabled() )
+    // being on the screen or not. (does NOT Q_EMIT followDisabled() )
     void jumpToLine( LineNumber line );
 
     // Configure the setting of whether to show line number margin
@@ -346,7 +346,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     void setSearchLimits( LineNumber startLine, LineNumber endLine );
 
-  private slots:
+  private Q_SLOTS:
     void handlePatternUpdated();
     void addToSearch();
     void replaceSearch();

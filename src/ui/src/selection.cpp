@@ -206,7 +206,7 @@ FilePosition Selection::getNextPosition() const
 
 FilePosition Selection::getPreviousPosition() const
 {
-    LineNumber line;
+    LineNumber line = 0_lnum;
     int column = 0;
 
     if ( selectedLine_.has_value() ) {

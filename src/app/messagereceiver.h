@@ -45,10 +45,10 @@ class MessageReceiver final : public QObject {
     {
     }
 
-  signals:
+  Q_SIGNALS:
     void loadFile( const QString& filename );
 
-  public slots:
+  public Q_SLOTS:
     void receiveMessage( quint32 instanceId, QByteArray message )
     {
       
@@ -69,7 +69,7 @@ class MessageReceiver final : public QObject {
         QStringList filenames = data[ "files" ].toStringList();
 
         for ( const auto& f : filenames ) {
-            emit loadFile( f );
+            Q_EMIT loadFile( f );
         }
     }
 };

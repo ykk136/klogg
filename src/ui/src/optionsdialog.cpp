@@ -339,7 +339,7 @@ void OptionsDialog::updateDialogFromConfig()
 }
 
 //
-// Slots
+// Q_SLOTS:
 //
 
 void OptionsDialog::updateFontSize( const QString& fontFamily )
@@ -464,7 +464,7 @@ void OptionsDialog::updateConfigFromDialog()
     savedSearches.setHistorySize( searchHistorySpinBox->value() );
     savedSearches.save();
 
-    emit optionsChanged();
+    Q_EMIT optionsChanged();
 }
 
 void OptionsDialog::onButtonBoxClicked( QAbstractButton* button )

@@ -43,8 +43,6 @@
 #include "blockpool.h"
 #include "linetypes.h"
 
-#include "tbb/enumerable_thread_specific.h"
-
 // This class is a compressed storage backend for LinePositionArray
 // It emulates the interface of a vector, but take advantage of the nature
 // of the stored data (increasing end of line addresses) to apply some
@@ -134,7 +132,7 @@ class CompressedLinePositionStorage {
 
     size_t allocatedSize() const;
 
-   using BlockOffset = fluent::NamedType<size_t, struct block_offset, fluent::Incrementable,
+   using BlockOffset = fluent::NamedType<size_t, struct block_offset, fluent::Incrementable, fluent::PreIncrementable,
                                           fluent::Addable, fluent::Comparable>;
 
     // Cache the last position read

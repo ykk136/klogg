@@ -123,7 +123,7 @@ class LogData : public AbstractLogData {
 
     RawLines getLinesRaw( LineNumber first, LinesCount number ) const;
 
-  signals:
+  Q_SIGNALS:
     // Sent during the 'attach' process to signal progress
     // percent being the percentage of completion.
     void loadingProgressed( int percent );
@@ -133,7 +133,7 @@ class LogData : public AbstractLogData {
     // by loadingProgressed if needed and then a loadingFinished.
     void fileChanged( MonitoredFileStatus status );
 
-  private slots:
+  private Q_SLOTS:
     // Consider reloading the file when it changes on disk updated
     void fileChangedOnDisk( const QString& filename );
     // Called when the worker thread signals the current operation ended

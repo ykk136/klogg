@@ -60,7 +60,6 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
 
         WHEN( "Access items in random order" )
         {
-
             std::random_device rd;
             std::mt19937 g( rd() );
 
@@ -70,6 +69,7 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
             THEN( "Corrent offsets returned" )
             {
                 for ( auto i : index ) {
+                    std::cout << "Test " << i <<  std::endl;
                     REQUIRE( line_array[ i ] == offsets[ i ] );
                 }
             }

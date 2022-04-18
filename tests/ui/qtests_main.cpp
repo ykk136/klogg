@@ -48,14 +48,14 @@ class TestRunner : public QObject {
         return result_;
     }
 
-  public slots:
+  public Q_SLOTS:
     void process()
     {
         result_ = Catch::Session().run( argc_, argv_ );
-        emit finished( result_ );
+        Q_EMIT finished( result_ );
     }
 
-  signals:
+  Q_SIGNALS:
     void finished( int );
 
   private:

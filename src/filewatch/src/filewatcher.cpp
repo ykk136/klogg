@@ -367,13 +367,13 @@ void FileWatcher::fileChangedOnDisk( const QString& fileName )
         changes_.push_back( fileName );
     }
 
-    emit notifyFileChangedOnDisk();
+    Q_EMIT notifyFileChangedOnDisk();
 }
 
 void FileWatcher::sendChangesNotifications()
 {
     for ( const auto& fileName : changes_ ) {
-        emit fileChanged( fileName );
+        Q_EMIT fileChanged( fileName );
     }
 
     changes_.clear();

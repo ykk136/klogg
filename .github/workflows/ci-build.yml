@@ -175,7 +175,7 @@ jobs:
         run: |
           cd $KLOGG_BUILD_ROOT
           macdeployqt ./output/klogg.app -always-overwrite -verbose=2
-          $KLOGG_WORKSPACE/3rdparty/macdeployqtfix/macdeployqtfix.py ./output/klogg.app/Contents/MacOS/klogg $Qt5_Dir
+          $KLOGG_BUILD_ROOT/_deps/macdeployqtfix-src/macdeployqtfix.py ./output/klogg.app/Contents/MacOS/klogg $Qt5_Dir
       
       - name: Mac codesign binaries
         if: ${{ github.event_name != 'pull_request' }}

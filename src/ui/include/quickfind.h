@@ -79,7 +79,7 @@ class SearchingNotifier : public QObject {
             sendNotification( line, nb_lines, backward );
     }
 
-  signals:
+  Q_SIGNALS:
     // Sent when the UI shall display a message to the user.
     void notify( const QFNotification& message );
 
@@ -106,7 +106,7 @@ class QuickFind : public QObject {
     // Make the object forget the 'no more match' flag.
     void resetLimits();
 
-  public slots:
+  public Q_SLOTS:
     // Used for incremental searches
     // Return the first occurrence of the passed pattern from the starting
     // point.  These searches don't change the starting point.
@@ -130,7 +130,7 @@ class QuickFind : public QObject {
 
     void stopSearch();
 
-  signals:
+  Q_SIGNALS:
     // Sent when the UI shall display a message to the user.
     void notify( const QFNotification& message );
     // Sent when the UI shall clear the notification.
@@ -138,7 +138,7 @@ class QuickFind : public QObject {
     // Sent when search is completed
     void searchDone( bool hasMatch, Portion selection );
 
-  private slots:
+  private Q_SLOTS:
     void sendNotification( QFNotification notification );
     void onSearchFutureReady();
 

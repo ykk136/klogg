@@ -152,5 +152,5 @@ void PredefinedFiltersComboBox::collectFilters()
                                    item->data( RegexRole ).toBool() } );
     }
 
-    emit filterChanged( selectedPatterns );
+    Q_EMIT filterChanged( selectedPatterns );
 }

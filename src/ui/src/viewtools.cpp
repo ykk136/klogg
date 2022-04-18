@@ -46,12 +46,12 @@ void ElasticHook::move( int value )
     if ( allowHook_ && ( !hooked_ ) && position_ >= hook_threshold_ ) {
         position_ -= hook_threshold_;
         hooked_ = true;
-        emit hooked( true );
+        Q_EMIT hooked( true );
     }
     else if ( hooked_ && position_ <= -hook_threshold_ ) {
         position_ += hook_threshold_;
         hooked_ = false;
-        emit hooked( false );
+        Q_EMIT hooked( false );
     }
 
     if ( position_ < 0 && !isHooked() )
@@ -61,7 +61,7 @@ void ElasticHook::move( int value )
 
     LOG_DEBUG << "ElasticHook::move: new value " << position_;
 
-    emit lengthChanged();
+    Q_EMIT lengthChanged();
 }
 
 void ElasticHook::timerEvent( QTimerEvent* )
@@ -93,5 +93,5 @@ void ElasticHook::decreasePosition()
 
     LOG_DEBUG << "ElasticHook::timerEvent: new value " << position_;
 
-    emit lengthChanged();
+    Q_EMIT lengthChanged();
 }

@@ -338,5 +338,5 @@ void PredefinedFiltersDialog::resolveStandardButton( QAbstractButton* button )
         return;
     }
 
-    emit optionsChanged();
+    Q_EMIT optionsChanged();
 }

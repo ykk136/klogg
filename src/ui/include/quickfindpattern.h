@@ -118,7 +118,7 @@ class QuickFindPattern : public QObject {
 
     QuickFindMatcher getMatcher() const;
 
-  signals:
+  Q_SIGNALS:
     // Sent when the pattern is changed
     void patternUpdated();
 

@@ -85,11 +85,11 @@ class VersionChecker : public QObject {
     // In case of error or if no new version is found, no signal is emitted.
     void startCheck();
 
-  signals:
+  Q_SIGNALS:
     // New version "version" is available
     void newVersionFound( const QString& version, const QString& url, const QStringList& changes );
 
-  private slots:
+  private Q_SLOTS:
     // Called when download is finished
     void downloadFinished( QNetworkReply* );
 

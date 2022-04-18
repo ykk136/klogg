@@ -265,18 +265,18 @@ void LogDataWorker::onIndexingFinished( bool result )
 {
     if ( result ) {
         LOG_INFO << "finished indexing in worker thread";
-        emit indexingFinished( LoadingStatus::Successful );
+        Q_EMIT indexingFinished( LoadingStatus::Successful );
     }
     else {
         LOG_INFO << "indexing interrupted in worker thread";
-        emit indexingFinished( LoadingStatus::Interrupted );
+        Q_EMIT indexingFinished( LoadingStatus::Interrupted );
     }
 }
 
 void LogDataWorker::onCheckFileFinished( const MonitoredFileStatus result )
 {
     LOG_INFO << "checking file finished in worker thread";
-    emit checkFileChangesFinished( result );
+    Q_EMIT checkFileChangesFinished( result );
 }
 
 //
@@ -566,7 +566,7 @@ void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& bloc
         if ( progress != scopedAccessor.getProgress() ) {
             scopedAccessor.setProgress( progress );
             LOG_DEBUG << "Indexing progress " << progress << ", indexed size " << state.pos;
-            emit indexingProgressed( progress );
+            Q_EMIT indexingProgressed( progress );
         }
     }
     else {
@@ -615,7 +615,7 @@ void IndexOperation::doIndex( LineOffset initialPosition )
         scopedAccessor.setEncodingGuess( QTextCodec::codecForLocale() );
 
         scopedAccessor.setProgress( 100 );
-        emit indexingProgressed( 100 );
+        Q_EMIT indexingProgressed( 100 );
         return;
     }
 
@@ -756,7 +756,7 @@ OperationResult FullIndexOperation::run()
     try {
         LOG_INFO << "FullIndexOperation::run(), file " << fileName_.toStdString();
 
-        emit indexingProgressed( 0 );
+        Q_EMIT indexingProgressed( 0 );
 
         {
             IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
@@ -770,7 +770,7 @@ OperationResult FullIndexOperation::run()
                  << static_cast<bool>( interruptRequest_ );
 
         const auto result = interruptRequest_ ? false : true;
-        emit indexingFinished( result );
+        Q_EMIT indexingFinished( result );
         return result;
     } catch ( const std::exception& err ) {
         const auto errorString = QString( "FullIndexOperation failed: %1" ).arg( err.what() );
@@ -795,14 +795,14 @@ OperationResult PartialIndexOperation::run()
 
         LOG_INFO << "PartialIndexOperation: Starting the count at " << initialPosition << " ...";
 
-        emit indexingProgressed( 0 );
+        Q_EMIT indexingProgressed( 0 );
 
         doIndex( initialPosition );
 
         LOG_INFO << "PartialIndexOperation: ... finished counting.";
 
         const auto result = interruptRequest_ ? false : true;
-        emit indexingFinished( result );
+        Q_EMIT indexingFinished( result );
         return result;
     } catch ( const std::exception& err ) {
         const auto errorString = QString( "PartialIndexOperation failed: %1" ).arg( err.what() );
@@ -823,7 +823,7 @@ OperationResult CheckFileChangesOperation::run()
     try {
         LOG_INFO << "CheckFileChangesOperation::run(), file " << fileName_.toStdString();
         const auto result = doCheckFileChanges();
-        emit fileCheckFinished( result );
+        Q_EMIT fileCheckFinished( result );
         return result;
     } catch ( const std::exception& err ) {
         const auto errorString

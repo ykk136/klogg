@@ -39,16 +39,17 @@
 #ifndef LOGDATAWORKERTHREAD_H
 #define LOGDATAWORKERTHREAD_H
 
-#include <oneapi/tbb/enumerable_thread_specific.h>
-#include <oneapi/tbb/task_group.h>
 #include <variant>
 
 #include <QObject>
 #include <QFile>
 #include <QTextCodec>
 
+#if !defined(Q_MOC_RUN)
+#include <tbb/enumerable_thread_specific.h>
 #include <tbb/flow_graph.h>
 #include <tbb/task_group.h>
+#endif
 
 #include "atomicflag.h"
 #include "filedigest.h"
@@ -269,7 +270,7 @@ class IndexOperation : public QObject {
     // and false if it has been cancelled (results not copied)
     virtual OperationResult run() = 0;
 
-  signals:
+  Q_SIGNALS:
     void indexingProgressed( int );
     void indexingFinished( bool );
     void fileCheckFinished( MonitoredFileStatus );
@@ -371,7 +372,7 @@ class LogDataWorker : public QObject {
     // Interrupts the indexing if one is in progress
     void interrupt();
 
-  signals:
+  Q_SIGNALS:
     // Sent during the indexing process to signal progress
     // percent being the percentage of completion.
     void indexingProgressed( int percent );
@@ -383,7 +384,7 @@ class LogDataWorker : public QObject {
     // to copy the new data back.
     void checkFileChangesFinished( MonitoredFileStatus status );
 
-  private slots:
+  private Q_SLOTS:
     void onIndexingFinished( bool result );
     void onCheckFileFinished( MonitoredFileStatus result );
 

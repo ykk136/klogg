@@ -184,6 +184,6 @@ void VersionChecker::checkVersionData( QByteArray versionData )
     if ( isVersionNewer( currentVersion, latestVersion ) ) {
         LOG_INFO << "Sending new version notification";
 
-        emit newVersionFound( latestVersion, url, changes );
+        Q_EMIT newVersionFound( latestVersion, url, changes );
     }
 }

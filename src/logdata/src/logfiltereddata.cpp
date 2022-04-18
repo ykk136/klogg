@@ -121,7 +121,7 @@ void LogFilteredData::runSearch( const RegularExpressionPattern& regExp, LineNum
 
             marks_and_matches_ = matching_lines_ | marks_;
 
-            emit searchProgressed( LinesCount( matching_lines_.cardinality() ), 100, startLine );
+            Q_EMIT searchProgressed( LinesCount( matching_lines_.cardinality() ), 100, startLine );
         }
     }
 
@@ -392,7 +392,7 @@ void LogFilteredData::updateSearchResultsCache()
 }
 
 //
-// Slots
+// Q_SLOTS:
 //
 void LogFilteredData::handleSearchProgressed( LinesCount nbMatches, int progress,
                                               LineNumber initialLine )
@@ -417,7 +417,7 @@ void LogFilteredData::handleSearchProgressed( LinesCount nbMatches, int progress
         searchProgress_ = std::make_tuple( nbMatches, progress, initialLine );
     }
 
-    emit searchProgressedThrottled();
+    Q_EMIT searchProgressedThrottled();
 
     if ( progress == 100 ) {
         detachReader();
@@ -437,7 +437,7 @@ void LogFilteredData::handleSearchProgressedThrottled()
         ScopedLock lock( searchProgressMutex_ );
         std::tie( nbMatches, progress, initialLine ) = searchProgress_;
     }
-    emit searchProgressed( nbMatches, progress, initialLine );
+    Q_EMIT searchProgressed( nbMatches, progress, initialLine );
 }
 
 LineNumber LogFilteredData::findLogDataLine( LineNumber index ) const

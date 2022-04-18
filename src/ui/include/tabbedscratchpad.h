@@ -33,7 +33,7 @@ class TabbedScratchPad : public QWidget {
     TabbedScratchPad( const TabbedScratchPad& ) = delete;
     TabbedScratchPad& operator=( const TabbedScratchPad& ) = delete;
 
-  public slots:
+  public Q_SLOTS:
     void addData( QString data );
     void replaceData( QString data );
 

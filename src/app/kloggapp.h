@@ -49,7 +49,7 @@
 #include "session.h"
 #include "uuid.h"
 
-#include <singleapp/singleapplication.h>
+#include <singleapplication.h>
 
 #include "mainwindow.h"
 #include "messagereceiver.h"

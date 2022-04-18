@@ -69,12 +69,12 @@ void Downloader::downloadFinished()
         LOG_ERROR << "Download failed: " << currentDownload_->errorString();
         lastError_ = currentDownload_->errorString();
         output_->remove();
-        emit finished( false );
+        Q_EMIT finished( false );
     }
     else {
         LOG_INFO << "Download done";
         output_->close();
-        emit finished( true );
+        Q_EMIT finished( true );
     }
 }
 

@@ -29,7 +29,7 @@ set(KLOGG_UI_SOURCES
 set(KLOGG_GREP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/klogg_grep.cpp)
 
-set(MAIN_LIBS klogg_logdata singleapp klogg_crash_handler)
+set(MAIN_LIBS klogg_logdata klogg_crash_handler roaring SingleApplication)
 if(KLOGG_OVERRIDE_MALLOC)
     LIST(PREPEND MAIN_LIBS klogg_malloc_proxy)
     if(KLOGG_USE_MIMALLOC AND NOT WIN32)

@@ -225,7 +225,7 @@ void OverviewWidget::handleMousePress( int position )
 {
     const auto line = overview_->fileLineFromY( position );
     LOG_DEBUG << "OverviewWidget::handleMousePress y=" << position << " line=" << line;
-    emit lineClicked( line );
+    Q_EMIT lineClicked( line );
 }
 
 void OverviewWidget::highlightLine( LineNumber line )

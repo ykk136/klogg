@@ -234,9 +234,9 @@ std::vector<QObject*> CrawlerWidget::doGetAllSearchables() const
 // Update the state of the parent
 void CrawlerWidget::doSendAllStateSignals()
 {
-    emit updateLineNumber( currentLineNumber_ );
+    Q_EMIT updateLineNumber( currentLineNumber_ );
     if ( !loadingInProgress_ )
-        emit loadingFinished( LoadingStatus::Successful );
+        Q_EMIT loadingFinished( LoadingStatus::Successful );
 }
 
 void CrawlerWidget::changeEvent( QEvent* event )
@@ -252,7 +252,7 @@ void CrawlerWidget::changeEvent( QEvent* event )
 }
 
 //
-// Public slots
+// Public Q_SLOTS:
 //
 
 void CrawlerWidget::stopLoading()
@@ -367,7 +367,7 @@ std::shared_ptr<const ViewContextInterface> CrawlerWidget::doGetViewContext() co
 }
 
 //
-// Slots
+// Q_SLOTS:
 //
 
 void CrawlerWidget::startNewSearch()
@@ -435,7 +435,7 @@ void CrawlerWidget::saveAsPredefinedFilter()
 {
     const auto currentText = searchLineEdit_->currentText();
 
-    emit saveCurrentSearchAsPredefinedFilter( currentText );
+    Q_EMIT saveCurrentSearchAsPredefinedFilter( currentText );
 }
 
 void CrawlerWidget::showSearchContextMenu()
@@ -515,7 +515,7 @@ void CrawlerWidget::jumpToMatchingLine( LineNumber filteredLineNb )
 void CrawlerWidget::updateLineNumberHandler( LineNumber line )
 {
     currentLineNumber_ = line;
-    emit updateLineNumber( line );
+    Q_EMIT updateLineNumber( line );
 }
 
 void CrawlerWidget::markLinesFromMain( const std::vector<LineNumber>& lines )
@@ -686,7 +686,7 @@ void CrawlerWidget::loadingFinishedHandler( LoadingStatus status )
     }
 
     loadingInProgress_ = false;
-    emit loadingFinished( status );
+    Q_EMIT loadingFinished( status );
 }
 
 void CrawlerWidget::fileChangedHandler( MonitoredFileStatus status )
@@ -1266,14 +1266,14 @@ void CrawlerWidget::setup()
              &CrawlerWidget::addColorLabelToSelection );
 
     connect( logMainView_, &AbstractLogView::sendSelectionToScratchpad, this,
-             [ this ]() { emit sendToScratchpad( logMainView_->getSelection() ); } );
+             [ this ]() { Q_EMIT sendToScratchpad( logMainView_->getSelection() ); } );
     connect( filteredView_, &AbstractLogView::sendSelectionToScratchpad, this,
-             [ this ]() { emit sendToScratchpad( filteredView_->getSelection() ); } );
+             [ this ]() { Q_EMIT sendToScratchpad( filteredView_->getSelection() ); } );
     
     connect( logMainView_, &AbstractLogView::replaceScratchpadWithSelection, this,
-             [ this ]() { emit replaceDataInScratchpad( logMainView_->getSelection() ); } );
+             [ this ]() { Q_EMIT replaceDataInScratchpad( logMainView_->getSelection() ); } );
     connect( filteredView_, &AbstractLogView::replaceScratchpadWithSelection, this,
-             [ this ]() { emit replaceDataInScratchpad( filteredView_->getSelection() ); } );
+             [ this ]() { Q_EMIT replaceDataInScratchpad( filteredView_->getSelection() ); } );
 
     const auto defaultEncodingMib = config.defaultEncodingMib();
     if ( defaultEncodingMib >= 0 ) {
@@ -1483,7 +1483,7 @@ void CrawlerWidget::changeDataStatus( DataStatus status )
          && ( !( dataStatus_ == DataStatus::NEW_FILTERED_DATA
                  && status == DataStatus::NEW_DATA ) ) ) {
         dataStatus_ = status;
-        emit dataStatusChanged( dataStatus_ );
+        Q_EMIT dataStatusChanged( dataStatus_ );
     }
 }
 

@@ -140,7 +140,7 @@ void HighlighterSetEdit::setHighlighters( HighlighterSet set )
 void HighlighterSetEdit::setName( const QString& name )
 {
     highlighterSet_.name_ = name;
-    emit changed();
+    Q_EMIT changed();
 }
 
 void HighlighterSetEdit::addHighlighter()
@@ -156,7 +156,7 @@ void HighlighterSetEdit::addHighlighter()
 
     setCurrentRow( highlighterListWidget->count() - 1 );
 
-    emit changed();
+    Q_EMIT changed();
 }
 
 void HighlighterSetEdit::removeHighlighter()
@@ -182,7 +182,7 @@ void HighlighterSetEdit::removeHighlighter()
             }
         } );
 
-        emit changed();
+        Q_EMIT changed();
     }
 }
 
@@ -201,7 +201,7 @@ void HighlighterSetEdit::moveHighlighterUp()
             setCurrentRow( index - 1 );
         } );
 
-        emit changed();
+        Q_EMIT changed();
     }
 }
 
@@ -220,7 +220,7 @@ void HighlighterSetEdit::moveHighlighterDown()
             setCurrentRow( index + 1 );
         } );
 
-        emit changed();
+        Q_EMIT changed();
     }
 }
 
@@ -274,7 +274,7 @@ void HighlighterSetEdit::updateHighlighterProperties()
         highlighterListWidget->currentItem()->setBackground(
             QBrush( currentHighlighter.backColor() ) );
 
-        emit changed();
+        Q_EMIT changed();
     }
 }
 

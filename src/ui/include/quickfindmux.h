@@ -95,12 +95,12 @@ class QuickFindMux : public QObject
     // forward.
     void setDirection( QFDirection direction );
 
-  signals:
+  Q_SIGNALS:
     void patternChanged( const QString& );
     void notify( const QFNotification& );
     void clearNotification();
 
-  public slots:
+  public Q_SLOTS:
     // Signal the current pattern must be altered (will start an incremental
     // search if the options are configured in such a way).
     void setNewPattern( const QString& newPattern, bool ignoreCase, bool isRegexSearch );
@@ -122,7 +122,7 @@ class QuickFindMux : public QObject
     void searchForward();
     void searchBackward();
 
-  private slots:
+  private Q_SLOTS:
     void changeQuickFind( const QString& newPattern,
             QuickFindMux::QFDirection newDirection );
     void notifyPatternChanged();

@@ -117,13 +117,13 @@ Highlighter HighlighterEdit::highlighter() const
 void HighlighterEdit::setPattern( const QString& pattern )
 {
     highlighter_.setPattern( pattern );
-    emit changed();
+    Q_EMIT changed();
 }
 
 void HighlighterEdit::setIgnoreCase( bool ignoreCase )
 {
     highlighter_.setIgnoreCase( ignoreCase );
-    emit changed();
+    Q_EMIT changed();
 }
 
 void HighlighterEdit::setHighlightOnlyMatch( bool onlyMatch )
@@ -131,20 +131,20 @@ void HighlighterEdit::setHighlightOnlyMatch( bool onlyMatch )
     highlighter_.setHighlightOnlyMatch( onlyMatch );
     variateColorsCheckBox->setEnabled( onlyMatch );
     variationSpinBox->setEnabled( onlyMatch );
-    emit changed();
+    Q_EMIT changed();
 }
 
 void HighlighterEdit::setVariateColors( bool variateColors )
 {
     highlighter_.setVariateColors( variateColors );
     highlighter_.setColorVariance( variationSpinBox->value() );
-    emit changed();
+    Q_EMIT changed();
 }
 
 void HighlighterEdit::setColorVariance( int colorVariance )
 {
     highlighter_.setColorVariance( colorVariance );
-    emit changed();
+    Q_EMIT changed();
 }
 
 void HighlighterEdit::changeForeColor()
@@ -153,7 +153,7 @@ void HighlighterEdit::changeForeColor()
     if ( showColorPicker( highlighter_.foreColor(), new_color ) ) {
         highlighter_.setForeColor( new_color );
         updateIcon( foreColorButton, highlighter_.foreColor() );
-        emit changed();
+        Q_EMIT changed();
     }
 }
 
@@ -163,7 +163,7 @@ void HighlighterEdit::changeBackColor()
     if ( showColorPicker( highlighter_.backColor(), new_color ) ) {
         highlighter_.setBackColor( new_color );
         updateIcon( backColorButton, highlighter_.backColor() );
-        emit changed();
+        Q_EMIT changed();
     }
 }
 
@@ -195,5 +195,5 @@ bool HighlighterEdit::showColorPicker( const QColor& in, QColor& out )
 void HighlighterEdit::setPatternType( int index )
 {
     highlighter_.setUseRegex( index == 0 );
-    emit changed();
+    Q_EMIT changed();
 }

@@ -53,7 +53,7 @@
 #include <QFileInfo>
 #include <QIODevice>
 
-#include <simdutf/simdutf.h>
+#include <simdutf.h>
 
 #include "configuration.h"
 #include "linetypes.h"
@@ -220,7 +220,7 @@ void LogData::indexingFinished( LoadingStatus status )
     fileChangedOnDisk_ = MonitoredFileStatus::Unchanged;
 
     LOG_DEBUG << "Sending indexingFinished.";
-    emit loadingFinished( status );
+    Q_EMIT loadingFinished( status );
 
     operationQueue_.finishOperationAndStartNext();
 }
@@ -252,7 +252,7 @@ void LogData::checkFileChangesFinished( MonitoredFileStatus status )
 
     if ( status != MonitoredFileStatus::Unchanged
          || fileChangedOnDisk_ == MonitoredFileStatus::Truncated ) {
-        emit fileChanged( fileChangedOnDisk_ );
+        Q_EMIT fileChanged( fileChangedOnDisk_ );
     }
 
     operationQueue_.finishOperationAndStartNext();

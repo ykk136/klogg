@@ -57,7 +57,7 @@ class KeySequencePresenter : public QWidget {
 
   QString keySequence() const;
 
-  private slots:
+  private Q_SLOTS:
     void showEditor();
 
   private:
@@ -71,11 +71,11 @@ class OptionsDialog : public QDialog, public Ui::OptionsDialog {
   public:
     explicit OptionsDialog( QWidget* parent = nullptr );
 
-  signals:
+  Q_SIGNALS:
     // Is emitted when new settings must be used
     void optionsChanged();
 
-  private slots:
+  private Q_SLOTS:
     // Clears and updates the font size box with the sizes allowed
     // by the passed font family.
     void updateFontSize( const QString& fontFamily );

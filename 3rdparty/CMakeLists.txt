@@ -1,13 +1,154 @@
-add_subdirectory(named_type)
-add_subdirectory(singleapp) #3.3.2
-add_subdirectory(maddy)
-add_subdirectory(whereami)
-add_subdirectory(kdab)
-add_subdirectory(robin_hood) #3.11.5
-add_subdirectory(exprtk)
-add_subdirectory(roaring) #0.3.3
-add_subdirectory(simdutf) #1.0.0
-add_subdirectory(backward-cpp) #1.6
+set(QAPPLICATION_CLASS QApplication)
+
+include(CPM)
+
+CPMAddPackage("gh:RoaringBitmap/CRoaring@0.4.0")
+CPMAddPackage("gh:simdutf/simdutf@1.0.1")
+CPMAddPackage("gh:bombela/backward-cpp@1.6")
+CPMAddPackage("gh:bombela/backward-cpp@1.6")
+
+CPMAddPackage(NAME macdeployqtfix GITHUB_REPOSITORY arl/macdeployqtfix GIT_TAG ffe980011dd7a08ac2bc79dbd5ac86a62b1c1f05 DOWNLOAD_ONLY YES)
+
+if(KLOGG_USE_HYPERSCAN)
+    CPMAddPackage("gh:intel/hyperscan@5.4.0")
+endif()
+
+#add_subdirectory(named_type EXCLUDE_FROM_ALL)
+
+CPMAddPackage(NAME maddy GITHUB_REPOSITORY variar/maddy GIT_TAG 67d331c59d3abc4e92eecc5874836a600dbfaf58 EXCLUDE_FROM_ALL YES)
+CPMAddPackage(NAME NamedType GITHUB_REPOSITORY joboccara/NamedType GIT_TAG 215f039574a7d5111f1a131def337f142029f896 DOWNLOAD_ONLY YES)
+if(NOT TARGET NamedType)
+    message("Adding imported target for NamedType")
+    add_library(NamedType INTERFACE)
+    target_include_directories(NamedType SYSTEM INTERFACE ${NamedType_SOURCE_DIR})
+endif()
+
+CPMAddPackage(NAME Uchardet GITHUB_REPOSITORY freedesktop/Uchardet VERSION 0.0.7 EXCLUDE_FROM_ALL YES OPTIONS "BUILD_BINARY=OFF")
+if(TARGET libuchardet)
+    message("Adding alias for uchardet")
+    SET(KLOGG_UCHARDET_LIBRARY libuchardet PARENT_SCOPE)
+else()
+    SET(KLOGG_UCHARDET_LIBRARY uchardet PARENT_SCOPE)
+endif()
+
+CPMAddPackage(NAME KF5Archive GITHUB_REPOSITORY variar/klogg_karchive GIT_TAG f546bf6ae66a8d34b43da5a41afcfbf4e1a47906 EXCLUDE_FROM_ALL YES)
+if(NOT KF5Archive_ADDED)
+    find_package(KF5Archive)
+    add_library(klogg_karchive INTERFACE)
+    target_link_libraries(klogg_karchive INTERFACE KF5::Archive)
+endif()
+
+CPMAddPackage(NAME robin_hood GITHUB_REPOSITORY martinus/robin-hood-hashing GIT_TAG 3.11.2 EXCLUDE_FROM_ALL YES)
+if(NOT TARGET robin_hood)
+    message("Adding imported target for robin_hood")
+    add_library(robin_hood INTERFACE)
+    target_include_directories(robin_hood INTERFACE ${ROBIN_HOOD_INCLUDE_DIRS})
+endif(NOT TARGET robin_hood)
+
+
+CPMAddPackage(NAME Catch2 GITHUB_REPOSITORY catchorg/Catch2 VERSION 2.13.8 EXCLUDE_FROM_ALL YES)
+if(NOT TARGET Catch2)
+    message("Adding imported target for catch2")
+    add_library(Catch2 INTERFACE)
+    target_include_directories(Catch2 INTERFACE ${CATCH2_INCLUDE_DIRS})
+endif(NOT TARGET Catch2)
+
+
+CPMAddPackage(NAME SingleApplication GITHUB_REPOSITORY itay-grudev/SingleApplication VERSION 3.3.4 DOWNLOAD_ONLY YES)
+if (SingleApplication_ADDED)
+    add_subdirectory(${SingleApplication_SOURCE_DIR} ${CMAKE_BINARY_DIR}/SingleApplication EXCLUDE_FROM_ALL)
+    set_property(TARGET SingleApplication PROPERTY AUTOMOC ON)
+endif()
+
+CPMAddPackage(NAME xxHash GITHUB_REPOSITORY Cyan4973/xxHash VERSION 0.8.1 DOWNLOAD_ONLY YES)
+if (xxHash_ADDED)
+    set(XXHASH_BUILD_ENABLE_INLINE_API OFF)
+    set(XXHASH_BUILD_XXHSUM OFF)
+    add_subdirectory(${xxHash_SOURCE_DIR}/cmake_unofficial ${CMAKE_BINARY_DIR}/xxhash EXCLUDE_FROM_ALL)
+endif()
+
+CPMAddPackage(NAME whereami GITHUB_REPOSITORY gpakosz/whereami GIT_TAG ba364cd54fd431c76c045393b6522b4bff547f50 DOWNLOAD_ONLY YES)
+if (whereami_ADDED)
+    add_library(whereami STATIC
+        ${whereami_SOURCE_DIR}/src/whereami.h
+        ${whereami_SOURCE_DIR}/src/whereami.c
+    )
+
+    target_include_directories(whereami PUBLIC ${whereami_SOURCE_DIR}/src)
+endif()
+
+CPMAddPackage(NAME exprtk GITHUB_REPOSITORY variar/klogg_exprtk GIT_TAG 1f9f4cd7d2620b7b24232de9ea22908d63913459 DOWNLOAD_ONLY YES)
+if (exprtk_ADDED)
+    add_library(exprtk INTERFACE)
+    target_link_libraries(exprtk INTERFACE robin_hood)
+    target_include_directories(exprtk SYSTEM INTERFACE ${exprtk_SOURCE_DIR})
+    target_compile_definitions(exprtk INTERFACE 
+        -Dexprtk_disable_caseinsensitivity
+        -Dexprtk_disable_comments
+        -Dexprtk_disable_break_continue
+        -Dexprtk_disable_return_statement
+        -Dexprtk_disable_superscalar_unroll
+        -Dexprtk_disable_rtl_io_file
+        -Dexprtk_disable_rtl_vecops
+        -Dexprtk_disable_string_capabilities)
+endif()
+
+
+CPMAddPackage(NAME KDToolBox GITHUB_REPOSITORY KDAB/KDToolBox GIT_TAG 253a6c087c626cd477e15c9dae4b0e3ec27afaee DOWNLOAD_ONLY YES)
+if (KDToolBox_ADDED)
+    add_library(kdtoolbox STATIC
+        ${KDToolBox_SOURCE_DIR}/qt/KDSignalThrottler/src/KDSignalThrottler.cpp
+        ${KDToolBox_SOURCE_DIR}/qt/KDSignalThrottler/src/KDSignalThrottler.h)
+
+    target_include_directories(kdtoolbox PUBLIC ${KDToolBox_SOURCE_DIR}/qt/KDSignalThrottler/src)
+    target_link_libraries(kdtoolbox Qt${QT_VERSION_MAJOR}::Core)
+    set_target_properties(kdtoolbox PROPERTIES AUTOMOC ON)
+endif()
+
+CPMAddPackage(NAME efsw GITHUB_REPOSITORY SpartanJ/efsw GIT_TAG 2e73f8e96779a2895c6242d66cadb3a15aa5e192 EXCLUDE_FROM_ALL YES OPTIONS "BUILD_TEST_APP OFF")
+if (efsw_ADDED)
+    target_compile_definitions(efsw PRIVATE EFSW_FSEVENTS_NOT_SUPPORTED)
+endif()
+
+SET(BUILD_SHARED_LIBS ON)
+CPMAddPackage(NAME tbb GITHUB_REPOSITORY oneapi-src/oneTBB VERSION 2021.5.0 EXCLUDE_FROM_ALL YES
+    OPTIONS "TBB_TEST=OFF" "TBB_EXAMPLES=OFF" "TBB_STRICT=OFF" "BUILD_SHARED_LIBS=ON"
+)
+SET(BUILD_SHARED_LIBS OFF)
+if (tbb_ADDED)
+    add_library(tbbmalloc_proxy_wrapper ALIAS tbbmalloc_proxy)
+else()
+    add_library(tbbmalloc_proxy_wrapper INTERFACE)
+    find_package(tbbmalloc_proxy)
+    target_link_libraries(tbbmalloc_proxy_wrapper INTERFACE ${TBB_MALLOC_PROXY_LIBRARIES})
+endif()
+
+set(klogg_cpm_targets "xxhash;Catch2;roaring;roaring-headers-cpp;libuchardet;robin_hood;whereami;simdutf;efsw;SingleApplication;NamedType;hs;tbb;exprtk")
+foreach(target ${klogg_cpm_targets})
+    if (TARGET ${target})
+        get_property(${target}_include_dirs TARGET ${target} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+        set_property(TARGET ${target} PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${${target}_include_dirs})
+    endif()
+endforeach()
+
+if(KLOGG_OVERRIDE_MALLOC)
+    add_library(klogg_malloc_proxy INTERFACE)
+    target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_OVERRIDE_MALLOC)
+
+    if(NOT WIN32 AND KLOGG_USE_MIMALLOC)
+        target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_USE_MIMALLOC)
+
+        CPMAddPackage(NAME mimalloc GITHUB_REPOSITORY microsoft/mimalloc VERSION 2.0.5 EXCLUDE_FROM_ALL YES
+            OPTIONS "MI_BUILD_TESTS=OFF" "MI_SECURE=ON" "MI_BUILD_SHARED=OFF" "MI_BUILD_STATIC=OFF" "MI_BUILD_OBJECT=ON"
+        )
+        if(mimalloc_ADDED)
+            target_link_libraries(klogg_malloc_proxy INTERFACE mimalloc-obj)
+        endif()
+    else()
+        target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_USE_TBBMALLOC)
+        target_link_libraries(klogg_malloc_proxy INTERFACE tbbmalloc_proxy_wrapper)
+    endif()
+endif()
 
 if(KLOGG_USE_SENTRY)
     set(SENTRY_BACKEND "crashpad" CACHE INTERNAL "" FORCE)
@@ -17,133 +158,3 @@ if(KLOGG_USE_SENTRY)
     set(CRASHPAD_ENABLE_INSTALL_DEV OFF CACHE INTERNAL "" FORCE)
     add_subdirectory(sentry)
 endif(KLOGG_USE_SENTRY)
-
-set(EFSW_INSTALL OFF CACHE INTERNAL "" FORCE)
-set(BUILD_TEST_APP OFF CACHE INTERNAL "" FORCE)
-add_subdirectory(efsw) #2e73f8e96779a2895c6242d66cadb3a15aa5e192 on 15 Mar 2022
-mark_as_advanced(BUILD_TEST_APP VERBOSE)
-mark_as_advanced(EFSW_INSTALL VERBOSE)
-
-#TBB
-add_library(tbb_wrapper INTERFACE)
-add_library(tbbmalloc_proxy_wrapper INTERFACE)
-
-pkg_check_modules(TBB tbb>=2021)
-pkg_check_modules(TBB_MALLOC_PROXY tbbmalloc_proxy>=2021)
-if (TBB_FOUND AND TBB_MALLOC_PROXY_FOUND)
-    message("Using system tbb")
-    target_include_directories(tbb_wrapper SYSTEM INTERFACE ${TBB_INCLUDE_DIRS})
-    target_include_directories(tbb_malloc_proxy_wrapper SYSTEM INTERFACE ${TBB_MALLOC_PROXY_INCLUDE_DIRS})
-
-    target_link_libraries(tbb_wrapper INTERFACE ${TBB_LINK_LIBRARIES})
-    target_link_libraries(tbbmalloc_proxy_wrapper INTERFACE ${TBB_MALLOC_PROXY_LINK_LIBRARIES})
-else()
-    message("Using bundled tbb")
-    set(TBB_TEST OFF CACHE INTERNAL "" FORCE)
-    set(TBB_EXAMPLES OFF CACHE INTERNAL "" FORCE)
-    set(TBB_STRICT OFF CACHE INTERNAL "" FORCE)
-    add_subdirectory(onetbb) #2021.5.0
-    mark_as_advanced(FORCE TBB_TEST)
-    mark_as_advanced(FORCE TBB_EXAMPLES)
-    mark_as_advanced(FORCE TBB_STRICT)
-    mark_as_advanced(FORCE TBB_WINDOWS_DRIVER)
-    mark_as_advanced(FORCE TBB_NO_APPCONTAINER)
-    mark_as_advanced(FORCE TBB4PY_BUILD)
-    mark_as_advanced(FORCE TBB_CPF)
-    mark_as_advanced(FORCE TBB_FIND_PACKAGE)
-    target_compile_definitions(klogg_tbb INTERFACE __TBB_NO_IMPLICIT_LINKAGE=1)
-
-    target_link_libraries(tbb_wrapper INTERFACE klogg_tbb)
-    target_link_libraries(tbbmalloc_proxy_wrapper INTERFACE klogg_tbbmalloc_proxy)
-endif()
-
-if(KLOGG_OVERRIDE_MALLOC)
-    add_library(klogg_malloc_proxy INTERFACE)
-    target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_OVERRIDE_MALLOC)
-
-    if(KLOGG_USE_MIMALLOC)
-        target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_USE_MIMALLOC)
-        set(MI_BUILD_TESTS OFF)
-        set(MI_SECURE ON)
-                
-        if(WIN32)
-            add_subdirectory(mimalloc)
-            target_link_libraries(klogg_malloc_proxy INTERFACE mimalloc)
-        else()
-            set(MI_BUILD_SHARED OFF)
-            set(MI_BUILD_STATIC OFF)
-            set(MI_BUILD_OBJECT ON)
-            add_subdirectory(mimalloc)
-            target_link_libraries(klogg_malloc_proxy INTERFACE mimalloc-obj)
-        endif()
-        
-    else()
-        target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_USE_TBBMALLOC)
-        target_link_libraries(klogg_malloc_proxy INTERFACE tbbmalloc_proxy_wrapper)
-    endif()
-endif()
-
-#UCHARDET
-add_library(uchardet_wrapper INTERFACE)
-pkg_check_modules(UCHARDET uchardet>=0.0.7)
-if(UCHARDET_FOUND)
-    message("Using system uchardet")
-    target_include_directories(uchardet_wrapper SYSTEM INTERFACE ${UCHARDET_INCLUDE_DIRS})
-    target_link_libraries(uchardet_wrapper INTERFACE ${UCHARDET_LINK_LIBRARIES})
-else()
-    message("Using bundled uchardet")
-    add_subdirectory(uchardet) #0.0.7
-    target_link_libraries(uchardet_wrapper INTERFACE uchardet)
-endif()
-
-#HYPERSCAN
-if(KLOGG_USE_HYPERSCAN)
-add_library(hypersan_wrapper INTERFACE)
-pkg_check_modules(HYPESCAN libhs>=5.4)
-if(HYPESCAN_FOUND)
-    message("Using system hyperscan")
-    target_include_directories(hypersan_wrapper SYSTEM INTERFACE ${HYPESCAN_INCLUDE_DIRS})
-    target_link_libraries(hypersan_wrapper INTERFACE ${HYPESCAN_LINK_LIBRARIES})
-else(NOT Hyperscan_FOUND)
-    message("Using bundled hyperscan")
-    set(BUILD_EXAMPLES OFF CACHE INTERNAL "" FORCE)
-    add_subdirectory(hyperscan) #5.4.0
-    target_link_libraries(hypersan_wrapper INTERFACE hs)
-    target_compile_definitions(hs_compile PRIVATE "-DBOOST_ALLOW_DEPRECATED_HEADERS")
-endif()
-endif(KLOGG_USE_HYPERSCAN)
-
-#XXHASH
-add_library(xxhash_wrapper INTERFACE)
-pkg_check_modules(XXHASH libxxhash>=0.8)
-if(XXHASH_FOUND)
-    message("Using system xxhash")
-    target_include_directories(xxhash_wrapper SYSTEM INTERFACE ${XXHASH_INCLUDE_DIRS})
-    target_link_libraries(xxhash_wrapper INTERFACE ${XXHASH_LINK_LIBRARIES})
-else()
-    message("Using bundled xxhash")
-    set(XXHASH_BUILD_ENABLE_INLINE_API OFF) #optional
-    set(XXHASH_BUILD_XXHSUM OFF) #optional
-    add_subdirectory(xxhash/cmake_unofficial) #0.8
-    target_link_libraries(xxhash_wrapper INTERFACE xxHash::xxhash)
-endif()
-
-#KARCHIVE
-add_subdirectory(karchive)
-
-#catch2
-if(KLOGG_BUILD_TESTS)
-add_library(catch2_wrapper INTERFACE)
-pkg_check_modules(CATCH2 catch2>=2.13)
-if(CATCH2_FOUND)
-    message("Using system catch2")
-    target_include_directories(catch2_wrapper SYSTEM INTERFACE ${CATCH2_INCLUDE_DIRS})
-    target_link_libraries(catch2_wrapper INTERFACE ${CATCH2_LINK_LIBRARIES})
-else()
-    message("Using bundled catch2")
-    add_subdirectory(catch) #v2.13.9
-    target_link_libraries(catch2_wrapper INTERFACE catch)
-endif()
-endif()
-
-

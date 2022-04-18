@@ -58,10 +58,10 @@ class HighlighterSetEdit : public QWidget, public Ui::HighlighterSetEdit {
 
     void reset();
 
-  signals:
+  Q_SIGNALS:
     void changed();
 
-  private slots:
+  private Q_SLOTS:
     void setName( const QString& name );
 
     void addHighlighter();

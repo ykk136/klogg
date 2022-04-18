@@ -115,7 +115,7 @@ void SignalMux::setCurrentDocument( QObject* current_document )
     for ( const auto& c: connectionList_ )
         connect( c );
 
-    // And ask the doc to emit all state signals
+    // And ask the doc to Q_EMIT all state signals
     auto* doc =
         dynamic_cast<MuxableDocumentInterface*>( current_document );
     if ( doc )

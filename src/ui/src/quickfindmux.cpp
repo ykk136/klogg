@@ -63,7 +63,7 @@ void QuickFindMux::setDirection( QFDirection direction )
 }
 
 //
-// Public slots
+// Public Q_SLOTS:
 //
 void QuickFindMux::searchNext()
 {
@@ -136,7 +136,7 @@ void QuickFindMux::cancelSearch()
 }
 
 //
-// Private slots
+// Private Q_SLOTS:
 //
 void QuickFindMux::changeQuickFind( const QString& new_pattern, QFDirection new_direction )
 {
@@ -146,7 +146,7 @@ void QuickFindMux::changeQuickFind( const QString& new_pattern, QFDirection new_
 
 void QuickFindMux::notifyPatternChanged()
 {
-    emit patternChanged( pattern_->getPattern() );
+    Q_EMIT patternChanged( pattern_->getPattern() );
 }
 
 //

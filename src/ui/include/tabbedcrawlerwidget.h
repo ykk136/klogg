@@ -71,7 +71,7 @@ class TabbedCrawlerWidget : public QTabWidget {
     void loadIcons();
     void updateIcon( int index );
 
-  private slots:
+  private Q_SLOTS:
     void showContextMenu( const QPoint& );
 
   private:

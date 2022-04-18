@@ -32,7 +32,7 @@
 #include <QString>
 
 #ifdef KLOGG_HAS_HS
-#include <hs.h>
+#include <hs/hs.h>
 
 #include "resourcewrapper.h"
 #endif

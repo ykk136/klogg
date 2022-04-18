@@ -79,7 +79,7 @@ class MainWindow : public QMainWindow {
     // Loads the initial file (parameter passed or from config file)
     void loadInitialFile( QString fileName, bool followFile );
 
-  public slots:
+  public Q_SLOTS:
     // Load a file in a new tab (non-interactive)
     // (for use from e.g. IPC)
     void loadFileNonInteractive( const QString& file_name );
@@ -97,7 +97,7 @@ class MainWindow : public QMainWindow {
   private:
     enum class ActionInitiator { User, App };
 
-  private slots:
+  private Q_SLOTS:
     void open();
     void openFileFromRecent( QAction* action );
     void openFileFromFavorites( QAction* action );
@@ -166,7 +166,7 @@ class MainWindow : public QMainWindow {
     // and confirm it.
     void changeQFPattern( const QString& newPattern );
 
-  signals:
+  Q_SIGNALS:
     // Is emitted when new settings must be used
     void optionsChanged();
     // Is emitted when the 'follow' option is enabled/disabled

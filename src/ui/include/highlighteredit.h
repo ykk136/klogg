@@ -38,10 +38,10 @@ class HighlighterEdit : public QWidget, public Ui::HighlighterEdit {
     static bool showColorPicker( const QColor& in, QColor& out );
     static void updateIcon( QPushButton* button, const QColor& color );
 
-  signals:
+  Q_SIGNALS:
     void changed();
 
-  private slots:
+  private Q_SLOTS:
     void changeForeColor();
     void changeBackColor();
     void setPattern( const QString& pattern );

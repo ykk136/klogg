@@ -185,7 +185,7 @@ HighlightersDialog::HighlightersDialog( QWidget* parent )
 }
 
 //
-// Slots
+// Q_SLOTS:
 //
 
 void HighlightersDialog::exportHighlighters()
@@ -321,7 +321,7 @@ void HighlightersDialog::resolveDialog( QAbstractButton* button )
         return;
     }
     persistentHighlighterSet.save();
-    emit optionsChanged();
+    Q_EMIT optionsChanged();
 }
 
 void HighlightersDialog::setCurrentRow( int row )

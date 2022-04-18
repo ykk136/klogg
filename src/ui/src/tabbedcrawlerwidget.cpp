@@ -159,7 +159,7 @@ void TabbedCrawlerWidget::mouseReleaseEvent( QMouseEvent* event )
     if ( event->button() == Qt::MiddleButton ) {
         int tab = this->myTabBar_.tabAt( event->pos() );
         if ( -1 != tab ) {
-            emit tabCloseRequested( tab );
+            Q_EMIT tabCloseRequested( tab );
             event->accept();
         }
     }
@@ -189,13 +189,13 @@ void TabbedCrawlerWidget::showContextMenu( const QPoint& point )
         auto renameTab = menu.addAction( "Rename tab" );
         auto resetTabName = menu.addAction( "Reset tab name" );
 
-        connect( closeThis, &QAction::triggered, [ tab, this ] { emit tabCloseRequested( tab ); } );
+        connect( closeThis, &QAction::triggered, [ tab, this ] { Q_EMIT tabCloseRequested( tab ); } );
 
         connect( closeOthers, &QAction::triggered, [ tabWidget = widget( tab ), this ] {
             while ( count() != 1 ) {
                 for ( int i = 0; i < count(); ++i ) {
                     if ( i != indexOf( tabWidget ) ) {
-                        emit tabCloseRequested( i );
+                        Q_EMIT tabCloseRequested( i );
                         break;
                     }
                 }
@@ -204,19 +204,19 @@ void TabbedCrawlerWidget::showContextMenu( const QPoint& point )
 
         connect( closeLeft, &QAction::triggered, [ tabWidget = widget( tab ), this ] {
             while ( indexOf( tabWidget ) != 0 ) {
-                emit tabCloseRequested( 0 );
+                Q_EMIT tabCloseRequested( 0 );
             }
         } );
 
         connect( closeRight, &QAction::triggered, [ tab, this ] {
             while ( count() > tab + 1 ) {
-                emit tabCloseRequested( tab + 1 );
+                Q_EMIT tabCloseRequested( tab + 1 );
             }
         } );
 
         connect( closeAll, &QAction::triggered, [ this ] {
             while ( count() ) {
-                emit tabCloseRequested( 0 );
+                Q_EMIT tabCloseRequested( 0 );
             }
         } );
 
@@ -292,7 +292,7 @@ void TabbedCrawlerWidget::keyPressEvent( QKeyEvent* event )
         setCurrentIndex( count() - 1 );
     }
     else if ( mod == Qt::ControlModifier && ( key == Qt::Key_Q || key == Qt::Key_W ) ) {
-        emit tabCloseRequested( currentIndex() );
+        Q_EMIT tabCloseRequested( currentIndex() );
     }
     else {
         QTabWidget::keyPressEvent( event );

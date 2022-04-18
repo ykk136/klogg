@@ -109,7 +109,7 @@ class CrawlerWidget : public QSplitter,
 
     void registerShortcuts();
 
-  public slots:
+  public Q_SLOTS:
     // Stop the asynchoronous loading of the file if one is in progress
     // The file is identified by the view attached to it.
     void stopLoading();
@@ -147,7 +147,7 @@ class CrawlerWidget : public QSplitter,
 
     void changeEvent( QEvent* event ) override;
 
-  signals:
+  Q_SIGNALS:
     // Sent to signal the client load has progressed,
     // passing the completion percentage.
     void loadingProgressed( int progress );
@@ -175,7 +175,7 @@ class CrawlerWidget : public QSplitter,
     // available) has changed
     void dataStatusChanged( DataStatus status );
 
-  private slots:
+  private Q_SLOTS:
     // Instructs the widget to start a search using the current search line.
     void startNewSearch();
     // Stop the currently ongoing search (if one exists)

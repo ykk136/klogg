@@ -33,8 +33,10 @@ add_library(klogg_logdata STATIC
 set_target_properties(klogg_logdata PROPERTIES AUTOMOC ON)
 
 target_include_directories(klogg_logdata PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_compile_definitions(klogg_logdata PUBLIC "-DQT_NO_KEYWORDS")
 
 target_link_libraries(klogg_logdata PUBLIC
+
         project_options
         project_warnings
         
@@ -47,14 +49,17 @@ target_link_libraries(klogg_logdata PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
 
         roaring
-        tbb_wrapper
-        named_type
-        uchardet_wrapper
+        roaring-headers-cpp
+        roaring-headers
+
+        tbb
+        NamedType
+        ${KLOGG_UCHARDET_LIBRARY}
         kdtoolbox
         robin_hood
         simdutf)
 
-target_link_libraries(klogg_logdata PRIVATE xxhash_wrapper)
+target_link_libraries(klogg_logdata PRIVATE xxhash)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 find_package(Qt6 COMPONENTS Core5Compat REQUIRED)

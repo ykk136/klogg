@@ -241,7 +241,7 @@ Decompressor::Decompressor( QObject* parent )
 {
     connect( &watcher_, &QFutureWatcher<bool>::finished, [ this ]() {
         LOG_INFO << "Decompressor finished " << watcher_.result();
-        emit finished( watcher_.result() );
+        Q_EMIT finished( watcher_.result() );
     } );
 }
 

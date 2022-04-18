@@ -135,13 +135,13 @@ class LogFilteredData : public AbstractLogData {
     void setVisibility( Visibility visibility );
 
     void iterateOverLines( const std::function<void( LineNumber )>& callback ) const;
-  signals:
+  Q_SIGNALS:
     // Sent when the search has progressed, give the number of matches (so far)
     // and the percentage of completion
     void searchProgressed( LinesCount nbMatches, int progress, LineNumber initialLine );
     void searchProgressedThrottled();
 
-  private slots:
+  private Q_SLOTS:
     void handleSearchProgressed( LinesCount nbMatches, int progress, LineNumber initialLine );
     void handleSearchProgressedThrottled();
 
