@@ -54,7 +54,7 @@ target_link_libraries(klogg_logdata PUBLIC
 
         tbb
         NamedType
-        ${KLOGG_UCHARDET_LIBRARY}
+        uchardet_wrapper
         kdtoolbox
         robin_hood
         simdutf)

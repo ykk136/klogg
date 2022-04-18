@@ -22,7 +22,7 @@
 #include <QTextCodec>
 
 #include "log.h"
-#include "uchardet/uchardet.h"
+#include <uchardet.h>
 
 namespace {
 
