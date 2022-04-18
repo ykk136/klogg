@@ -63,9 +63,10 @@ inline void showPathInFileExplorer( const QString& filePath )
     LOG_INFO << "Show path in explorer: " << filePath;
 
 #if defined( Q_OS_WIN )
-    const auto explorer = QString( "explorer.exe /select,%1" )
-                              .arg( QDir::toNativeSeparators( fileInfo.canonicalFilePath() ) );
-    QProcess::startDetached( explorer );
+    const auto explorerArgs
+        = QStringList() << QString( "/select,%1" )
+                               .arg( QDir::toNativeSeparators( fileInfo.canonicalFilePath() ) );
+    QProcess::startDetached( "explorer.exe", explorerArgs );
 #elif defined( Q_OS_MAC )
     QStringList scriptArgs;
     scriptArgs << QLatin1String( "-e" )
