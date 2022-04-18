@@ -6,7 +6,7 @@ RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
 RUN dnf update -y
 
 RUN dnf install -y epel-release && \
-    dnf install -y ragel make wget python38 rpm-build && \
+    dnf install -y ragel make wget python38 rpm-build git && \
     dnf install -y qt5-qtbase-devel openssl-devel boost-devel zlib-devel && \
     dnf install -y gcc-toolset-9-gcc gcc-toolset-9-gcc-c++ && \
     dnf --enablerepo=powertools install -y ninja-build

@@ -5,7 +5,7 @@ RUN apt-get update -y && \
     add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
     apt-get install gcc-9 g++-9 \
                     qt5-default qtbase5-dev qt5-qmake qtbase5-dev-tools \
-                    ragel ninja-build zlib1g-dev \
+                    ragel ninja-build zlib1g-dev git \
                     wget fuse -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
