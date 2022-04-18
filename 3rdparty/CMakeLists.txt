@@ -10,7 +10,7 @@ CPMAddPackage("gh:bombela/backward-cpp@1.6")
 CPMAddPackage(NAME macdeployqtfix GITHUB_REPOSITORY arl/macdeployqtfix GIT_TAG ffe980011dd7a08ac2bc79dbd5ac86a62b1c1f05 DOWNLOAD_ONLY YES)
 
 if(KLOGG_USE_HYPERSCAN)
-    CPMAddPackage("gh:intel/hyperscan@5.4.0")
+    CPMAddPackage(NAME hyperscan GITHUB_REPOSITORY variar/hyperscan GIT_TAG 0931a40e0cf1d7f92189bc546c3491ed5c113f8b EXCLUDE_FROM_ALL YES)
 endif()
 
 CPMAddPackage(NAME maddy GITHUB_REPOSITORY variar/maddy GIT_TAG 67d331c59d3abc4e92eecc5874836a600dbfaf58 EXCLUDE_FROM_ALL YES)
