@@ -2,8 +2,10 @@
 .\release\klogg.pdb
 .\release\klogg_portable.exe
 .\release\klogg_portable.pdb
-.\release\klogg_tbbmalloc.dll
-.\release\klogg_tbbmalloc_proxy.dll
-.\release\klogg_tbbmalloc.pdb
-.\release\klogg_tbbmalloc_proxy.pdb
+.\release\tbb12.dll
+.\release\tbb12.pdb
+.\release\tbbmalloc.dll
+.\release\tbbmalloc_proxy.dll
+.\release\tbbmalloc.pdb
+.\release\tbbmalloc_proxy.pdb
 

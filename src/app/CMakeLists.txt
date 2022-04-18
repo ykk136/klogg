@@ -97,6 +97,27 @@ install(TARGETS
     BUNDLE DESTINATION .
 )
 
+if(TARGET tbb)
+    add_custom_command(TARGET klogg POST_BUILD
+        COMMAND cmake -E copy $<TARGET_FILE:tbb> $<TARGET_FILE_DIR:klogg>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Copy tbb"
+    )
+endif()
+
+if(TARGET tbbmalloc_proxy)
+    add_custom_command(TARGET klogg POST_BUILD
+        COMMAND cmake -E copy $<TARGET_FILE:tbbmalloc> $<TARGET_FILE_DIR:klogg>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Copy tbbmalloc"
+    )
+    add_custom_command(TARGET klogg POST_BUILD
+        COMMAND cmake -E copy $<TARGET_FILE:tbbmalloc_proxy> $<TARGET_FILE_DIR:klogg>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Copy tbbmalloc_proxy"
+    )
+endif()
+
 if(KLOGG_USE_SENTRY)
     if (NOT WIN32)
 

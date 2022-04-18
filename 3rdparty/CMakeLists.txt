@@ -128,11 +128,13 @@ endif()
 CPMAddPackage(NAME tbb GITHUB_REPOSITORY oneapi-src/oneTBB VERSION 2021.5.0 EXCLUDE_FROM_ALL YES
     OPTIONS "TBB_TEST=OFF" "TBB_EXAMPLES=OFF" "TBB_STRICT=OFF"
 )
+
 if(WIN32)
+
 SET(BUILD_SHARED_LIBS OFF)
 endif()
 
-if (tbb_ADDED)
+if (TARGET tbbmalloc_proxy)
     add_library(tbbmalloc_proxy_wrapper ALIAS tbbmalloc_proxy)
 else()
     add_library(tbbmalloc_proxy_wrapper INTERFACE)

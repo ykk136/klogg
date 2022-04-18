@@ -69,8 +69,9 @@ Section "klogg" klogg
     File release\klogg.exe
     File release\klogg_crashpad_handler.exe
     File release\klogg_minidump_dump.exe
-    File release\klogg_tbbmalloc.dll
-    File release\klogg_tbbmalloc_proxy.dll
+    File release\tbb12.dll
+    File release\tbbmalloc.dll
+    File release\tbbmalloc_proxy.dll
 
     File COPYING
     File NOTICE
@@ -186,6 +187,7 @@ Section "Uninstall"
     Delete "$INSTDIR\msvcp140_1.dll"
     Delete "$INSTDIR\vcruntime140.dll"
     Delete "$INSTDIR\vcruntime140_1.dll"
+    Delete "$INSTDIR\tbb12.dll"
     Delete "$INSTDIR\tbbmalloc.dll"
     Delete "$INSTDIR\tbbmalloc_proxy.dll"
     Delete "$INSTDIR\klogg_tbbmalloc.dll"
