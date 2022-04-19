@@ -178,7 +178,7 @@ jobs:
 
       - name: Mac deploy Qt fixing
         run: |
-          python3 ./_deps/macdeployqtfix-src/macdeployqtfix.py ./output/klogg.app/Contents/MacOS/klogg $Qt5_Dir
+          python3 $KLOGG_BUILD_ROOT/_deps/macdeployqtfix-src/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt5_Dir
       
       - name: Mac codesign binaries
         if: ${{ github.event_name != 'pull_request' }}
