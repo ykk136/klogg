@@ -1,34 +1,17 @@
 function(set_project_compile_flags project_name)
 
-  set(MSVC_FLAGS
-        /fp:fast
-  )
-  set(MSVC_DEFINITIONS
-        -DNOMINMAX
-  )
+  set(MSVC_FLAGS /fp:fast)
+  set(MSVC_DEFINITIONS -DNOMINMAX)
 
-  set(CLANG_FLAGS
-        -ffast-math
-  )
-  
-  set(CLANG_DEFINITIONS 
+  set(CLANG_FLAGS -ffast-math)
 
-  )
+  set(CLANG_DEFINITIONS)
 
-  set(APPLE_CLANG_FLAGS
-        ${CLANG_FLAGS}
-        -stdlib=libc++
-  )
-  set(APPLE_CLANG_DEFINITIONS
-        ${CLANG_DEFINITIONS}
-  )
+  set(APPLE_CLANG_FLAGS ${CLANG_FLAGS} -stdlib=libc++)
+  set(APPLE_CLANG_DEFINITIONS ${CLANG_DEFINITIONS})
 
-  set(GCC_FLAGS
-        ${CLANG_FLAGS}
-  )
-  set(GCC_DEFINITIONS
-    ${CLANG_DEFINITIONS}
-  )
+  set(GCC_FLAGS ${CLANG_FLAGS})
+  set(GCC_DEFINITIONS ${CLANG_DEFINITIONS})
 
   if(MSVC)
     set(PROJECT_FLAGS ${MSVC_FLAGS})
@@ -52,9 +35,7 @@ function(set_project_compile_flags project_name)
   target_compile_options(${project_name} INTERFACE ${PROJECT_FLAGS})
   target_compile_definitions(${project_name} INTERFACE ${PROJECT_DEFINITIONS})
 
-  set(PROJECT_COMPILER_FEATURES 
-        cxx_std_14
-  )
+  set(PROJECT_COMPILER_FEATURES cxx_std_14)
   target_compile_features(${project_name} INTERFACE ${PROJECT_COMPILER_FEATURES})
 
 endfunction()
