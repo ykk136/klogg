@@ -1,11 +1,11 @@
-FROM ubuntu:bionic
+FROM ubuntu:jammy
 
 RUN apt update -y && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
     apt update -y
 
-RUN apt install gcc-9 g++-9 \
+RUN apt install gcc-11 g++-11 \
                     qt5-default qtbase5-dev qt5-qmake qtbase5-dev-tools libicu-dev \
                     ragel ninja-build zlib1g-dev git \
                     wget fuse -y && \

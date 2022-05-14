@@ -47,27 +47,60 @@ jobs:
       matrix:
         config:
 
-          - os: centos
+          - os: oraclelinux
             os_version: 8
             arch: x64
             check_command: yum install -y --setopt tsflags=test /usr/local/klogg*.rpm
             cpack_gen: RPM
             artifacts_id: rpm
-            check_container: roboxes/rhel8git
-            container_root: docker/centos8
-            container: variar/klogg_centos8
-            cmake_opts: -DKLOGG_USE_LTO=OFF
+            check_container: oraclelinux:7
+            container_root: docker/oracle7
+            container: variar/klogg_oracle7
+            cmake_opts: -DCMAKE_BUILD_WITH_INSTALL_RPATH=on
 
-          - os: ubuntu
+          - os: ubuntu_bionic
             os_version: 18.04
             arch: x64
             check_command: apt-get update && apt install --dry-run /usr/local/klogg*.deb
             cpack_gen: DEB
-            artifacts_id: deb
+            artifacts_id: deb_bionic
             check_container: ubuntu:18.04
             container_root: docker/ubuntu18.04
             container: variar/klogg_ubuntu18.04
             cmake_opts:
+
+          - os: ubuntu_focal
+            os_version: 20.04
+            arch: x64
+            check_command: apt-get update && apt install --dry-run /usr/local/klogg*.deb
+            cpack_gen: DEB
+            artifacts_id: deb_focal
+            check_container: ubuntu:20.04
+            container_root: docker/ubuntu20.04
+            container: variar/klogg_ubuntu20.04
+            cmake_opts:
+
+          - os: ubuntu_jammy
+            os_version: 22.04
+            arch: x64
+            check_command: apt-get update && apt install --dry-run /usr/local/klogg*.deb
+            cpack_gen: DEB
+            artifacts_id: deb_jammy
+            check_container: ubuntu:22.04
+            container_root: docker/ubuntu22.04
+            container: variar/klogg_ubuntu22.04
+            cmake_opts:
+
+          - os: ubuntu_appimage
+            os_version: 18.04
+            arch: x64
+            #check_command: apt-get update && apt install --dry-run /usr/local/klogg*.deb
+            #cpack_gen: DEB
+            artifacts_id: appimage
+            #check_container: ubuntu:22.04
+            container_root: docker/ubuntu18.04_qt5.15
+            container: variar/klogg_ubuntu18.04_qt5.15
+            cmake_opts: -DCMAKE_PREFIX_PATH=/opt/qt515/
 
 
     runs-on: ubuntu-18.04
@@ -89,18 +122,19 @@ jobs:
       - uses: ./.github/actions/docker-build
       - uses: ./.github/actions/docker-run-tests
 
-      - name: package 
+      - name: package
+        if: ${{ matrix.config.cpack_gen }}
         run: |
           docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cpack -G ${{ matrix.config.cpack_gen }} "
           docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cp ./output/klogg.sym ./packages/klogg_${{ matrix.config.artifacts_id }}.sym"
 
       - name: Check package
-        if: ${{ matrix.config.os == 'ubuntu' }}
+        if: ${{ matrix.config.check_command }}
         run: |
           docker run --rm -v "$KLOGG_WORKSPACE/$KLOGG_BUILD_ROOT/packages":/usr/local ${{ matrix.config.check_container }} /bin/bash -c "${{ matrix.config.check_command }}"
     
       - name: Linux AppImage 
-        if: ${{ matrix.config.os == 'ubuntu' }}
+        if: ${{ matrix.config.os == 'ubuntu_appimage' }}
         run: |
           docker run --device /dev/fuse --privileged --env KLOGG_VERSION=$KLOGG_VERSION -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && ../packaging/linux/appimage/generate_appimage.sh"
 

@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 RUN apt update -y && \
     apt install software-properties-common -y && \

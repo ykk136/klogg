@@ -192,7 +192,9 @@ find_package(
   REQUIRED
 )
 
-message("Qt version ${Qt${QT_VERSION_MAJOR}Core_VERSION}")
+set(KLOGG_QT_VERSION ${Qt${QT_VERSION_MAJOR}Core_VERSION})
+
+message("Qt version ${KLOGG_QT_VERSION}")
 message("LTO ${KLOGG_USE_LTO}")
 
 set(CMAKE_AUTOMOC OFF)
@@ -270,13 +272,13 @@ if(UNIX)
     set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://github.com/variar/klogg")
     set(CPACK_DEBIAN_PACKAGE_DEPENDS ${CPACK_DEBIAN_PACKAGE_DEPENDS}
-                                     "libqt5widgets5 (>=5.9.5), libqt5concurrent5 (>=5.9.5), libqt5xml5 (>=5.9.5)"
+                                     "libqt5core5a (>=${KLOGG_QT_VERSION}),  libqt5gui5 (>=${KLOGG_QT_VERSION}), libqt5widgets5 (>=${KLOGG_QT_VERSION}), libqt5concurrent5 (>=${KLOGG_QT_VERSION}), libqt5xml5 (>=${KLOGG_QT_VERSION})"
     )
 
     #RPM
     set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
     set(CPACK_RPM_PACKAGE_LICENSE "GPLv3")
-    set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase >= 5.9.5")
+    set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase >= ${KLOGG_QT_VERSION}")
     set(CPACK_RPM_PACKAGE_URL "http://github.com/variar/klogg")
     set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
         /usr/share/applications
