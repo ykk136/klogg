@@ -48,7 +48,7 @@ jobs:
         config:
 
           - os: oraclelinux
-            os_version: 8
+            os_version: 7
             arch: x64
             check_command: yum install -y --setopt tsflags=test /usr/local/klogg*.rpm
             cpack_gen: RPM
