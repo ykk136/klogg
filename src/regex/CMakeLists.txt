@@ -16,6 +16,7 @@ target_link_libraries(
          klogg_logging
          klogg_settings
          Qt${QT_VERSION_MAJOR}::Core
+         robin_hood
          exprtk
 )
 
