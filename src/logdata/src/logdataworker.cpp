@@ -380,26 +380,16 @@ findNextLineFeed( const QByteArray& block, int posWithinBlock, const IndexingSta
     const auto nextLineFeed = findNextDelimeter( state.encodingParams, blockView, '\n' );
 
     const auto isEndOfBlock = nextLineFeed == std::string_view::npos;
-    const auto isZeroBlock = isEndOfBlock ? std::all_of( blockView.begin(), blockView.end(),
-                                                         []( const auto c ) { return c == '\0'; } )
-                                          : false;
-
     const auto nextLineSize = !isEndOfBlock ? nextLineFeed : searchLineSize;
 
-    if ( !isZeroBlock ) {
-        posWithinBlock = charOffsetWithinBlock( block.data(), searchStart + nextLineSize,
-                                                state.encodingParams );
+    posWithinBlock
+        = charOffsetWithinBlock( block.data(), searchStart + nextLineSize, state.encodingParams );
 
-        const auto additionalSpaces
-            = expandTabsInLine( block, blockView.substr( 0, nextLineSize ), posWithinBlock,
-                                state.encodingParams, findNextDelimeter, state.additional_spaces );
+    const auto additionalSpaces
+        = expandTabsInLine( block, blockView.substr( 0, nextLineSize ), posWithinBlock,
+                            state.encodingParams, findNextDelimeter, state.additional_spaces );
 
-        return std::make_tuple( isEndOfBlock, posWithinBlock, additionalSpaces );
-    }
-    else {
-        LOG_INFO << "Found zero block at " << state.pos << " of size " << blockView.size();
-        return std::make_tuple( false, block.size() - state.encodingParams.lineFeedWidth, 0 );
-    }
+    return std::make_tuple( isEndOfBlock, posWithinBlock, additionalSpaces );
 }
 } // namespace parse_data_block
 
@@ -738,9 +728,10 @@ void IndexOperation::doIndex( LineOffset initialPosition )
 
     if ( scopedAccessor.getMaxLength().get()
          == std::numeric_limits<LineLength::UnderlyingType>::max() ) {
-
-        QMessageBox::critical( nullptr, "Klogg", "Can't index file: some lines are too long",
-                               QMessageBox::Abort );
+        dispatchToMainThread( [] {
+            QMessageBox::critical( nullptr, "Klogg", "Can't index file: some lines are too long",
+                                   QMessageBox::Close );
+        } );
 
         scopedAccessor.clear();
     }
