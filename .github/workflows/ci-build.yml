@@ -48,14 +48,14 @@ jobs:
         config:
 
           - os: oraclelinux
-            os_version: 7
+            os_version: 8
             arch: x64
             check_command: yum install -y --setopt tsflags=test /usr/local/klogg*.rpm
             cpack_gen: RPM
             artifacts_id: rpm
-            check_container: oraclelinux:7
-            container_root: docker/oracle7
-            container: variar/klogg_oracle7
+            check_container: oraclelinux:8
+            container_root: docker/oracle8
+            container: variar/klogg_oracle8
             cmake_opts: -DCMAKE_BUILD_WITH_INSTALL_RPATH=on
 
           - os: ubuntu_bionic
@@ -78,17 +78,6 @@ jobs:
             check_container: ubuntu:20.04
             container_root: docker/ubuntu20.04
             container: variar/klogg_ubuntu20.04
-            cmake_opts:
-
-          - os: ubuntu_jammy
-            os_version: 22.04
-            arch: x64
-            check_command: apt-get update && apt install --dry-run /usr/local/klogg*.deb
-            cpack_gen: DEB
-            artifacts_id: deb_jammy
-            check_container: ubuntu:22.04
-            container_root: docker/ubuntu22.04
-            container: variar/klogg_ubuntu22.04
             cmake_opts:
 
           - os: ubuntu_appimage
