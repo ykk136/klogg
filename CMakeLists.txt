@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(
   klogg
-  VERSION 22.04.0
+  VERSION 22.05.0
   DESCRIPTION "klogg log viewer"
   LANGUAGES C CXX ASM
 )
@@ -314,4 +314,4 @@ add_custom_target(
           ${DOCUMENTATION_FILE}
 )
 
-add_custom_target(stuff SOURCES .clang-format .clang-tidy .cmake-format.yaml)
+add_custom_target(stuff SOURCES .clang-format .clang-tidy .cmake-format)
