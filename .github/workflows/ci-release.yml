@@ -50,8 +50,9 @@ jobs:
     - name: Upload symbols linux
       shell: sh
       run: |
-        sentry-cli upload-dif ./packages-deb-x64/klogg_deb.sym 
-        sentry-cli upload-dif ./packages-rpm-x64/klogg_rpm.sym 
+        sentry-cli upload-dif ./packages-bionic-x64/klogg_bionic.sym 
+        sentry-cli upload-dif ./packages-focal-x64/klogg_focal.sym 
+        sentry-cli upload-dif ./packages-oracle-x64/klogg_oracle.sym 
 
     - name: Upload symbols mac
       shell: sh
@@ -85,8 +86,10 @@ jobs:
         automatic_release_tag: continuous-linux
         prerelease: true
         files: |
-          ./packages-deb-x64/*
-          ./packages-rpm-x64/*
+          ./packages-bionic-x64/*
+          ./packages-focal-x64/*
+          ./packages-oracle-x64/*
+          ./packages-appimage-x64/*
 
     - name: Release mac
       uses: "marvinpinto/action-automatic-releases@latest"
