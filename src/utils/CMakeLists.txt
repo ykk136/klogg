@@ -1,6 +1,5 @@
 add_library(
   klogg_utils
-  INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR}/include/atomicflag.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/uuid.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/dispatch_to.h
@@ -15,16 +14,16 @@ add_library(
 
 set_target_properties(klogg_utils PROPERTIES AUTOMOC ON)
 
-target_include_directories(klogg_utils INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(klogg_utils PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(
   klogg_utils
-  INTERFACE project_options
-            project_warnings
-            klogg_version
-            klogg_logging
-            Qt${QT_VERSION_MAJOR}::Gui
-            Qt${QT_VERSION_MAJOR}::Widgets
-            Qt${QT_VERSION_MAJOR}::Network
-            Qt${QT_VERSION_MAJOR}::Concurrent
-            whereami
+  PUBLIC project_options
+         project_warnings
+         klogg_version
+         klogg_logging
+         Qt${QT_VERSION_MAJOR}::Gui
+         Qt${QT_VERSION_MAJOR}::Widgets
+         Qt${QT_VERSION_MAJOR}::Network
+         Qt${QT_VERSION_MAJOR}::Concurrent
+         whereami
 )
