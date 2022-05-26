@@ -92,7 +92,7 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
 
             THEN( "New last offset is returned" )
             {
-                REQUIRE( line_array.at( 6 ) == 20030_offset );
+                REQUIRE( line_array.at( 5 ) == 20030_offset );
             }
         }
 
