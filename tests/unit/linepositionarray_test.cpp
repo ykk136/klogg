@@ -53,7 +53,7 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
             THEN( "Corrent offsets returned" )
             {
                 for ( auto i = 0u; i < offsets.size(); ++i ) {
-                    REQUIRE( line_array[ i ] == offsets[ i ] );
+                    REQUIRE( line_array.at( i ) == offsets[ i ] );
                 }
             }
         }
@@ -69,8 +69,8 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
             THEN( "Corrent offsets returned" )
             {
                 for ( auto i : index ) {
-                    std::cout << "Test " << i <<  std::endl;
-                    REQUIRE( line_array[ i ] == offsets[ i ] );
+                    std::cout << "Test " << i << std::endl;
+                    REQUIRE( line_array.at( i ) == offsets[ i ] );
                 }
             }
         }
@@ -81,7 +81,7 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
 
             THEN( "Last offset is returned" )
             {
-                REQUIRE( line_array[ 5 ] == offsets[ 5 ] );
+                REQUIRE( line_array.at( 5 ) == offsets[ 5 ] );
             }
         }
 
@@ -92,7 +92,7 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
 
             THEN( "New last offset is returned" )
             {
-                REQUIRE( line_array[ 6 ] == 20030_offset );
+                REQUIRE( line_array.at( 6 ) == 20030_offset );
             }
         }
 
@@ -112,10 +112,10 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
                     THEN( "All lines are kept" )
                     {
                         for ( auto i = 0u; i < offsets.size(); ++i ) {
-                            REQUIRE( line_array[ i ] == offsets[ i ] );
+                            REQUIRE( line_array.at( i ) == offsets[ i ] );
                         }
-                        REQUIRE( line_array[ 6 ] == other_array[ 0 ] );
-                        REQUIRE( line_array[ 7 ] == other_array[ 1 ] );
+                        REQUIRE( line_array.at( 6 ) == other_array.at( 0 ));
+                        REQUIRE( line_array.at( 7 ) == other_array.at( 1 ));
                     }
                 }
 
@@ -128,10 +128,10 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
                     {
                         REQUIRE( line_array.size() == 7_lcount );
                         for ( auto i = 0u; i < offsets.size() - 1; ++i ) {
-                            REQUIRE( line_array[ i ] == offsets[ i ] );
+                            REQUIRE( line_array.at( i ) == offsets[ i ] );
                         }
-                        REQUIRE( line_array[ 5 ] == other_array[ 0 ] );
-                        REQUIRE( line_array[ 6 ] == other_array[ 1 ] );
+                        REQUIRE( line_array.at( 5 ) == other_array.at( 0 ));
+                        REQUIRE( line_array.at( 6 ) == other_array.at( 1 ));
                     }
                 }
             }
@@ -161,7 +161,7 @@ SCENARIO( "LinePositionArray with full block of lines", "[linepositionarray]" )
 
             THEN( "Correct offset is returned" )
             {
-                REQUIRE( line_array[ 256 ] == LineOffset( 255 * 4 + 10 ) );
+                REQUIRE( line_array.at( 256 ) == LineOffset( 255 * 4 + 10 ) );
             }
         }
 
@@ -172,9 +172,9 @@ SCENARIO( "LinePositionArray with full block of lines", "[linepositionarray]" )
                 int64_t pos = ( 257LL * 4 ) + i * 35LL;
                 line_array.append( LineOffset( pos ) );
                 line_array.setFakeFinalLF();
-                REQUIRE( line_array[ 256 + i ] == LineOffset( pos ) );
+                REQUIRE( line_array.at( 256 + i ) == LineOffset( pos ) );
                 line_array.append( LineOffset( pos + 21LL ) );
-                REQUIRE( line_array[ 256 + i ] == LineOffset( pos + 21LL ) );
+                REQUIRE( line_array.at( 256 + i ) == LineOffset( pos + 21LL ) );
             }
         }
     }
@@ -208,7 +208,7 @@ SCENARIO( "LinePositionArray with UINT32_MAX offsets", "[linepositionarray]" )
             THEN( "Corrent offsets returned" )
             {
                 for ( auto i = 0u; i < offsets.size(); ++i ) {
-                    REQUIRE( line_array[ i ] == offsets[ i ] );
+                    REQUIRE( line_array.at( i ) == offsets[ i ] );
                 }
             }
         }
@@ -220,9 +220,9 @@ SCENARIO( "LinePositionArray with UINT32_MAX offsets", "[linepositionarray]" )
                 int64_t pos = 3LL * UINT32_MAX + 524LL + i * 35LL;
                 line_array.append( LineOffset( pos ) );
                 line_array.setFakeFinalLF();
-                REQUIRE( line_array[ 9 + i ] == LineOffset( pos ) );
+                REQUIRE( line_array.at( 9 + i ) == LineOffset( pos ) );
                 line_array.append( LineOffset( pos + 21LL ) );
-                REQUIRE( line_array[ 9 + i ] == LineOffset( pos + 21LL ) );
+                REQUIRE( line_array.at( 9 + i ) == LineOffset( pos + 21LL ) );
             }
         }
     }
@@ -246,10 +246,10 @@ SCENARIO( "LinePositionArray with UINT32_MAX offsets", "[linepositionarray]" )
             {
                 REQUIRE( line_array.size() == 4_lcount );
 
-                REQUIRE( line_array[ 0 ] == 4_offset );
-                REQUIRE( line_array[ 1 ] == 8_offset );
-                REQUIRE( line_array[ 2 ] == LineOffset( (uint64_t)UINT32_MAX + 10 ) );
-                REQUIRE( line_array[ 3 ] == LineOffset( (uint64_t)UINT32_MAX + 30 ) );
+                REQUIRE( line_array.at( 0 ) == 4_offset );
+                REQUIRE( line_array.at( 1 ) == 8_offset );
+                REQUIRE( line_array.at( 2 ) == LineOffset( (uint64_t)UINT32_MAX + 10 ) );
+                REQUIRE( line_array.at( 3 ) == LineOffset( (uint64_t)UINT32_MAX + 30 ) );
             }
         }
     }
