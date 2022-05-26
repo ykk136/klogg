@@ -327,12 +327,12 @@ void EfswFileWatcherDeleter::operator()( EfswFileWatcher* watcher ) const
 
 FileWatcher::FileWatcher()
     : checkTimer_{ new QTimer( this ) }
-    , throttler_{ new KDToolBox::KDSignalLeadingDebouncer( this ) }
+    , throttler_{ new KDToolBox::KDSignalThrottler( this ) }
     , efswWatcher_{ new EfswFileWatcher( this ) }
 {
     connect( checkTimer_, &QTimer::timeout, this, &FileWatcher::checkWatches );
 
-    throttler_->setTimeout( 500 );
+    throttler_->setTimeout( 250 );
     connect( this, &FileWatcher::notifyFileChangedOnDisk, throttler_,
              &KDToolBox::KDGenericSignalThrottler::throttle );
     connect( throttler_, &KDToolBox::KDGenericSignalThrottler::triggered, this,
@@ -350,14 +350,12 @@ FileWatcher& FileWatcher::getFileWatcher()
 void FileWatcher::addFile( const QString& fileName )
 {
     efswWatcher_->addFile( fileName );
-
     updateConfiguration();
 }
 
 void FileWatcher::removeFile( const QString& fileName )
 {
     efswWatcher_->removeFile( fileName );
-
     updateConfiguration();
 }
 
