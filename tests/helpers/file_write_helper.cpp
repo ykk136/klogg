@@ -36,6 +36,7 @@ int main( int argc, const char** argv )
 
     if ( argc < 4 ) {
         LOG_ERROR << "Expected 3 arguments";
+        return -1;
     }
 
     LOG_INFO << "Will write to " << argv[ 1 ] << " lines " << argv[ 2 ] << ", flag " << argv[ 3 ];
@@ -55,28 +56,28 @@ int main( int argc, const char** argv )
         LOG_INFO << "Truncating file";
         file.resize( 0 );
     }
-    else {
-        if ( flag == WriteFileModification::StartWithPartialLineEnd ) {
-            file.write( partial_line_end, static_cast<qint64>( qstrlen( partial_line_end ) ) );
-        }
 
-        char newLine[ 90 ];
-        for ( int i = 0; i < numberOfLines; i++ ) {
-            snprintf( newLine, 89,
-                      "LOGDATA is a part of glogg, we are going to test it thoroughly, this is "
-                      "line %06d\n",
-                      i );
-            file.write( newLine, static_cast<qint64>( qstrlen( newLine ) ) );
+    if ( flag == WriteFileModification::StartWithPartialLineEnd ) {
+        file.write( partial_line_end, static_cast<qint64>( qstrlen( partial_line_end ) ) );
+    }
 
-            if ( flag == WriteFileModification::DelayClosingFile ) {
-                QThread::sleep( 2 );
-            }
-        }
+    char newLine[ 90 ];
+    for ( int i = 0; i < numberOfLines; i++ ) {
+        snprintf( newLine, 89,
+                    "LOGDATA is a part of glogg, we are going to test it thoroughly, this is "
+                    "line %06d\n",
+                    i );
+        file.write( newLine, static_cast<qint64>( qstrlen( newLine ) ) );
 
-        if ( flag == WriteFileModification::EndWithPartialLineBegin ) {
-            file.write( partial_line_begin, static_cast<qint64>( qstrlen( partial_line_begin ) ) );
+        if ( flag == WriteFileModification::DelayClosingFile ) {
+            QThread::sleep( 2 );
         }
     }
+
+    if ( flag == WriteFileModification::EndWithPartialLineBegin ) {
+        file.write( partial_line_begin, static_cast<qint64>( qstrlen( partial_line_begin ) ) );
+    }
+    
 
 #ifdef _WIN32
     FlushFileBuffers( reinterpret_cast<HANDLE>( _get_osfhandle( file.handle() ) ) );

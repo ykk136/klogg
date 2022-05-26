@@ -199,7 +199,7 @@ TEST_CASE( "Logdata reading changing file", "[logdata]" )
 
     {
         // Truncate the file
-        writeDataToFile( file, 100, WriteFileModification::Truncate );
+        writeDataToFile( file, 0, WriteFileModification::Truncate );
 
         waitUiState( [ &logData ] { return logData.getNbLine() == 0_lcount; } );
 
