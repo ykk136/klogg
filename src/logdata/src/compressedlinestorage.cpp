@@ -40,9 +40,11 @@
 #include <cassert>
 #include <cstdlib>
 #include <limits>
+#include <stdexcept>
 
 #include "compressedlinestorage.h"
 #include "configuration.h"
+#include "log.h"
 
 static constexpr size_t IndexBlockSize = 256;
 
@@ -228,7 +230,7 @@ void CompressedLinePositionStorage::append( LineOffset pos )
     }
     else {
         const auto block
-            = ( !store_in_big ) ? pool32_[ block_index_ ] : pool64_[ long_block_index_ ];
+            = ( !store_in_big ) ? pool32_.at(block_index_) : pool64_.at(long_block_index_);
         auto delta = pos - current_pos_;
         if ( delta < 128_offset ) {
             // Code relative on one byte
@@ -286,6 +288,11 @@ void CompressedLinePositionStorage::append( LineOffset pos )
 
 LineOffset CompressedLinePositionStorage::at( LineNumber index, Cache* lastPosition ) const
 {
+    if (index >= nb_lines_) {
+        LOG_ERROR << "Line number not in storage: " << index.get() << ", storage size is " << nb_lines_;
+        throw std::runtime_error("Line number not in storage");
+    }
+
     auto last_read = lastPosition != nullptr ? *lastPosition : Cache{};
 
     const uint8_t* block = nullptr;
@@ -293,7 +300,7 @@ LineOffset CompressedLinePositionStorage::at( LineNumber index, Cache* lastPosit
     LineOffset position;
 
     if ( !first_long_line_ || index < *first_long_line_ ) {
-        block = pool32_[ index.get() / IndexBlockSize ];
+        block = pool32_.at(index.get() / IndexBlockSize);
 
         if ( ( index.get() == last_read.index.get() + 1 )
              && ( index.get() % IndexBlockSize != 0 ) ) {
@@ -313,7 +320,7 @@ LineOffset CompressedLinePositionStorage::at( LineNumber index, Cache* lastPosit
     }
     else {
         const auto index_in_64 = index - *first_long_line_;
-        block = pool64_[ index_in_64.get() / IndexBlockSize ];
+        block = pool64_.at(index_in_64.get() / IndexBlockSize);
 
         if ( ( index.get() == last_read.index.get() + 1 )
              && ( index_in_64.get() % IndexBlockSize != 0 ) ) {

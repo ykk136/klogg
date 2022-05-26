@@ -169,10 +169,6 @@ class LinePosition {
         LOG_DEBUG << "Line pos at " << i << " is " << pos;
         return pos;
     }
-    inline LineOffset operator[]( LineNumber::UnderlyingType i ) const
-    {
-        return array.at( i );
-    }
 
     // Set the presence of a fake final LF
     // Must be used after 'append'-ing a fake LF at the end.

@@ -36,8 +36,8 @@ public:
     size_t getElementSize() const;
     size_t getPaddedElementSize() const;
 
-    uint8_t* operator[](size_t index);
-    const uint8_t* operator[](size_t index) const;
+    uint8_t* at(size_t index);
+    const uint8_t* at(size_t index) const;
 
     uint32_t currentBlock() const;
 

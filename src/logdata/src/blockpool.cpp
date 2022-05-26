@@ -77,12 +77,12 @@ BlockPoolBase& BlockPoolBase::operator=( BlockPoolBase&& other ) noexcept
     return *this;
 }
 
-uint8_t* BlockPoolBase::operator[](size_t index)
+uint8_t* BlockPoolBase::at(size_t index)
 {
     return pool_.data() + blockIndex_.at( index );
 }
 
-const uint8_t* BlockPoolBase::operator[](size_t index) const
+const uint8_t* BlockPoolBase::at(size_t index) const
 {
     return pool_.data() + blockIndex_.at( index );
 }
