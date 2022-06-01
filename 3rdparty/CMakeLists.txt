@@ -2,7 +2,6 @@ set(QAPPLICATION_CLASS QApplication)
 
 include(CPM)
 
-cpmaddpackage("gh:RoaringBitmap/CRoaring@0.4.0")
 cpmaddpackage("gh:simdutf/simdutf@1.0.1")
 cpmaddpackage("gh:bombela/backward-cpp@1.6")
 cpmaddpackage("gh:bombela/backward-cpp@1.6")
@@ -16,6 +15,19 @@ cpmaddpackage(
   ffe980011dd7a08ac2bc79dbd5ac86a62b1c1f05
   DOWNLOAD_ONLY
   YES
+)
+
+cpmaddpackage(
+  NAME
+  CRoaring
+  GITHUB_REPOSITORY
+  variar/CRoaring
+  GIT_TAG
+  5b4e3779389715bceeee60739f7088019661ff35
+  EXCLUDE_FROM_ALL
+  YES
+  OPTIONS
+  "ENABLE_ROARING_TESTS OFF"
 )
 
 cpmaddpackage(
@@ -78,7 +90,7 @@ cpmaddpackage(
   EXCLUDE_FROM_ALL
   YES
   OPTIONS
-  "BUILD_BINARY=OFF"
+  "BUILD_BINARY OFF"
 )
 if(Uchardet_ADDED)
   message("Adding alias for uchardet")
@@ -263,9 +275,9 @@ cpmaddpackage(
   EXCLUDE_FROM_ALL
   YES
   OPTIONS
-  "TBB_TEST=OFF"
-  "TBB_EXAMPLES=OFF"
-  "TBB_STRICT=OFF"
+  "TBB_TEST OFF"
+  "TBB_EXAMPLES OFF"
+  "TBB_STRICT OFF"
 )
 
 if(WIN32)
@@ -324,11 +336,11 @@ if(KLOGG_OVERRIDE_MALLOC)
       EXCLUDE_FROM_ALL
       YES
       OPTIONS
-      "MI_BUILD_TESTS=OFF"
-      "MI_SECURE=ON"
-      "MI_BUILD_SHARED=OFF"
-      "MI_BUILD_STATIC=OFF"
-      "MI_BUILD_OBJECT=ON"
+      "MI_BUILD_TESTS OFF"
+      "MI_SECURE ON"
+      "MI_BUILD_SHARED OFF"
+      "MI_BUILD_STATIC OFF"
+      "MI_BUILD_OBJECT ON"
     )
     if(mimalloc_ADDED)
       target_link_libraries(klogg_malloc_proxy INTERFACE mimalloc-obj)
