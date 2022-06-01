@@ -10,6 +10,9 @@ add_library(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/overload_visitor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/resourcewrapper.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/crc32.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cpu_info.h
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/cpu_info.cpp
 )
 
 set_target_properties(klogg_utils PROPERTIES AUTOMOC ON)

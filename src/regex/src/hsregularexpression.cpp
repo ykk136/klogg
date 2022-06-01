@@ -29,6 +29,7 @@
 #ifdef KLOGG_HAS_HS
 #include "hsregularexpression.h"
 
+#include "cpu_info.h"
 #include "log.h"
 
 namespace {
@@ -43,7 +44,7 @@ int matchSingleCallback( unsigned int id, unsigned long long from, unsigned long
 
     auto* matchContext = static_cast<HsMatcherContext*>( context );
 
-    matchContext->matchingPatterns[0] = true;
+    matchContext->matchingPatterns[ 0 ] = true;
     return 1;
 }
 
@@ -124,54 +125,62 @@ HsRegularExpression::HsRegularExpression( const RegularExpressionPattern& patter
 HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPattern>& patterns )
     : patterns_( patterns )
 {
-    database_ = HsDatabase{ makeUniqueResource<hs_database_t, hs_free_database>(
-        []( const std::vector<RegularExpressionPattern>& expressions,
-            QString& errorMessage ) -> hs_database_t* {
-            hs_database_t* db = nullptr;
-            hs_compile_error_t* error = nullptr;
+    auto requiredInstructuins = CpuInstructions::SSE2;
+    requiredInstructuins |= CpuInstructions::SSSE3;
 
-            std::vector<unsigned> flags( expressions.size() );
-            std::transform( expressions.cbegin(), expressions.cend(), flags.begin(),
-                            []( const auto& expression ) {
-                                auto expressionFlags
-                                    = HS_FLAG_UTF8 | HS_FLAG_UCP | HS_FLAG_SINGLEMATCH;
-                                if ( !expression.isCaseSensitive ) {
-                                    expressionFlags |= HS_FLAG_CASELESS;
-                                }
-                                return expressionFlags;
-                            } );
+    if ( hasRequiredInstructions( supportedCpuInstructions(), requiredInstructuins ) ) {
+        database_ = HsDatabase{ makeUniqueResource<hs_database_t, hs_free_database>(
+            []( const std::vector<RegularExpressionPattern>& expressions,
+                QString& errorMessage ) -> hs_database_t* {
+                hs_database_t* db = nullptr;
+                hs_compile_error_t* error = nullptr;
 
-            std::vector<QByteArray> utf8Patterns( expressions.size() );
-            std::transform( expressions.cbegin(), expressions.cend(), utf8Patterns.begin(),
-                            []( const auto& expression ) {
-                                auto p = expression.pattern;
-                                if ( expression.isPlainText ) {
-                                    p = QRegularExpression::escape( expression.pattern );
-                                }
-                                return p.toUtf8();
-                            } );
+                std::vector<unsigned> flags( expressions.size() );
+                std::transform( expressions.cbegin(), expressions.cend(), flags.begin(),
+                                []( const auto& expression ) {
+                                    auto expressionFlags
+                                        = HS_FLAG_UTF8 | HS_FLAG_UCP | HS_FLAG_SINGLEMATCH;
+                                    if ( !expression.isCaseSensitive ) {
+                                        expressionFlags |= HS_FLAG_CASELESS;
+                                    }
+                                    return expressionFlags;
+                                } );
 
-            std::vector<const char*> patternPointers( utf8Patterns.size() );
-            std::transform( utf8Patterns.cbegin(), utf8Patterns.cend(), patternPointers.begin(),
-                            []( const auto& utf8Pattern ) { return utf8Pattern.data(); } );
+                std::vector<QByteArray> utf8Patterns( expressions.size() );
+                std::transform( expressions.cbegin(), expressions.cend(), utf8Patterns.begin(),
+                                []( const auto& expression ) {
+                                    auto p = expression.pattern;
+                                    if ( expression.isPlainText ) {
+                                        p = QRegularExpression::escape( expression.pattern );
+                                    }
+                                    return p.toUtf8();
+                                } );
 
-            std::vector<unsigned> expressionIds( expressions.size() );
-            std::iota( expressionIds.begin(), expressionIds.end(), 0u );
+                std::vector<const char*> patternPointers( utf8Patterns.size() );
+                std::transform( utf8Patterns.cbegin(), utf8Patterns.cend(), patternPointers.begin(),
+                                []( const auto& utf8Pattern ) { return utf8Pattern.data(); } );
 
-            const auto compileResult = hs_compile_multi(
-                patternPointers.data(), flags.data(), expressionIds.data(),
-                static_cast<unsigned>( expressions.size() ), HS_MODE_BLOCK, nullptr, &db, &error );
+                std::vector<unsigned> expressionIds( expressions.size() );
+                std::iota( expressionIds.begin(), expressionIds.end(), 0u );
 
-            if ( compileResult != HS_SUCCESS ) {
-                LOG_ERROR << "Failed to compile pattern " << error->message;
-                errorMessage = error->message;
-                hs_free_compile_error( error );
-                return nullptr;
-            }
+                const auto compileResult
+                    = hs_compile_multi( patternPointers.data(), flags.data(), expressionIds.data(),
+                                        static_cast<unsigned>( expressions.size() ), HS_MODE_BLOCK,
+                                        nullptr, &db, &error );
 
-            return db;
-        },
-        patterns, errorMessage_ ) };
+                if ( compileResult != HS_SUCCESS ) {
+                    LOG_ERROR << "Failed to compile pattern " << error->message;
+                    errorMessage = error->message;
+                    hs_free_compile_error( error );
+                    return nullptr;
+                }
+
+                return db;
+            },
+            patterns, errorMessage_ ) };
+    } else {
+        LOG_WARNING << "Cpu doesn't have sse2 or ssse3, use qt regex engine";
+    }
 
     if ( database_ ) {
         scratch_ = makeUniqueResource<hs_scratch_t, hs_free_scratch>(

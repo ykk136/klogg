@@ -119,17 +119,6 @@ int main( int argc, char* argv[] )
     mi_process_init();
 #endif
 
-    auto requiredInstructuins = CpuInstructions::SSE2;
-    requiredInstructuins |= CpuInstructions::SSSE3;
-
-    if ( !hasRequiredInstructions( supportedCpuInstructions(), requiredInstructuins ) ) {
-        QApplication app( argc, argv );
-        QMessageBox::critical( nullptr, "Klogg",
-                               "Current CPU is not supported. SSE2 and SSSE3 are required.",
-                               QMessageBox::Close );
-        exit( EXIT_FAILURE );
-    }
-
     const auto& config = Configuration::getSynced();
     setApplicationAttributes( config.enableQtHighDpi(), config.scaleFactorRounding() );
 
