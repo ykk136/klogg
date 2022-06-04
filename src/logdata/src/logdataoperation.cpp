@@ -38,17 +38,18 @@
 
 #include "logdataoperation.h"
 
+#include "configuration.h"
 #include "log.h"
 #include "overload_visitor.h"
 #include "synchronization.h"
-#include "configuration.h"
 
 void AttachOperation::doStart( LogDataWorker& workerThread ) const
 {
     const auto defaultEncodingMib = Configuration::get().defaultEncodingMib();
     LOG_INFO << "Attaching " << filename_ << ", encoding " << defaultEncodingMib;
     workerThread.attachFile( filename_ );
-    workerThread.indexAll(defaultEncodingMib >= 0 ? QTextCodec::codecForMib( defaultEncodingMib ) : nullptr );
+    workerThread.indexAll( defaultEncodingMib >= 0 ? QTextCodec::codecForMib( defaultEncodingMib )
+                                                   : nullptr );
 }
 
 void FullReindexOperation::doStart( LogDataWorker& workerThread ) const
@@ -97,23 +98,23 @@ void OperationQueue::shutdown()
     LOG_INFO << "Operation queue shutdown";
 }
 
-void OperationQueue::tryStartOperation( OperationVariant&& operation )
+void OperationQueue::tryStartPendingOperation()
 {
+    executingOperation_ = std::exchange( pendingOperation_, {} );
     if ( !worker_ ) {
         LOG_WARNING << "No worker for operation";
         executingOperation_ = {};
         return;
     }
 
-    std::swap( executingOperation_, operation );
     std::visit( makeOverloadVisitor(
-                     [this]( const LogDataOperation& logDataOperation ) {
-                         beforeOperationStart_();
-                         logDataOperation.start( worker_.get() );
-                         LOG_INFO << "Started operation " << executingOperation_.index();
-                     },
-                     []( std::monostate ) { LOG_INFO << "no operation to start"; } ),
-                 executingOperation_ );
+                    [ this ]( const LogDataOperation& logDataOperation ) {
+                        beforeOperationStart_();
+                        logDataOperation.start( worker_.get() );
+                        LOG_INFO << "Started operation " << executingOperation_.index();
+                    },
+                    []( std::monostate ) { LOG_INFO << "no operation to start"; } ),
+                executingOperation_ );
 }
 
 void OperationQueue::enqueueOperation( OperationVariant&& operation )
@@ -123,11 +124,10 @@ void OperationQueue::enqueueOperation( OperationVariant&& operation )
     LOG_INFO << "Enqueue operation " << operation.index() << ", now executing "
              << executingOperation_.index();
 
-    if ( executingOperation_.index() > 0 ) {
-        pendingOperation_ = std::move( operation );
-    }
-    else {
-        tryStartOperation( std::move( operation ) );
+    pendingOperation_ = std::move(operation);
+
+    if ( executingOperation_.index() == 0 ) {
+        tryStartPendingOperation();
     }
 }
 
@@ -137,5 +137,5 @@ void OperationQueue::finishOperationAndStartNext()
     LOG_INFO << "Finished operation " << executingOperation_.index() << ", next operation "
              << pendingOperation_.index();
 
-    tryStartOperation( std::exchange( pendingOperation_, {} ) );
+    tryStartPendingOperation();
 }

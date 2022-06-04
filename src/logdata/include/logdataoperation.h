@@ -134,7 +134,7 @@ class OperationQueue {
                                            PartialReindexOperation, CheckDataChangesOperation>;
 
     void enqueueOperation( OperationVariant&& operation );
-    void tryStartOperation( OperationVariant&& operation );
+    void tryStartPendingOperation();
 
     std::function<void()> beforeOperationStart_;
 
