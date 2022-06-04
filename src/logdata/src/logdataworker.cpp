@@ -45,8 +45,6 @@
 #include <string_view>
 #include <thread>
 
-#include <oneapi/tbb/flow_graph.h>
-
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -63,6 +61,7 @@
 #include "memory_info.h"
 #include "progress.h"
 #include "readablesize.h"
+#include "runnable_lambda.h"
 
 #include "logdataworker.h"
 #include "synchronization.h"
@@ -564,30 +563,6 @@ void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& bloc
     }
 
     LOG_DEBUG << "Indexing block " << blockBeginning << " done";
-}
-
-template <typename TRunnable>
-class RunnableWrapper : public QRunnable {
-  public:
-    RunnableWrapper( TRunnable&& runnable )
-        : runnable_( std::move( runnable ) )
-    {
-        setAutoDelete( true );
-    }
-
-    void run() override
-    {
-        runnable_();
-    }
-
-  private:
-    TRunnable runnable_;
-};
-
-template <typename TRunnable>
-RunnableWrapper<TRunnable>* createRunnable( TRunnable&& runnable )
-{
-    return new RunnableWrapper<TRunnable>( std::move( runnable ) );
 }
 
 void IndexOperation::doIndex( LineOffset initialPosition )
