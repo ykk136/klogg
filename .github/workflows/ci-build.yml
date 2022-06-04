@@ -135,6 +135,11 @@ jobs:
         run: |
           docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cp ./output/klogg.sym ./packages/klogg_${{ matrix.config.artifacts_id }}.sym"
 
+      - name: Copy deps
+        if: ${{ matrix.config.os == 'ubuntu_appimage' }}
+        run: |
+          docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local && tar -czvf ./packages/klogg_deps.tar.gz ./cpm_cache"
+
           
 # Final upload of all packages
       - uses: actions/upload-artifact@v2
