@@ -3,19 +3,19 @@ set(QAPPLICATION_CLASS QApplication)
 include(CPM)
 
 cpmaddpackage("gh:simdutf/simdutf@1.0.1")
-cpmaddpackage("gh:bombela/backward-cpp@1.6")
-cpmaddpackage("gh:bombela/backward-cpp@1.6")
 
-cpmaddpackage(
-  NAME
-  macdeployqtfix
-  GITHUB_REPOSITORY
-  arl/macdeployqtfix
-  GIT_TAG
-  ffe980011dd7a08ac2bc79dbd5ac86a62b1c1f05
-  DOWNLOAD_ONLY
-  YES
-)
+if(APPLE)
+  cpmaddpackage(
+    NAME
+    macdeployqtfix
+    GITHUB_REPOSITORY
+    arl/macdeployqtfix
+    GIT_TAG
+    ffe980011dd7a08ac2bc79dbd5ac86a62b1c1f05
+    DOWNLOAD_ONLY
+    YES
+  )
+endif()
 
 cpmaddpackage(
   NAME
@@ -23,7 +23,7 @@ cpmaddpackage(
   GITHUB_REPOSITORY
   variar/CRoaring
   GIT_TAG
-  5b4e3779389715bceeee60739f7088019661ff35
+  d582cd224ebc2f5a1585035a8f5ce306052e8ad1
   EXCLUDE_FROM_ALL
   YES
   OPTIONS
@@ -135,21 +135,24 @@ if(NOT TARGET robin_hood)
   target_include_directories(robin_hood INTERFACE ${ROBIN_HOOD_INCLUDE_DIRS})
 endif(NOT TARGET robin_hood)
 
-cpmaddpackage(
-  NAME
-  Catch2
-  GITHUB_REPOSITORY
-  catchorg/Catch2
-  VERSION
-  2.13.8
-  EXCLUDE_FROM_ALL
-  YES
-)
-if(NOT TARGET Catch2)
-  message("Adding imported target for catch2")
-  add_library(Catch2 INTERFACE)
-  target_include_directories(Catch2 INTERFACE ${CATCH2_INCLUDE_DIRS})
-endif(NOT TARGET Catch2)
+if(KLOGG_BUILD_TESTS)
+  cpmaddpackage("gh:bombela/backward-cpp@1.6")
+  cpmaddpackage(
+    NAME
+    Catch2
+    GITHUB_REPOSITORY
+    catchorg/Catch2
+    VERSION
+    2.13.8
+    EXCLUDE_FROM_ALL
+    YES
+  )
+  if(NOT TARGET Catch2)
+    message("Adding imported target for catch2")
+    add_library(Catch2 INTERFACE)
+    target_include_directories(Catch2 INTERFACE ${CATCH2_INCLUDE_DIRS})
+  endif(NOT TARGET Catch2)
+endif()
 
 cpmaddpackage(
   NAME
