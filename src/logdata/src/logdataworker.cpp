@@ -508,13 +508,13 @@ std::chrono::microseconds IndexOperation::readFileInBlocks( QFile& file,
 
         LOG_DEBUG << "Sending block " << blockData.first << " size " << blockData.second.size();
 
-        while ( !gw.try_put( blockData ) ) {
+        while ( !gw.try_put( blockData ) && !interruptRequest_ ) {
             std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
         }
     }
 
     auto lastBlock = std::make_pair( -1, QByteArray{} );
-    while ( !gw.try_put( lastBlock ) ) {
+    while ( !gw.try_put( lastBlock ) && !interruptRequest_ ) {
         std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
     }
 
