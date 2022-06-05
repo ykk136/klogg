@@ -4,16 +4,21 @@ include(CPM)
 
 cpmaddpackage("gh:simdutf/simdutf@1.0.1")
 
-cpmaddpackage(
-  NAME
-  macdeployqtfix
-  GITHUB_REPOSITORY
-  arl/macdeployqtfix
-  GIT_TAG
-  ffe980011dd7a08ac2bc79dbd5ac86a62b1c1f05
-  DOWNLOAD_ONLY
-  YES
-)
+if(APPLE)
+  cpmaddpackage(
+    NAME
+    macdeployqtfix
+    GITHUB_REPOSITORY
+    arl/macdeployqtfix
+    GIT_TAG
+    ffe980011dd7a08ac2bc79dbd5ac86a62b1c1f05
+    DOWNLOAD_ONLY
+    YES
+  )
+  if(macdeployqtfix_ADDED)
+    configure_file(${macdeployqtfix_SOURCE_DIR}/macdeployqtfix.py ${CMAKE_BINARY_DIR}/macdeployqtfix.py COPYONLY)
+  endif()
+endif()
 
 cpmaddpackage(
   NAME
