@@ -138,7 +138,7 @@ jobs:
       - name: Copy deps
         if: ${{ matrix.config.os == 'ubuntu_appimage' }}
         run: |
-          docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local && tar -czvf ./packages/klogg_deps.tar.gz ./cpm_cache"
+          docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local && tar -czvf ./build_root/packages/klogg_deps.tar.gz ./cpm_cache"
 
           
 # Final upload of all packages
