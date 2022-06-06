@@ -383,7 +383,7 @@ void CompressedLinePositionStorage::pop_back()
     }
 
     --nb_lines_;
-    current_pos_ = at( nb_lines_.get() - 1 );
+    current_pos_ = nb_lines_.get() > 0 ? at( nb_lines_.get() - 1 ) : 0_offset;
 }
 
 size_t CompressedLinePositionStorage::allocatedSize() const

@@ -96,6 +96,18 @@ SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" 
             }
         }
 
+        WHEN( "Add line to single line array with fake lf" )
+        {
+            LinePositionArray one_line_array;
+            one_line_array.append(10_offset);
+            one_line_array.setFakeFinalLF();
+            one_line_array.append(20_offset);
+            THEN( "New last offset is returned" )
+            {
+                REQUIRE( one_line_array.at( 0 ) == 20_offset );
+            }
+        }
+
         WHEN( "Appending other array " )
         {
 

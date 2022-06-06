@@ -169,7 +169,7 @@ size_t IndexingData::allocatedSize() const
 LogDataWorker::LogDataWorker( const std::shared_ptr<IndexingData>& indexing_data )
     : indexing_data_( indexing_data )
 {
-    operationsPool_.setMaxThreadCount(1);
+    operationsPool_.setMaxThreadCount( 1 );
 }
 
 LogDataWorker::~LogDataWorker() noexcept
@@ -203,7 +203,6 @@ void LogDataWorker::indexAll( QTextCodec* forcedEncoding )
     QSemaphore operationStarted;
     operationsPool_.start(
         createRunnable( [ this, &operationStarted, forcedEncoding, fileName = fileName_ ] {
-            QThread::currentThread()->setObjectName("FullIndex");
             LOG_INFO << "FullIndex thread started";
             operationStarted.release();
             ScopedLock operationLock( operationsMutex_ );
@@ -223,16 +222,15 @@ void LogDataWorker::indexAdditionalLines()
     LOG_INFO << "PartialIndex requested";
 
     QSemaphore operationStarted;
-    operationsPool_.start(
-        createRunnable( [ this, &operationStarted, fileName = fileName_ ] {
-            QThread::currentThread()->setObjectName("PartialIndex");
-            LOG_INFO << "PartialIndex thread started";
-            operationStarted.release();
-            ScopedLock operationLock( operationsMutex_ );
-            auto operationRequested = std::make_unique<PartialIndexOperation>(
-                fileName, indexing_data_, interruptRequest_ );
-            return connectSignalsAndRun( operationRequested.get() );
-        } ) );
+    operationsPool_.start( createRunnable( [ this, &operationStarted, fileName = fileName_ ] {
+        QThread::currentThread()->setObjectName( "PartialIndex" );
+        LOG_INFO << "PartialIndex thread started";
+        operationStarted.release();
+        ScopedLock operationLock( operationsMutex_ );
+        auto operationRequested = std::make_unique<PartialIndexOperation>( fileName, indexing_data_,
+                                                                           interruptRequest_ );
+        return connectSignalsAndRun( operationRequested.get() );
+    } ) );
     operationStarted.acquire();
 }
 
@@ -245,15 +243,14 @@ void LogDataWorker::checkFileChanges()
     LOG_INFO << "Check file changes requested";
 
     QSemaphore operationStarted;
-    operationsPool_.start(
-        createRunnable( [ this, &operationStarted, fileName = fileName_ ] {
-            operationStarted.release();
-            ScopedLock operationLock( operationsMutex_ );
-            auto operationRequested = std::make_unique<CheckFileChangesOperation>(
-                fileName, indexing_data_, interruptRequest_ );
+    operationsPool_.start( createRunnable( [ this, &operationStarted, fileName = fileName_ ] {
+        operationStarted.release();
+        ScopedLock operationLock( operationsMutex_ );
+        auto operationRequested = std::make_unique<CheckFileChangesOperation>(
+            fileName, indexing_data_, interruptRequest_ );
 
-            return connectSignalsAndRun( operationRequested.get() );
-        } ) );
+        return connectSignalsAndRun( operationRequested.get() );
+    } ) );
     operationStarted.acquire();
 }
 
@@ -751,8 +748,12 @@ OperationResult FullIndexOperation::run()
             IssueReporter::askUserAndReportIssue( IssueTemplate::Exception, errorString );
         } );
 
-        IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
-        scopedAccessor.clear();
+        {
+            IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
+            scopedAccessor.clear();
+        }
+
+        Q_EMIT indexingFinished( false );
         return false;
     }
 }
@@ -783,9 +784,12 @@ OperationResult PartialIndexOperation::run()
             IssueReporter::askUserAndReportIssue( IssueTemplate::Exception, errorString );
         } );
 
-        IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
-        scopedAccessor.clear();
+        {
+            IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
+            scopedAccessor.clear();
+        }
 
+        Q_EMIT indexingFinished( false );
         return false;
     }
 }
@@ -804,6 +808,7 @@ OperationResult CheckFileChangesOperation::run()
         dispatchToMainThread( [ errorString ]() {
             IssueReporter::askUserAndReportIssue( IssueTemplate::Exception, errorString );
         } );
+        Q_EMIT fileCheckFinished( MonitoredFileStatus::Truncated );
         return MonitoredFileStatus::Truncated;
     }
 }
