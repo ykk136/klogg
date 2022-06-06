@@ -517,6 +517,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     void considerMouseHovering( int xPos, int yPos );
 
+    LineLength maxLineLength(const std::vector<LineNumber>& lines) const;
+
     // Search functions (for n/N)
     using QuickFindSearchFn = void ( QuickFind::* )( Selection, QuickFindMatcher );
     void searchUsingFunction( QuickFindSearchFn searchFunction );

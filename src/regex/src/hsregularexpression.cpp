@@ -178,7 +178,8 @@ HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPat
                 return db;
             },
             patterns, errorMessage_ ) };
-    } else {
+    }
+    else {
         LOG_WARNING << "Cpu doesn't have sse2 or ssse3, use qt regex engine";
     }
 
@@ -199,16 +200,14 @@ HsRegularExpression::HsRegularExpression( const std::vector<RegularExpressionPat
     }
 
     if ( !isHsValid() ) {
-        const auto validationResult = std::transform_reduce(
-            patterns_.cbegin(), patterns_.cend(), std::make_pair( true, QString{} ),
-            []( const auto& acc, const auto& next ) { return acc.first ? next : acc; },
-            []( const auto& pattern ) {
-                const auto regex = static_cast<QRegularExpression>( pattern );
-                return std::make_pair( regex.isValid(), regex.errorString() );
-            } );
-
-        isValid_ = validationResult.first;
-        errorMessage_ = validationResult.second;
+        for ( const auto& pattern : patterns_ ) {
+            const auto regex = static_cast<QRegularExpression>( pattern );
+            if ( !regex.isValid() ) {
+                isValid_ = false;
+                errorMessage_ = regex.errorString();
+                break;
+            }
+        }
     }
 
     LOG_INFO << "Finished creating pattern database, patterns: " << patterns_.size()

@@ -27,6 +27,7 @@
 #include <stack>
 
 #include <QApplication>
+#include <vector>
 
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 12, 0 )
 #include <QCborValue>
@@ -183,12 +184,12 @@ class KloggApp : public SingleApplication {
         const auto previousSessions = session_->windowSessions();
 
         QByteArray geometry;
-        if (!previousSessions.empty()) {
+        if ( !previousSessions.empty() ) {
             previousSessions.back().restoreGeometry( &geometry );
         }
-        
+
         auto window = newWindow( { session_, generateIdFromUuid(), nextWindowIndex() } );
-        window->restoreGeometry(geometry);
+        window->restoreGeometry( geometry );
 
         return window;
     }
@@ -274,7 +275,8 @@ class KloggApp : public SingleApplication {
         session_->setExitRequested( true );
         auto mainWindows = mainWindows_;
         mainWindows.reverse();
-        for ( const auto& [session, window] : mainWindows ) {
+        for ( const auto& [ session, window ] : mainWindows ) {
+            Q_UNUSED(session);
             window->close();
         }
 
@@ -309,10 +311,11 @@ class KloggApp : public SingleApplication {
             return 0;
         }
         else {
-            return std::transform_reduce(
-                mainWindows_.begin(), mainWindows_.end(), size_t{ 1 },
-                []( size_t acc, size_t nextIndex ) { return std::max( acc, nextIndex ); },
-                []( const auto& window ) { return window.first.windowIndex(); } );
+            const auto windowWithMaxIndex = std::max_element(
+                mainWindows_.begin(), mainWindows_.end(), []( const auto& lhs, const auto& rhs ) {
+                    return lhs.first.windowIndex() < rhs.first.windowIndex();
+                } );
+            return windowWithMaxIndex->first.windowIndex() + 1;
         }
     }
 

@@ -84,6 +84,7 @@
 
 #include <tbb/flow_graph.h>
 
+#include "abstractlogview.h"
 #include "linetypes.h"
 
 #include "configuration.h"
@@ -1555,15 +1556,14 @@ int AbstractLogView::getNbVisibleCols() const
 OptionalLineNumber AbstractLogView::convertCoordToLine( int yPos ) const
 {
     const auto offset = ( yPos - drawingTopOffset_ ) / charHeight_;
+    const auto linesOffset
+        = LinesCount( static_cast<LinesCount::UnderlyingType>( std::abs( offset ) ) );
     if ( offset >= 0 ) {
-        return firstLine_ + LinesCount( static_cast<LinesCount::UnderlyingType>( offset ) );
+        return firstLine_ + linesOffset;
     }
-
-    if ( firstLine_.get() < static_cast<LineNumber::UnderlyingType>( qAbs( offset ) ) ) {
-        return {};
+    else {
+        return firstLine_ - linesOffset;
     }
-
-    return firstLine_ - LinesCount( static_cast<LinesCount::UnderlyingType>( offset ) );
 }
 
 // Converts the mouse x, y coordinates to the char coordinates (in the file)
@@ -1650,18 +1650,23 @@ void AbstractLogView::jumpToStartOfLine()
     horizontalScrollBar()->setValue( 0 );
 }
 
+LineLength AbstractLogView::maxLineLength( const std::vector<LineNumber>& lines ) const
+{
+    const auto longestLine = std::max_element(
+        lines.cbegin(), lines.cend(), [ this ]( const auto& lhs, const auto& rhs ) {
+            const auto lhsLength = logData_->getLineLength( lhs );
+            const auto rhsLength = logData_->getLineLength( rhs );
+            return lhsLength < rhsLength;
+        } );
+
+    return logData_->getLineLength( LineNumber( *longestLine ) );
+}
+
 // Make the end of the lines in the selection visible
 void AbstractLogView::jumpToEndOfLine()
 {
     const auto selection = selection_.getLines();
-
-    // Search the longest line in the selection
-    const auto maxLength = std::transform_reduce(
-        selection.cbegin(), selection.cend(), 0_length,
-        []( auto acc, auto next ) { return std::max( acc, next ); },
-        [ this ]( auto line ) { return logData_->getLineLength( LineNumber( line ) ); } );
-
-    horizontalScrollBar()->setValue( maxLength.get() - getNbVisibleCols() );
+    horizontalScrollBar()->setValue( maxLineLength( selection ).get() - getNbVisibleCols() );
 }
 
 // Make the end of the lines on the screen visible
@@ -1672,12 +1677,10 @@ void AbstractLogView::jumpToRightOfScreen()
     std::vector<LineNumber::UnderlyingType> visibleLinesNumbers( nbVisibleLines.get() );
     std::iota( visibleLinesNumbers.begin(), visibleLinesNumbers.end(), firstLine_.get() );
 
-    const auto maxLength = std::transform_reduce(
-        visibleLinesNumbers.cbegin(), visibleLinesNumbers.cend(), 0_length,
-        []( auto acc, auto next ) { return std::max( acc, next ); },
-        [ this ]( const auto& line ) { return logData_->getLineLength( LineNumber( line ) ); } );
-
-    horizontalScrollBar()->setValue( maxLength.get() - getNbVisibleCols() );
+    std::vector<LineNumber> visibleLines( nbVisibleLines.get() );
+    std::transform( visibleLinesNumbers.cbegin(), visibleLinesNumbers.cend(), visibleLines.begin(),
+                    []( auto number ) { return LineNumber{ number }; } );
+    horizontalScrollBar()->setValue( maxLineLength( visibleLines ).get() - getNbVisibleCols() );
 }
 
 // Jump to the first line

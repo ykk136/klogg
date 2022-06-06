@@ -54,6 +54,7 @@
 #include <numeric>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "logdata.h"
 #include "logfiltereddata.h"
@@ -149,7 +150,7 @@ void LogFilteredData::interruptSearch()
     workerThread_.interrupt();
 }
 
-void LogFilteredData::clearSearch(bool dropCache)
+void LogFilteredData::clearSearch( bool dropCache )
 {
     interruptSearch();
 
@@ -159,7 +160,7 @@ void LogFilteredData::clearSearch(bool dropCache)
     maxLength_ = 0_length;
     nbLinesProcessed_ = 0_lcount;
 
-    if (dropCache) {
+    if ( dropCache ) {
         searchResultsCache_.clear();
     }
 }
@@ -363,17 +364,15 @@ void LogFilteredData::updateSearchResultsCache()
         LOG_DEBUG << "LogFilteredData: too many matches to place in cache";
     }
     else {
-        LOG_INFO << "LogFilteredData: caching results for key " << std::get<0>( currentSearchKey_ ).pattern
-                 << "_" << std::get<1>( currentSearchKey_ ) << "_"
-                 << std::get<2>( currentSearchKey_ );
+        LOG_INFO << "LogFilteredData: caching results for key "
+                 << std::get<0>( currentSearchKey_ ).pattern << "_"
+                 << std::get<1>( currentSearchKey_ ) << "_" << std::get<2>( currentSearchKey_ );
 
         searchResultsCache_[ currentSearchKey_ ] = { matching_lines_, maxLength_ };
-
-        auto cacheSize
-            = std::transform_reduce( searchResultsCache_.cbegin(), searchResultsCache_.cend(),
-                                     uint64_t{}, std::plus{}, []( const auto& cachedResults ) {
-                                         return cachedResults.second.matching_lines.cardinality();
-                                     } );
+        auto cacheSize = std::accumulate( searchResultsCache_.cbegin(), searchResultsCache_.cend(),
+                                          uint64_t{ 0 }, []( const auto& acc, const auto& next ) {
+                                              return acc + next.second.matching_lines.cardinality();
+                                          } );
 
         LOG_INFO << "LogFilteredData: cache size " << cacheSize;
 

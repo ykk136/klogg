@@ -69,7 +69,7 @@ jobs:
             check_container: ubuntu:18.04
             container_root: docker/ubuntu18.04
             container: variar/klogg_ubuntu18.04
-            cmake_opts:
+            cmake_opts: -DKLOGG_USE_LTO=OFF
 
           - os: ubuntu_focal
             os_version: 20.04
@@ -90,10 +90,10 @@ jobs:
             #cpack_gen: DEB
             artifacts_id: appimage
             package_suffix: AppImage
-            #check_container: ubuntu:22.04
+            #check_container: ubuntu:18.04
             container_root: docker/ubuntu18.04_qt5.15
             container: variar/klogg_ubuntu18.04_qt5.15
-            cmake_opts: -DCMAKE_PREFIX_PATH=/opt/qt515/
+            cmake_opts: -DKLOGG_USE_LTO=OFF -DCMAKE_PREFIX_PATH=/opt/qt515/
 
 
     runs-on: ubuntu-18.04

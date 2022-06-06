@@ -16,6 +16,7 @@ target_link_libraries(
          project_warnings
          klogg_version
          klogg_utils
+         tbb
          Qt${QT_VERSION_MAJOR}::Gui
          Qt${QT_VERSION_MAJOR}::Widgets
 )

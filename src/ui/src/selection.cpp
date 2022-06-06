@@ -165,9 +165,10 @@ QString Selection::getSelectedText( const AbstractLogData* logData ) const
     else if ( selectedRange_.startLine.has_value() ) {
         const auto list = logData->getLines( *selectedRange_.startLine, selectedRange_.size() );
 
-        const auto selectionSizeEstimate
-            = std::transform_reduce( list.begin(), list.end(), static_cast<int>( list.size() ),
-                                     std::plus{}, []( const auto& line ) { return line.size(); } );
+        const auto selectionSizeEstimate = std::accumulate(
+            list.begin(), list.end(), static_cast<int>( list.size() ),
+            []( const auto& acc, const auto& next ) { return acc + next.size(); } );
+
         text.reserve( selectionSizeEstimate );
 
         for ( const auto& line : list ) {
