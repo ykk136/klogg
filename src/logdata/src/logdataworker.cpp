@@ -42,12 +42,15 @@
 #include <exception>
 #include <functional>
 #include <qrunnable.h>
+#include <qthread.h>
+#include <qthreadpool.h>
 #include <string_view>
 #include <thread>
 
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QSemaphore>
 #include <QThreadPool>
 #include <tuple>
 
@@ -166,20 +169,16 @@ size_t IndexingData::allocatedSize() const
 LogDataWorker::LogDataWorker( const std::shared_ptr<IndexingData>& indexing_data )
     : indexing_data_( indexing_data )
 {
-}
-
-void LogDataWorker::waitForDone()
-{
-    operationsExecuter_.wait();
-    interruptRequest_.clear();
+    operationsPool_.setMaxThreadCount(1);
 }
 
 LogDataWorker::~LogDataWorker() noexcept
 {
     try {
         interruptRequest_.set();
-        ScopedLock locker( mutex_ );
-        waitForDone();
+        ScopedLock locker( operationsMutex_ );
+        operationsPool_.waitForDone();
+        LOG_INFO << "LogDataWorker shutdown";
     } catch ( const std::exception& e ) {
         LOG_ERROR << "Failed to destroy LogDataWorker: " << e.what();
     }
@@ -187,53 +186,75 @@ LogDataWorker::~LogDataWorker() noexcept
 
 void LogDataWorker::attachFile( const QString& fileName )
 {
-    ScopedLock locker( mutex_ ); // to protect fileName_
+    ScopedLock locker( operationsMutex_ );
+    interruptRequest_.clear();
     fileName_ = fileName;
 }
 
 void LogDataWorker::indexAll( QTextCodec* forcedEncoding )
 {
-    ScopedLock locker( mutex_ );
+    ScopedLock locker( operationsMutex_ );
+    operationsPool_.waitForDone();
+    interruptRequest_.clear();
+
     LOG_INFO << "FullIndex requested, forced encoding: "
              << ( forcedEncoding != nullptr ? forcedEncoding->name().toStdString()
                                             : std::string{ "none" } );
-
-    waitForDone();
-
-    operationsExecuter_.run( [ this, forcedEncoding, fileName = fileName_ ] {
-        auto operationRequested = std::make_unique<FullIndexOperation>(
-            fileName, indexing_data_, interruptRequest_, forcedEncoding );
-        return connectSignalsAndRun( operationRequested.get() );
-    } );
+    QSemaphore operationStarted;
+    operationsPool_.start(
+        createRunnable( [ this, &operationStarted, forcedEncoding, fileName = fileName_ ] {
+            QThread::currentThread()->setObjectName("FullIndex");
+            LOG_INFO << "FullIndex thread started";
+            operationStarted.release();
+            ScopedLock operationLock( operationsMutex_ );
+            auto operationRequested = std::make_unique<FullIndexOperation>(
+                fileName, indexing_data_, interruptRequest_, forcedEncoding );
+            return connectSignalsAndRun( operationRequested.get() );
+        } ) );
+    operationStarted.acquire();
 }
 
 void LogDataWorker::indexAdditionalLines()
 {
-    ScopedLock locker( mutex_ );
-    LOG_DEBUG << "AddLines requested";
+    ScopedLock locker( operationsMutex_ );
+    operationsPool_.waitForDone();
+    interruptRequest_.clear();
 
-    waitForDone();
+    LOG_INFO << "PartialIndex requested";
 
-    operationsExecuter_.run( [ this, fileName = fileName_ ] {
-        auto operationRequested = std::make_unique<PartialIndexOperation>( fileName, indexing_data_,
-                                                                           interruptRequest_ );
-        return connectSignalsAndRun( operationRequested.get() );
-    } );
+    QSemaphore operationStarted;
+    operationsPool_.start(
+        createRunnable( [ this, &operationStarted, fileName = fileName_ ] {
+            QThread::currentThread()->setObjectName("PartialIndex");
+            LOG_INFO << "PartialIndex thread started";
+            operationStarted.release();
+            ScopedLock operationLock( operationsMutex_ );
+            auto operationRequested = std::make_unique<PartialIndexOperation>(
+                fileName, indexing_data_, interruptRequest_ );
+            return connectSignalsAndRun( operationRequested.get() );
+        } ) );
+    operationStarted.acquire();
 }
 
 void LogDataWorker::checkFileChanges()
 {
-    ScopedLock locker( mutex_ );
-    LOG_DEBUG << "Check file changes requested";
+    ScopedLock locker( operationsMutex_ );
+    operationsPool_.waitForDone();
+    interruptRequest_.clear();
 
-    waitForDone();
+    LOG_INFO << "Check file changes requested";
 
-    operationsExecuter_.run( [ this, fileName = fileName_ ] {
-        auto operationRequested = std::make_unique<CheckFileChangesOperation>(
-            fileName, indexing_data_, interruptRequest_ );
+    QSemaphore operationStarted;
+    operationsPool_.start(
+        createRunnable( [ this, &operationStarted, fileName = fileName_ ] {
+            operationStarted.release();
+            ScopedLock operationLock( operationsMutex_ );
+            auto operationRequested = std::make_unique<CheckFileChangesOperation>(
+                fileName, indexing_data_, interruptRequest_ );
 
-        return connectSignalsAndRun( operationRequested.get() );
-    } );
+            return connectSignalsAndRun( operationRequested.get() );
+        } ) );
+    operationStarted.acquire();
 }
 
 OperationResult LogDataWorker::connectSignalsAndRun( IndexOperation* operationRequested )
@@ -472,7 +493,7 @@ void IndexOperation::guessEncoding( const QByteArray& block,
 }
 
 std::chrono::microseconds IndexOperation::readFileInBlocks( QFile& file,
-                                                            BlockReader::gateway_type& gw )
+                                                            BlockPrefetcher& blockPrefetcher )
 {
     using namespace std::chrono;
     using clock = high_resolution_clock;
@@ -507,13 +528,13 @@ std::chrono::microseconds IndexOperation::readFileInBlocks( QFile& file,
 
         LOG_DEBUG << "Sending block " << blockData.first << " size " << blockData.second.size();
 
-        while ( !gw.try_put( blockData ) && !interruptRequest_ ) {
+        while ( !blockPrefetcher.try_put( blockData ) && !interruptRequest_ ) {
             std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
         }
     }
 
     auto lastBlock = std::make_pair( -1, QByteArray{} );
-    while ( !gw.try_put( lastBlock ) && !interruptRequest_ ) {
+    while ( !blockPrefetcher.try_put( lastBlock ) && !interruptRequest_ ) {
         std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
     }
 
@@ -614,19 +635,6 @@ void IndexOperation::doIndex( LineOffset initialPosition )
     const auto indexingStartTime = clock::now();
 
     tbb::flow::graph indexingGraph;
-
-    QThreadPool::globalInstance()->reserveThread();
-    auto blockReaderAsync
-        = BlockReader( indexingGraph, tbb::flow::serial,
-                       [ this, &file, &ioDuration ]( const auto&, auto& gateway ) {
-                           gateway.reserve_wait();
-                           QThreadPool::globalInstance()->start( createRunnable(
-                               [ this, &file, &ioDuration, gw = std::ref( gateway ) ] {
-                                   ioDuration = readFileInBlocks( file, gw.get() );
-                                   gw.get().release_wait();
-                               } ) );
-                       } );
-
     auto blockPrefetcher = tbb::flow::limiter_node<BlockData>( indexingGraph, prefetchBufferSize );
     auto blockQueue = tbb::flow::queue_node<BlockData>( indexingGraph );
 
@@ -636,15 +644,13 @@ void IndexOperation::doIndex( LineOffset initialPosition )
             return tbb::flow::continue_msg{};
         } );
 
-    tbb::flow::make_edge( blockReaderAsync, blockPrefetcher );
     tbb::flow::make_edge( blockPrefetcher, blockQueue );
     tbb::flow::make_edge( blockQueue, blockParser );
     tbb::flow::make_edge( blockParser, blockPrefetcher.decrementer() );
 
     file.seek( state.pos );
-    blockReaderAsync.try_put( tbb::flow::continue_msg{} );
+    ioDuration = readFileInBlocks( file, blockPrefetcher );
     indexingGraph.wait_for_all();
-    QThreadPool::globalInstance()->releaseThread();
 
     IndexingData::MutateAccessor scopedAccessor{ indexing_data_.get() };
 

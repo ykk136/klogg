@@ -39,6 +39,7 @@
 #ifndef LOGDATAWORKERTHREAD_H
 #define LOGDATAWORKERTHREAD_H
 
+#include <qthreadpool.h>
 #include <variant>
 
 #include <QObject>
@@ -277,7 +278,7 @@ class IndexOperation : public QObject {
 
   protected:
     using BlockData = std::pair<LineOffset::UnderlyingType, QByteArray>;
-    using BlockReader = tbb::flow::async_node<tbb::flow::continue_msg, BlockData>;
+    using BlockPrefetcher = tbb::flow::limiter_node<BlockData>;
 
     // Returns the total size indexed
     // Modify the passed linePosition and maxLength
@@ -294,7 +295,7 @@ class IndexOperation : public QObject {
     void guessEncoding( const QByteArray& block, IndexingData::MutateAccessor& scopedAccessor,
                         IndexingState& state ) const;
 
-    std::chrono::microseconds readFileInBlocks( QFile& file, BlockReader::gateway_type& gw );
+    std::chrono::microseconds readFileInBlocks( QFile& file, BlockPrefetcher& blockPrefetcher );
     void indexNextBlock( IndexingState& state, const BlockData& blockData );
 };
 
@@ -390,14 +391,12 @@ class LogDataWorker : public QObject {
 
   private:
     OperationResult connectSignalsAndRun( IndexOperation* operationRequested );
-    void waitForDone();
 
-    tbb::task_group operationsExecuter_;
-
+    // Mutex to wait for operations
+    QThreadPool operationsPool_;
+    Mutex operationsMutex_;
     AtomicFlag interruptRequest_;
 
-    // Mutex to protect operationRequested_ and friends
-    Mutex mutex_;
     QString fileName_;
 
     // Pointer to the owner's indexing data (we modify it)

@@ -41,6 +41,7 @@
 
 #include <QObject>
 
+#include <qthreadpool.h>
 #include <roaring.hh>
 #include <roaring64map.hh>
 
@@ -222,9 +223,8 @@ class LogFilteredDataWorker : public QObject {
     const LogData& sourceLogData_;
     AtomicFlag interruptRequested_;
 
-    // Mutex to protect operationRequested_ and friends
-    Mutex mutex_;
-    tbb::task_group operationsExecuter_;
+    QThreadPool operationsPool_;
+    Mutex operationsMutex_;
 
     // Shared indexing data
     SearchData searchData_;
