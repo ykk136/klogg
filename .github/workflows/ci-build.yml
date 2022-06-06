@@ -210,7 +210,8 @@ jobs:
       - name: Mac prepare pkgsign
         if: ${{ github.event_name != 'pull_request' }} 
         uses: apple-actions/import-codesign-certs@v1
-        with: 
+        with:
+          create-keychain: false
           p12-file-base64: ${{ secrets.INSTALL_SIGN }}
           p12-password: ${{ secrets.INSTALL_SIGN_PASSWORD }}
 
