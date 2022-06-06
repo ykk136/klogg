@@ -288,7 +288,8 @@ if(UNIX)
     #RPM
     set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
     set(CPACK_RPM_PACKAGE_LICENSE "GPLv3")
-    set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase >= ${KLOGG_QT_VERSION}")
+    set(CPACK_RPM_PACKAGE_AUTOREQ YES)
+    #set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase >= ${KLOGG_QT_VERSION}")
     set(CPACK_RPM_PACKAGE_URL "http://github.com/variar/klogg")
     set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
         /usr/share/applications
@@ -301,11 +302,6 @@ if(UNIX)
         /usr/share/icons/hicolor/scalable
         /usr/share/icons/hicolor/scalable/apps
     )
-
-    if(KLOGG_OVERRIDE_MALLOC AND NOT KLOGG_USE_MIMALLOC)
-      set(CPACK_RPM_PACKAGE_PROVIDES "libklogg_tbbmalloc.so()(64bit),libklogg_tbbmalloc_proxy.so()(64bit)")
-    endif()
-
   endif()
   include(CPack)
 endif()
