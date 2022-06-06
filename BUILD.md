@@ -16,9 +16,9 @@ git clone https://github.com/variar/klogg
 ## Dependencies
 
 To build Klogg:
-* cmake 3.12 or later to generate build files
-* C++ compiler with decent C++17 support (at least gcc 9.2.1, clang 10, msvc 19.14)
-* Qt libraries 5.9 or later (CI builds use Qt 5.9.5/5.12.5/5.15.2):
+ * cmake 3.12 or later to generate build files
+ * C++ compiler with decent C++17 support (at least gcc 7.5, clang 7, msvc 19.14)
+ * Qt libraries 5.9 or later (CI builds use Qt 5.9.5/5.12.5/5.15.2):
     - QtCore
     - QtGui
     - QtWidgets
@@ -28,24 +28,22 @@ To build Klogg:
 
 
 To build Hyperscan regular expressions backend (default):
-
-* CPU with support for [SSSE3](https://en.wikipedia.org/wiki/SSSE3) instructions (for Hyperscan backend)
-* Boost (1.58 or later, header-only part)
-* Ragel (6.8 or later; precompiled binary is provided for Windows; has to be installed from package managers on Linux or Homebrew on Mac)
+ * CPU with support for [SSSE3](https://en.wikipedia.org/wiki/SSSE3) instructions (for Hyperscan backend)
+ * Boost (1.58 or later, header-only part)
+ * Ragel (6.8 or later; precompiled binary is provided for Windows; has to be installed from package managers on Linux or Homebrew on Mac)
 
 To build installer for Windows:
-
-* nsis to build installer for Windows
-* Precompiled OpenSSl library to enable https support on Windows
+ * nsis to build installer for Windows
+ * Precompiled OpenSSl library to enable https support on Windows
 
 Building tests:
-   
-* QtTest  
+ * QtTest
 
-All other dependencies are provided in 3rdparty directory.
 
-Klogg will use pkgconfig to find Hyperscan, TBB, uchardet and xxhash installed on build host.
-If a library can't be found, the one bundled in 3rdparty directory will be used.
+All other dependencies are provided by [CPM](https://github.com/cpm-cmake/CPM.cmake) during cmake configuration stage (see 3rdparty directory).
+
+CPM will try to find Hyperscan, TBB, uchardet and xxhash installed on build host.
+If a library can't be found, the one provided by CPM will be used.
 
 ## Building
 
@@ -55,6 +53,10 @@ By default Klogg is built without support for reporting crash dumps. This can be
 
 Klogg uses Hyperscan regular expressions library which requires CPU with SSSE3 support, ragel and boost headers.
 Klogg can be built with only Qt reqular expressions backend by passing `-DKLOGG_USE_HYPERSCAN=OFF` to cmake.
+
+Klogg can use custom memory allocator. By default it uses TBB memory allocator for Windows, mimalloc on Linux and default system allocator on MacOS.
+Memory allocator override can be turned off by passing `-DKLOGG_OVERRIDE_MALLOC`. If you want to use TBB allocator on Linux then pass
+`-DKLOGG_USE_MIMALLOC=OFF`.
 
 ### Building on Linux
 
@@ -156,6 +158,9 @@ cmake --build .
 ```
 
 Binaries are placed into `build_root/output`.
+
+It might be necessary to pass `-DCMAKE_OSX_DEPLOYMENT_TARGET=<your_current_os_number>` to cmake during configuration step,
+`<your_current_os_number>` is one of `10.14`, `10.15`, `11`, `12`. 
 
 ## Running tests
 Tests are built by default. To turn them off pass `-DBUILD_TESTS:BOOL=OFF` to cmake.
