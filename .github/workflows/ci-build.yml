@@ -207,6 +207,13 @@ jobs:
           p12-file-base64: ${{ secrets.CODESIGN_BASE64 }}
           p12-password: ${{ secrets.CODESIGN_PASSWORD }}
 
+      - name: Mac prepare pkgsign
+        if: ${{ github.event_name != 'pull_request' }} 
+        uses: apple-actions/import-codesign-certs@v1
+        with: 
+          p12-file-base64: ${{ secrets.INSTALL_SIGN }}
+          p12-password: ${{ secrets.INSTALL_SIGN_PASSWORD }}
+
       - name: Mac deploy Qt
         run: |
           cd $KLOGG_BUILD_ROOT
@@ -233,7 +240,7 @@ jobs:
           cd $KLOGG_BUILD_ROOT
           codesign -v -f -o runtime --timestamp -s "Developer ID Application: Anton Filimonov (GAW773U324)" ./packages/*
           
-      - name: "Mac notarize"
+      - name: "Mac notarize DMG"
         if: ${{ github.event_name != 'pull_request' }} 
         uses: variar/xcode-notarize@v1.0.3
         with:
@@ -243,11 +250,39 @@ jobs:
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
 
-      - name: "Mac staple"
+      - name: "Mac staple DMG"
         if: ${{ github.event_name != 'pull_request' }} 
         uses: devbotsxyz/xcode-staple@v1
         with:
           product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/klogg-${{ env.KLOGG_VERSION }}-OSX.dmg"
+
+      - name: "Mac build pkg"
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          cd $KLOGG_BUILD_ROOT
+          productbuild --component ./output/klogg.app /Applications ./output/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
+
+      - name: "Mac sign pkg"
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          cd $KLOGG_BUILD_ROOT
+          productsign -sign “Developer ID Installer: Anton Filimonov (GAW773U324)” ./output/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg ./packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
+
+      - name: "Mac notarize PKG"
+        if: ${{ github.event_name != 'pull_request' }} 
+        uses: variar/xcode-notarize@v1.0.3
+        with:
+          verbose: true
+          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg"
+          primary-bundle-id: "dev.filimonov.klogg"
+          appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
+          appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
+
+      - name: "Mac staple PKG"
+        if: ${{ github.event_name != 'pull_request' }} 
+        uses: devbotsxyz/xcode-staple@v1
+        with:
+          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg"         
 
       - name: Mac symbols
         run: |
