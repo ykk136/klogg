@@ -36,9 +36,11 @@
  * along with klogg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "log.h"
 #include <QMessageBox>
 #include <QtGlobal>
 #include <qapplication.h>
+#include <qthreadpool.h>
 
 #ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
@@ -53,6 +55,8 @@
 #elif defined( KLOGG_USE_MIMALLOC )
 #include <mimalloc.h>
 #endif
+
+#include "tbb/global_control.h"
 
 #include "configuration.h"
 #include "cpu_info.h"
@@ -132,14 +136,25 @@ int main( int argc, char* argv[] )
 
     app.initCrashHandler();
 
+    auto maxConcurrency
+        = tbb::global_control::active_value( tbb::global_control::max_allowed_parallelism );
+
     LOG_INFO << "Klogg instance " << app.instanceId()
 #ifdef KLOGG_USE_MIMALLOC
              << ", mimalloc v" << mi_version()
 #endif
 #ifdef KLOGG_USE_TBBMALLOC
-             << ", tbbmalloc v2021.4"
+             << ", tbbmalloc " << TBB_runtime_version()
 #endif
-        ;
+             << ", default concurrency " << maxConcurrency;
+
+    if ( maxConcurrency < 2 ) {
+        maxConcurrency = 2;
+        LOG_INFO << "Overriding default concurrency to " << maxConcurrency;
+        tbb::global_control concurrencyControl( tbb::global_control::max_allowed_parallelism,
+                                                maxConcurrency );
+        QThreadPool::globalInstance()->setMaxThreadCount( static_cast<int>( maxConcurrency ) );
+    }
 
     if ( !parameters.multi_instance && app.isSecondary() ) {
         LOG_INFO << "Found another klogg, pid " << app.primaryPid();
