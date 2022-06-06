@@ -37,6 +37,7 @@
 #include <QVBoxLayout>
 #include <cstdint>
 #include <cstdlib>
+#include <qthreadpool.h>
 #include <string_view>
 
 #ifdef KLOGG_USE_MIMALLOC
@@ -93,12 +94,11 @@ void logSentry( sentry_level_t level, const char* message, va_list args, void* u
         break;
     }
 
-#if defined __clang__  
+#if defined __clang__
 #pragma clang diagnostic pop
 #elif defined __GNUC__
 #pragma GCC diagnostic pop
 #endif
-
 }
 
 QDialog::DialogCode askUserConfirmation( const QString& formattedReport, const QString& reportPath )
@@ -268,6 +268,7 @@ CrashHandler::CrashHandler()
     addExtra( "memory", physicalMemory() );
 
     addExtra( "cpuInstructions", static_cast<unsigned>( supportedCpuInstructions() ) );
+    addExtra( "concurrency", QThreadPool::globalInstance()->maxThreadCount() );
 
     memoryUsageTimer_ = std::make_unique<QTimer>();
     QObject::connect( memoryUsageTimer_.get(), &QTimer::timeout, [ addExtra ]() {
