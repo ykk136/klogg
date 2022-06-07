@@ -262,7 +262,7 @@ jobs:
         run: |
           cd $KLOGG_BUILD_ROOT
           productsign --sign "Developer ID Installer: Anton Filimonov (GAW773U324)" ./output/klogg-${{ env.KLOGG_VERSION }}-OSX_unsigned.pkg ./packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
-          rm ./output/klogg-${{ env.KLOGG_VERSION }}-OSX_unsigned.pkgg
+          rm ./output/klogg-${{ env.KLOGG_VERSION }}-OSX_unsigned.pkg
 
       - name: "Mac notarize PKG"
         if: ${{ github.event_name != 'pull_request' }} 
