@@ -172,15 +172,6 @@ jobs:
         with: 
           p12-file-base64: ${{ secrets.CODESIGN_BASE64 }}
           p12-password: ${{ secrets.CODESIGN_PASSWORD }}
-
-      - name: Mac prepare pkgsign
-        if: ${{ github.event_name != 'pull_request' }} 
-        uses: apple-actions/import-codesign-certs@v1
-        with:
-          create-keychain: false
-          keychain-password: ${{ steps.prepare-codesign.outputs.keychain-password}}
-          p12-file-base64: ${{ secrets.INSTALL_SIGN }}
-          p12-password: ${{ secrets.INSTALL_SIGN_PASSWORD }}
       
 #Install build deps
       - uses: seanmiddleditch/gha-setup-ninja@master
@@ -264,13 +255,14 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           cd $KLOGG_BUILD_ROOT
-          productbuild --component ./output/klogg.app /Applications ./output/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
+          productbuild --component ./output/klogg.app /Applications ./output/klogg-${{ env.KLOGG_VERSION }}-OSX_unsigned.pkg
 
       - name: "Mac sign pkg"
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           cd $KLOGG_BUILD_ROOT
-          productsign -sign “Developer ID Installer: Anton Filimonov (GAW773U324)” ./output/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg ./packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
+          productsign --sign "Developer ID Installer: Anton Filimonov (GAW773U324)" ./output/klogg-${{ env.KLOGG_VERSION }}-OSX_unsigned.pkg ./packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
+          rm ./output/klogg-${{ env.KLOGG_VERSION }}-OSX_unsigned.pkgg
 
       - name: "Mac notarize PKG"
         if: ${{ github.event_name != 'pull_request' }} 
