@@ -280,10 +280,6 @@ if(UNIX)
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://github.com/variar/klogg")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Anton Filimonov <${CPACK_PACKAGE_CONTACT}>")
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS YES)
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS
-        ${CPACK_DEBIAN_PACKAGE_DEPENDS}
-        "libqt5core5a (>=${KLOGG_QT_VERSION}),  libqt5gui5 (>=${KLOGG_QT_VERSION}), libqt5widgets5 (>=${KLOGG_QT_VERSION}), libqt5concurrent5 (>=${KLOGG_QT_VERSION}), libqt5xml5 (>=${KLOGG_QT_VERSION})"
-    )
 
     #RPM
     set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
