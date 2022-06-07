@@ -120,6 +120,7 @@ jobs:
         run: |
           docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cpack -G ${{ matrix.config.cpack_gen }} "
           docker run --env KLOGG_VERSION=$KLOGG_VERSION -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && mv ./packages/klogg-$KLOGG_VERSION-Linux.${{ matrix.config.package_suffix }} ./packages/klogg-$KLOGG_VERSION-${{ matrix.config.artifacts_id }}.${{ matrix.config.package_suffix }}"
+          docker run --env KLOGG_VERSION=$KLOGG_VERSION -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && mv ./packages/klogg-$KLOGG_VERSION-Linux.${{ matrix.config.package_suffix }}.sha256 ./packages/klogg-$KLOGG_VERSION-${{ matrix.config.artifacts_id }}.${{ matrix.config.package_suffix }}.sha256"
 
       - name: Check package
         if: ${{ matrix.config.check_command }}
@@ -165,10 +166,10 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Mac prepare codesign
+        id: prepare-codesign
         if: ${{ github.event_name != 'pull_request' }} 
         uses: apple-actions/import-codesign-certs@v1
         with: 
-          keychain: "code_sign"
           p12-file-base64: ${{ secrets.CODESIGN_BASE64 }}
           p12-password: ${{ secrets.CODESIGN_PASSWORD }}
 
@@ -176,9 +177,11 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }} 
         uses: apple-actions/import-codesign-certs@v1
         with:
-          keychain: "install_sign"
+          create-keychain: false
+          keychain-password: ${{ steps.prepare-codesign.outputs.keychain-password}}
           p12-file-base64: ${{ secrets.INSTALL_SIGN }}
           p12-password: ${{ secrets.INSTALL_SIGN_PASSWORD }}
+      
 #Install build deps
       - uses: seanmiddleditch/gha-setup-ninja@master
 
