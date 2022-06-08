@@ -159,8 +159,9 @@ cmake --build .
 
 Binaries are placed into `build_root/output`.
 
-It might be necessary to pass `-DCMAKE_OSX_DEPLOYMENT_TARGET=<your_current_os_number>` to cmake during configuration step,
-`<your_current_os_number>` is one of `10.14`, `10.15`, `11`, `12`. 
+By default, klogg will rely on cmake to figure out target MacOS version. Usually it uses build host version.
+To override default cmake value pass an option `-DKLOGG_OSX_DEPLOYMENT_TARGET=<target>` to cmake during configuration step,
+`<target>` is one of `10.14`, `10.15`, `11`, `12`. Klogg's traget must be greater or equal to target used by Qt libraries.
 
 ## Running tests
 Tests are built by default. To turn them off pass `-DBUILD_TESTS:BOOL=OFF` to cmake.

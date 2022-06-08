@@ -159,7 +159,7 @@ jobs:
             os_version: latest
             qt_version: 5.15.2
             arch: x64
-            cmake_opts:
+            cmake_opts: -DKLOGG_OSX_DEPLOYMENT_TARGET=10.14
 
     runs-on: ${{ matrix.config.os }}-${{ matrix.config.os_version }}
     steps:
@@ -258,7 +258,7 @@ jobs:
           mkdir -p pkg_resources/en.lproj
           cp ../COPYING pkg_resources/en.lproj
           cp ../packaging/description.txt pkg_resources/en.lproj
-          sed -e s/%klogg_version%/${{ env.KLOGG_VERSION }}/ -e s/%klogg_pkg%/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg/ ../packaging/osx/distribution.xml > distribution.xml
+g          sed -e s/%klogg_version%/${{ env.KLOGG_VERSION }}/ -e s/%klogg_pkg%/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg/ ../packaging/osx/distribution.xml > distribution.xml
           pkgbuild --component ./output/klogg.app --install-location /Applications --version ${{ env.KLOGG_VERSION }} --sign "Developer ID Installer: Anton Filimonov (GAW773U324)" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
           productbuild --package-path ./output --distribution distribution.xml --resources ./pkg_resources --sign "Developer ID Installer: Anton Filimonov (GAW773U324)" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-product.pkg
           pkgutil --expand ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-product.pkg ./output/klogg_product_pkg
