@@ -159,7 +159,16 @@ jobs:
             os_version: latest
             qt_version: 5.15.2
             arch: x64
+            artifacts_id: qt5
+            package_suffix: qt5
             cmake_opts: -DKLOGG_OSX_DEPLOYMENT_TARGET=10.14
+          - os: macos
+            os_version: latest
+            qt_version: 6.3.0
+            arch: x64
+            artifacts_id: qt6
+            package_suffix: qt6
+            cmake_opts: -DKLOGG_OSX_DEPLOYMENT_TARGET=12.0
 
     runs-on: ${{ matrix.config.os }}-${{ matrix.config.os_version }}
     steps:
@@ -215,14 +224,27 @@ jobs:
           macdeployqt ./output/klogg.app -always-overwrite -verbose=2
 
       - name: Mac deploy Qt fixing
+        if: ${{ matrix.config.artifacts_id == 'qt5' }}
         run: |
           python2 $KLOGG_BUILD_ROOT/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt5_Dir
+
+      - name: Mac deploy Qt fixing
+        if: ${{ matrix.config.artifacts_id == 'qt6' }}
+        run: |
+          python2 $KLOGG_BUILD_ROOT/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt6_Dir
       
+      - name: Set packaging env
+        run: |
+          echo "KLOGG_CODESIGN=Developer ID Application: Anton Filimonov (GAW773U324)" >> $GITHUB_ENV
+          echo "KLOGG_INSTALLERSIGN=Developer ID Installer: Anton Filimonov (GAW773U324)" >> $GITHUB_ENV
+          echo "KLOGG_DMG=klogg-${{ env.KLOGG_VERSION }}-OSX-${{ matrix.config.package_suffix }}.dmg" >> $GITHUB_ENV
+          echo "KLOGG_PKG=klogg-${{ env.KLOGG_VERSION }}-OSX-${{ matrix.config.package_suffix }}.pkg" >> $GITHUB_ENV
+
       - name: Mac codesign binaries
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           cd $KLOGG_BUILD_ROOT
-          codesign -v -f -o runtime --deep --timestamp -s "Developer ID Application: Anton Filimonov (GAW773U324)" ./output/klogg.app;
+          codesign -v -f -o runtime --deep --timestamp -s "${{ env.KLOGG_CODESIGN }}" ./output/klogg.app;
       
       - name: Mac pack dmg
         run: |
@@ -233,14 +255,15 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           cd $KLOGG_BUILD_ROOT
-          codesign -v -f -o runtime --timestamp -s "Developer ID Application: Anton Filimonov (GAW773U324)" ./packages/*
+          mv ./packages/klogg-${{ env.KLOGG_VERSION }}-OSX.dmg ./packages/${{ env.KLOGG_DMG }}
+          codesign -v -f -o runtime --timestamp -s "${{ env.KLOGG_CODESIGN }}" ./packages/${{ env.KLOGG_DMG }}
           
       - name: "Mac notarize DMG"
         if: ${{ github.event_name != 'pull_request' }} 
         uses: variar/xcode-notarize@v1.0.3
         with:
           verbose: true
-          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/klogg-${{ env.KLOGG_VERSION }}-OSX.dmg"
+          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/${{ env.KLOGG_DMG }}"
           primary-bundle-id: "dev.filimonov.klogg"
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
@@ -249,7 +272,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }} 
         uses: devbotsxyz/xcode-staple@v1
         with:
-          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/klogg-${{ env.KLOGG_VERSION }}-OSX.dmg"
+          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/${{ env.KLOGG_DMG }}"
 
       - name: "Mac build pkg"
         if: ${{ github.event_name != 'pull_request' }}
@@ -258,19 +281,19 @@ jobs:
           mkdir -p pkg_resources/en.lproj
           cp ../COPYING pkg_resources/en.lproj
           cp ../packaging/description.txt pkg_resources/en.lproj
-g          sed -e s/%klogg_version%/${{ env.KLOGG_VERSION }}/ -e s/%klogg_pkg%/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg/ ../packaging/osx/distribution.xml > distribution.xml
-          pkgbuild --component ./output/klogg.app --install-location /Applications --version ${{ env.KLOGG_VERSION }} --sign "Developer ID Installer: Anton Filimonov (GAW773U324)" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
-          productbuild --package-path ./output --distribution distribution.xml --resources ./pkg_resources --sign "Developer ID Installer: Anton Filimonov (GAW773U324)" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-product.pkg
+          sed -e s/%klogg_version%/${{ env.KLOGG_VERSION }}/ -e s/%klogg_pkg%/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg/ ../packaging/osx/distribution.xml > distribution.xml
+          pkgbuild --component ./output/klogg.app --install-location /Applications --version ${{ env.KLOGG_VERSION }} --sign "${{ env.KLOGG_INSTALLERSIGN }}" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
+          productbuild --package-path ./output --distribution distribution.xml --resources ./pkg_resources --sign "${{ env.KLOGG_INSTALLERSIGN }}" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-product.pkg
           pkgutil --expand ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-product.pkg ./output/klogg_product_pkg
           pkgutil --flatten ./output/klogg_product_pkg ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-flatten.pkg
-          productsign --sign "Developer ID Installer: Anton Filimonov (GAW773U324)" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-flatten.pkg ./packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
+          productsign --sign "${{ env.KLOGG_INSTALLERSIGN }}" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-flatten.pkg ./packages/${{ env.KLOGG_PKG }}
 
       - name: "Mac notarize PKG"
         if: ${{ github.event_name != 'pull_request' }} 
         uses: variar/xcode-notarize@v1.0.3
         with:
           verbose: true
-          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg"
+          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/${{ env.KLOGG_PKG }}"
           primary-bundle-id: "dev.filimonov.klogg"
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
@@ -279,18 +302,18 @@ g          sed -e s/%klogg_version%/${{ env.KLOGG_VERSION }}/ -e s/%klogg_pkg%/k
         if: ${{ github.event_name != 'pull_request' }} 
         uses: devbotsxyz/xcode-staple@v1
         with:
-          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg"         
+          product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/${{ env.KLOGG_PKG }}"         
 
       - name: Mac symbols
         run: |
           cd $KLOGG_BUILD_ROOT
-          cp -a ./output/klogg.dSym ./packages/
-          cp -a ./output/klogg.app ./packages/
+          cp -a ./output/klogg.dSym ./packages/klogg-${{ matrix.config.package_suffix }}.dSym
+          cp -a ./output/klogg.app ./packages/klogg-${{ matrix.config.package_suffix }}.app
 
 # Final upload of all packages
       - uses: actions/upload-artifact@v2
         with:
-          name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}
+          name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}-${{ matrix.config.artifacts_id }}
           path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*' 
           if-no-files-found: error
 
