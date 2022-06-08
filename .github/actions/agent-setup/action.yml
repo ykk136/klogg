@@ -1,8 +1,25 @@
-name: "Setup boost"
-description: "Set boost url, target location and downloads if needed"
+name: "Setup agent"
+description: ""
 runs:
   using: "composite"
   steps:
+    - name: Install Ninja
+      uses: seanmiddleditch/gha-setup-ninja@master
+
+    - name: Cache Qt
+      id: cache-qt
+      uses: actions/cache@v1
+      with:
+        path: ../Qt
+        key: ${{ matrix.config.os }}-${{ matrix.config.arch }}-${{ matrix.config.qt_version }}-QtCache
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: ${{ matrix.config.qt_version }}
+        arch: ${{ matrix.config.qt_arch }}
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+        modules: ${{ matrix.config.qt_modules }}
 
     - name: Set boost env vars
       shell: sh

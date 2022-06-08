@@ -1,0 +1,123 @@
+name: "Prepare klogg mac packages"
+description: ""
+inputs:
+  p12-file-base64:
+    required: true
+  p12-password:
+    required: true
+  appstore-connect-username:
+    required: true
+  appstore-connect-password:
+    required: true
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Mac prepare codesign
+      id: prepare-codesign
+      if: ${{ github.event_name != 'pull_request' }} 
+      uses: apple-actions/import-codesign-certs@v1
+      with: 
+        p12-file-base64: ${{ inputs.p12-file-base64 }}
+        p12-password: ${{ inputs.p12-password }}
+        
+    - name: Mac deploy Qt
+      shell: sh
+      run: |
+        cd $KLOGG_BUILD_ROOT
+        macdeployqt ./output/klogg.app -always-overwrite -verbose=2
+
+    - name: Mac deploy Qt fixing
+      if: ${{ matrix.config.artifacts_id == 'qt5' }}
+      shell: sh
+      run: |
+        python2 $KLOGG_BUILD_ROOT/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt5_DIR
+
+    - name: Mac deploy Qt fixing
+      if: ${{ matrix.config.artifacts_id == 'qt6' }}
+      shell: sh
+      run: |
+        python2 $KLOGG_BUILD_ROOT/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt6_DIR
+    
+    - name: Set packaging env
+      shell: sh
+      run: |
+        echo "KLOGG_CODESIGN=Developer ID Application: Anton Filimonov (GAW773U324)" >> $GITHUB_ENV
+        echo "KLOGG_INSTALLERSIGN=Developer ID Installer: Anton Filimonov (GAW773U324)" >> $GITHUB_ENV
+        echo "KLOGG_DMG=klogg-${{ env.KLOGG_VERSION }}-OSX-${{ matrix.config.package_suffix }}.dmg" >> $GITHUB_ENV
+        echo "KLOGG_PKG=klogg-${{ env.KLOGG_VERSION }}-OSX-${{ matrix.config.package_suffix }}.pkg" >> $GITHUB_ENV
+
+    - name: Mac codesign binaries
+      if: ${{ github.event_name != 'pull_request' }}
+      shell: sh
+      run: |
+        cd $KLOGG_BUILD_ROOT
+        codesign -v -f -o runtime --deep --timestamp -s "${{ env.KLOGG_CODESIGN }}" ./output/klogg.app;
+    
+    - name: Mac pack dmg
+      shell: sh
+      run: |
+        cd $KLOGG_BUILD_ROOT
+        cpack --verbose -G "DragNDrop"
+
+    - name: Mac codesign dmg
+      if: ${{ github.event_name != 'pull_request' }}
+      shell: sh
+      run: |
+        cd $KLOGG_BUILD_ROOT
+        mv ./packages/klogg-${{ env.KLOGG_VERSION }}-OSX.dmg ./packages/${{ env.KLOGG_DMG }}
+        codesign -v -f -o runtime --timestamp -s "${{ env.KLOGG_CODESIGN }}" ./packages/${{ env.KLOGG_DMG }}
+    
+    - name: "Mac build pkg"
+      if: ${{ github.event_name != 'pull_request' }}
+      shell: sh
+      run: |
+        cd $KLOGG_BUILD_ROOT
+        mkdir -p pkg_resources/en.lproj
+        cp ../COPYING pkg_resources/en.lproj
+        cp ../packaging/description.txt pkg_resources/en.lproj
+        sed -e s/%klogg_version%/${{ env.KLOGG_VERSION }}/ -e s/%klogg_pkg%/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg/ ../packaging/osx/distribution.xml > distribution.xml
+        pkgbuild --component ./output/klogg.app --install-location /Applications --version ${{ env.KLOGG_VERSION }} --sign "${{ env.KLOGG_INSTALLERSIGN }}" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX.pkg
+        productbuild --package-path ./output --distribution distribution.xml --resources ./pkg_resources --sign "${{ env.KLOGG_INSTALLERSIGN }}" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-product.pkg
+        pkgutil --expand ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-product.pkg ./output/klogg_product_pkg
+        pkgutil --flatten ./output/klogg_product_pkg ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-flatten.pkg
+        productsign --sign "${{ env.KLOGG_INSTALLERSIGN }}" --timestamp ./output/klogg-${{ env.KLOGG_VERSION }}-OSX-flatten.pkg ./packages/${{ env.KLOGG_PKG }}
+
+    - name: "Mac notarize DMG"
+      if: ${{ github.event_name != 'pull_request' }} 
+      uses: variar/xcode-notarize@v1.0.3
+      with:
+        verbose: true
+        product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/${{ env.KLOGG_DMG }}"
+        primary-bundle-id: "dev.filimonov.klogg"
+        appstore-connect-username: ${{ inputs.appstore-connect-username }}
+        appstore-connect-password: ${{ inputs.appstore-connect-password }}
+
+    - name: "Mac staple DMG"
+      if: ${{ github.event_name != 'pull_request' }} 
+      uses: devbotsxyz/xcode-staple@v1
+      with:
+        product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/${{ env.KLOGG_DMG }}"
+
+    - name: "Mac notarize PKG"
+      if: ${{ github.event_name != 'pull_request' }} 
+      uses: variar/xcode-notarize@v1.0.3
+      with:
+        verbose: true
+        product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/${{ env.KLOGG_PKG }}"
+        primary-bundle-id: "dev.filimonov.klogg"
+        appstore-connect-username: ${{ inputs.appstore-connect-username }}
+        appstore-connect-password: ${{ inputs.appstore-connect-password }}
+
+    - name: "Mac staple PKG"
+      if: ${{ github.event_name != 'pull_request' }} 
+      uses: devbotsxyz/xcode-staple@v1
+      with:
+        product-path: "${{ env.KLOGG_BUILD_ROOT }}/packages/${{ env.KLOGG_PKG }}"         
+
+    - name: Mac symbols
+      shell: sh
+      run: |
+        cd $KLOGG_BUILD_ROOT
+        cp -a ./output/klogg.dSym ./packages/klogg-${{ matrix.config.package_suffix }}.dSym
+        cp -a ./output/klogg.app ./packages/klogg-${{ matrix.config.package_suffix }}.app
