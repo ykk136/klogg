@@ -158,6 +158,7 @@ jobs:
           - os: macos
             os_version: latest
             qt_version: 5.15.2
+            qt_modules:
             arch: x64
             artifacts_id: qt5
             package_suffix: qt5
@@ -165,6 +166,7 @@ jobs:
           - os: macos
             os_version: latest
             qt_version: 6.3.0
+            qt_modules: qt5compat
             arch: x64
             artifacts_id: qt6
             package_suffix: qt6
@@ -198,6 +200,7 @@ jobs:
           version: ${{ matrix.config.qt_version }}
           arch: ${{ matrix.config.qt_arch }}
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          modules: ${{ matrix.config.qt_modules }}
 
       - name: Set brew env
         run: |
