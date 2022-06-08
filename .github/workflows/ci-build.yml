@@ -165,7 +165,7 @@ jobs:
             cmake_opts: -DKLOGG_OSX_DEPLOYMENT_TARGET=10.14
           - os: macos
             os_version: latest
-            qt_version: 6.3.0
+            qt_version: 6.2.4
             qt_modules: qt5compat
             arch: x64
             artifacts_id: qt6
