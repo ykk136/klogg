@@ -25,34 +25,47 @@
 #include <numeric>
 
 #include <QFontDatabase>
+#include <qfontdatabase.h>
 #include <vector>
 
 class FontUtils {
   public:
     static QStringList availableFonts()
     {
-        QFontDatabase database;
-
         // We only show the fixed fonts
-        QStringList fixedFamiles;
+        QStringList fixedFamilies;
+
+#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
+        QFontDatabase database;
         auto families = database.families();
         for ( const auto& family : qAsConst( families ) ) {
             if ( database.isFixedPitch( family ) )
-                fixedFamiles << family;
+                fixedFamilies << family;
         }
+#else
+        auto families = QFontDatabase::families();
+        for ( const auto& family : qAsConst( families ) ) {
+            if ( QFontDatabase::isFixedPitch( family ) )
+                fixedFamilies << family;
+        }
+#endif
 
-        return fixedFamiles;
+        return fixedFamilies;
     }
 
     static QList<int> availableFontSizes( const QString& family )
     {
-        QFontDatabase database;
-        auto sizes = database.pointSizes( family, "" );
+#if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
+        auto sizes = QFontDatabase().pointSizes( family, "" );
+#else
+        auto sizes = QFontDatabase::pointSizes( family, "" );
+#endif
+
         if ( sizes.empty() ) {
             sizes = QFontDatabase::standardSizes();
         }
 
-        std::vector<int> additionalSizes(10);
+        std::vector<int> additionalSizes( 10 );
         std::iota( additionalSizes.begin(), additionalSizes.end(), 10 );
         for ( int size : additionalSizes ) {
             if ( !sizes.contains( size ) ) {
