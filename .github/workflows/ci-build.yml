@@ -229,12 +229,12 @@ jobs:
       - name: Mac deploy Qt fixing
         if: ${{ matrix.config.artifacts_id == 'qt5' }}
         run: |
-          python2 $KLOGG_BUILD_ROOT/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt5_Dir
+          python2 $KLOGG_BUILD_ROOT/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt5_DIR
 
       - name: Mac deploy Qt fixing
         if: ${{ matrix.config.artifacts_id == 'qt6' }}
         run: |
-          python2 $KLOGG_BUILD_ROOT/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt6_Dir
+          python2 $KLOGG_BUILD_ROOT/macdeployqtfix.py $KLOGG_BUILD_ROOT/output/klogg.app/Contents/MacOS/klogg $Qt6_DIR
       
       - name: Set packaging env
         run: |
