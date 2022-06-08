@@ -97,7 +97,9 @@ jobs:
         repo_token: ${{ secrets.KLOGG_GITHUB_TOKEN }}
         automatic_release_tag: continuous-osx
         prerelease: true
-        files: ./packages-macos-x64/*
+        files: |
+          ./packages-macos-x64-qt5/*
+          ./packages-macos-x64-qt6/*
 
     - name: Discord notification
       env:
