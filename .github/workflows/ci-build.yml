@@ -196,6 +196,7 @@ jobs:
           - os: windows
             os_version: 2019
             qt_version: 6.2.4
+            qt_modules: qt5compat
             arch: x64
             ssl_arch: -x64
             cmake_opts:
