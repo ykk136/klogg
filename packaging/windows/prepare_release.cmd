@@ -1,6 +1,7 @@
 set "QTDIR=%Qt5_Dir%"
 set "Qt5_DIR=%QTDIR:/=\%"
 echo %Qt5_DIR%
+echo %Qt6_DIR%
 
 md %KLOGG_WORKSPACE%\release
 
@@ -54,6 +55,16 @@ xcopy %Qt5_DIR%\bin\Qt5Concurrent.dll %KLOGG_WORKSPACE%\release\ /y
 xcopy %Qt5_DIR%\bin\Qt5Xml.dll %KLOGG_WORKSPACE%\release\ /y
 xcopy %Qt5_DIR%\plugins\platforms\qwindows.dll %KLOGG_WORKSPACE%\release\platforms\ /y
 xcopy %Qt5_DIR%\plugins\styles\qwindowsvistastyle.dll %KLOGG_WORKSPACE%\release\styles /y
+
+xcopy %Qt6_DIR%\bin\Qt6Core.dll %KLOGG_WORKSPACE%\release\ /y
+xcopy %Qt6_DIR%\bin\Qt6Gui.dll %KLOGG_WORKSPACE%\release\ /y
+xcopy %Qt6_DIR%\bin\Qt6Network.dll %KLOGG_WORKSPACE%\release\ /y
+xcopy %Qt6_DIR%\bin\Qt6Widgets.dll %KLOGG_WORKSPACE%\release\ /y
+xcopy %Qt6_DIR%\bin\Qt6Concurrent.dll %KLOGG_WORKSPACE%\release\ /y
+xcopy %Qt6_DIR%\bin\Qt6Xml.dll %KLOGG_WORKSPACE%\release\ /y
+xcopy %Qt6_DIR%\bin\Qt6Core5Compat.dll %KLOGG_WORKSPACE%\release\ /y
+xcopy %Qt6_DIR%\plugins\platforms\qwindows.dll %KLOGG_WORKSPACE%\release\platforms\ /y
+xcopy %Qt6_DIR%\plugins\styles\qwindowsvistastyle.dll %KLOGG_WORKSPACE%\release\styles /y
 
 xcopy %SSL_DIR%\libcrypto-1_1%SSL_ARCH%.dll %KLOGG_WORKSPACE%\release\ /y
 xcopy %SSL_DIR%\libssl-1_1%SSL_ARCH%.dll %KLOGG_WORKSPACE%\release\ /y

@@ -40,15 +40,15 @@ runs:
       uses: joncloud/makensis-action@v3.3
       with:
         script-file: klogg.nsi
-        arguments: "-DVERSION=%KLOGG_VERSION% -DPLATFORM=%KLOGG_ARCH%"
-
+        arguments: "-DVERSION=%KLOGG_VERSION% -DPLATFORM=%KLOGG_ARCH% -DQT_MAJOR=${{ matrix.config.package_suffix }}" 
+    
     - name: Win package
       shell: cmd
       run: |
         md %KLOGG_BUILD_ROOT%\packages
-        xcopy klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-portable.zip %KLOGG_BUILD_ROOT%\packages\ /y
-        xcopy klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-pdb.zip %KLOGG_BUILD_ROOT%\packages\ /y
-        xcopy klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-setup.exe %KLOGG_BUILD_ROOT%\packages\ /y
+        xcopy klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-portable.zip %KLOGG_BUILD_ROOT%\packages\klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-${{ matrix.config.package_suffix }}-portable.zip /y
+        xcopy klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-pdb.zip %KLOGG_BUILD_ROOT%\packages\klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-${{ matrix.config.package_suffix }}-pdb.zip /y
+        xcopy klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-setup.exe %KLOGG_BUILD_ROOT%\packages\klogg-%KLOGG_VERSION%-%KLOGG_ARCH%-${{ matrix.config.package_suffix }}-setup.exe /y
 
     - name: Win codesign installer
       if: ${{ github.event_name != 'pull_request' }}

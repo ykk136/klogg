@@ -9,7 +9,6 @@ runs:
       run: |
         docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cpack -G ${{ matrix.config.cpack_gen }} "
         docker run --env KLOGG_VERSION=$KLOGG_VERSION -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && mv ./packages/klogg-$KLOGG_VERSION-Linux.${{ matrix.config.package_suffix }} ./packages/klogg-$KLOGG_VERSION-${{ matrix.config.artifacts_id }}.${{ matrix.config.package_suffix }}"
-        docker run --env KLOGG_VERSION=$KLOGG_VERSION -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && mv ./packages/klogg-$KLOGG_VERSION-Linux.${{ matrix.config.package_suffix }}.sha256 ./packages/klogg-$KLOGG_VERSION-${{ matrix.config.artifacts_id }}.${{ matrix.config.package_suffix }}.sha256"
 
     - name: Check package
       if: ${{ matrix.config.check_command }}

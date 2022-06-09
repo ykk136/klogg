@@ -9,6 +9,10 @@
     !define PLATFORM 'unknown'
 !endif
 
+!ifndef QT_MAJOR
+    !define QT_MAJOR 'Qt5'
+!endif
+
 # Headers
 !include "MUI2.nsh"
 !include "FileAssociation.nsh"
@@ -42,7 +46,7 @@ Caption "klogg ${VERSION} Setup"
 , a fast, advanced log explorer.$\r$\n$\r$\n\
 klogg and the Qt libraries are released under the GPL, see \
 the COPYING and NOTICE files.$\r$\n$\r$\n$_CLICK"
-; MUI_FINISHPAGE_LINK_LOCATION "http://nsis.sf.net/"
+MUI_FINISHPAGE_LINK_LOCATION "https://klogg.filimonov.dev/"
 
 !insertmacro MUI_PAGE_WELCOME
 ;!insertmacro MUI_PAGE_LICENSE "COPYING"
@@ -106,14 +110,18 @@ Section "klogg" klogg
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
-Section "Qt5 Runtime libraries" qtlibs
+Section "Qt Runtime libraries" qtlibs
     SetOutPath $INSTDIR
-    File release\Qt5Core.dll
-    File release\Qt5Gui.dll
-    File release\Qt5Network.dll
-    File release\Qt5Widgets.dll
-    File release\Qt5Concurrent.dll
-    File release\Qt5Xml.dll
+    File release\${QT_MAJOR}Core.dll
+    File release\${QT_MAJOR}Gui.dll
+    File release\${QT_MAJOR}Network.dll
+    File release\${QT_MAJOR}Widgets.dll
+    File release\${QT_MAJOR}Concurrent.dll
+    File release\${QT_MAJOR}Xml.dll
+!if ${QT_MAJOR} == "Qt6"
+    File release\${QT_MAJOR}Core5Compat.dll
+!endif
+
     SetOutPath $INSTDIR\platforms
     File release\platforms\qwindows.dll
     SetOutPath $INSTDIR\styles
@@ -151,7 +159,7 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${klogg} "The core files required to use klogg."
     !insertmacro MUI_DESCRIPTION_TEXT ${qtlibs} "Needed by klogg, you have to install these unless \
-you already have the Qt5 development kit installed."
+you already have the Qt development kit installed."
     !insertmacro MUI_DESCRIPTION_TEXT ${vcruntime} "Needed by klogg, you have to install these unless \
 you already have the Microsoft Visual C++ 2017 Redistributable installed."
     !insertmacro MUI_DESCRIPTION_TEXT ${shortcut} "Create a shortcut in the Start menu for klogg."
@@ -180,6 +188,13 @@ Section "Uninstall"
     Delete "$INSTDIR\Qt5Network.dll"
     Delete "$INSTDIR\Qt5Concurrent.dll"
     Delete "$INSTDIR\Qt5Xml.dll"
+    Delete "$INSTDIR\Qt6Widgets.dll"
+    Delete "$INSTDIR\Qt6Core.dll"
+    Delete "$INSTDIR\Qt6Gui.dll"
+    Delete "$INSTDIR\Qt6Network.dll"
+    Delete "$INSTDIR\Qt6Concurrent.dll"
+    Delete "$INSTDIR\Qt6Xml.dll"
+    Delete "$INSTDIR\Qt6Core5Compat.dll"
     Delete "$INSTDIR\platforms\qwindows.dll"
     Delete "$INSTDIR\platforms\qminimal.dll"
     Delete "$INSTDIR\styles\qwindowsvistastyle.dll"
