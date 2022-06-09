@@ -39,6 +39,7 @@
 #ifndef LOGFILTEREDDATA_H
 #define LOGFILTEREDDATA_H
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <tuple>
@@ -199,8 +200,7 @@ class LogFilteredData : public AbstractLogData {
         LineLength maxLength;
     };
 
-    using SearchCacheKey = std::tuple<RegularExpressionPattern, uint32_t, uint32_t>;
-
+    using SearchCacheKey = std::tuple<RegularExpressionPattern, LineNumber::UnderlyingType, LineNumber::UnderlyingType>;
     struct SearchCacheKeyHash {
         template <class T>
         void hash_combine( std::size_t& seed, const T& v ) const
