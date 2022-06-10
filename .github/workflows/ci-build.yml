@@ -82,6 +82,18 @@ jobs:
             container_root: docker/ubuntu20.04
             container: variar/klogg_ubuntu20.04
             cmake_opts:
+          
+          - os: ubuntu_jammy
+            os_version: 22.04
+            arch: x64
+            check_command: apt-get update && apt install --dry-run /usr/local/klogg*.deb
+            cpack_gen: DEB
+            artifacts_id: jammy
+            package_suffix: deb
+            check_container: ubuntu:22.04
+            container_root: docker/ubuntu22.04
+            container: variar/klogg_ubuntu22.04
+            cmake_opts:
 
           - os: ubuntu_appimage
             os_version: 18.04
@@ -118,7 +130,7 @@ jobs:
 # Final upload of all packages
       - uses: actions/upload-artifact@v2
         with:
-          name: packages-${{ matrix.config.artifacts_id }}-${{ matrix.config.arch }}
+          name: packages-${{ matrix.config.artifacts_id }}
           path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*'
           if-no-files-found: error      
 
@@ -129,21 +141,19 @@ jobs:
       matrix:
         config:
           - os: macos
-            os_version: latest
+            os_version: 10.15
             qt_version: 5.15.2
             qt_modules:
             arch: x64
-            artifacts_id: qt5
-            package_suffix: qt5
+            artifacts_id: macos-qt5
             cmake_opts: -DKLOGG_OSX_DEPLOYMENT_TARGET=10.14
           - os: macos
-            os_version: latest
+            os_version: 10.15
             qt_version: 6.2.4
             qt_modules: qt5compat
             arch: x64
-            artifacts_id: qt6
-            package_suffix: qt6
-            cmake_opts: -DKLOGG_OSX_DEPLOYMENT_TARGET=12.0
+            artifacts_id: macos-qt6
+            cmake_opts: -DKLOGG_OSX_DEPLOYMENT_TARGET=10.15
 
     runs-on: ${{ matrix.config.os }}-${{ matrix.config.os_version }}
     steps:
@@ -174,7 +184,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}-${{ matrix.config.artifacts_id }}
+          name: packages-${{ matrix.config.artifacts_id }}
           path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*' 
           if-no-files-found: error
 
@@ -190,8 +200,7 @@ jobs:
             arch: x64
             ssl_arch: -x64
             cmake_opts:
-            artifacts_id: qt5
-            package_suffix: Qt5
+            artifacts_id: windows-x64-qt5
 
           - os: windows
             os_version: 2019
@@ -200,8 +209,7 @@ jobs:
             arch: x64
             ssl_arch: -x64
             cmake_opts:
-            artifacts_id: qt6
-            package_suffix: Qt6
+            artifacts_id: windows-x64-qt6
 
           - os: windows
             os_version: 2019
@@ -209,8 +217,7 @@ jobs:
             arch: x86
             qt_arch: win32_msvc2019
             cmake_opts:
-            artifacts_id: qt5
-            package_suffix: Qt5
+            artifacts_id: windows-x86-qt5
 
     runs-on: ${{ matrix.config.os }}-${{ matrix.config.os_version }}
     steps:
@@ -254,6 +261,6 @@ jobs:
 # Final upload of all packages
       - uses: actions/upload-artifact@v2
         with:
-          name: packages-${{ matrix.config.os }}-${{ matrix.config.arch }}-${{ matrix.config.artifacts_id }}
+          name: packages-${{ matrix.config.artifacts_id }}
           path: '${{ env.KLOGG_BUILD_ROOT }}/packages/*'
           if-no-files-found: error

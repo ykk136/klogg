@@ -18,7 +18,7 @@
 !include "FileAssociation.nsh"
 
 # General
-OutFile "klogg-${VERSION}-${PLATFORM}-setup.exe"
+OutFile "klogg-${VERSION}-${PLATFORM}-${QT_MAJOR}-setup.exe"
 
 XpStyle on
 

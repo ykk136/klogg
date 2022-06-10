@@ -1,17 +1,13 @@
 FROM ubuntu:jammy
 
-RUN apt update -y && \
-    apt install software-properties-common -y && \
-    add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
-    apt update -y
+RUN apt update -y
 
-RUN apt install gcc-11 g++-11 \
-                    qtbase5-dev qt5-qmake qtbase5-dev-tools libicu-dev \
-                    ragel ninja-build zlib1g-dev git \
-                    wget fuse -y && \
+RUN apt install build-essential \
+                    qtbase5-dev qt5-qmake qtbase5-dev-tools \
+                    libboost-dev libssl-dev libicu-dev \
+                    ragel ninja-build zlib1g-dev git dpkg-dev \
+                    wget fuse file -y && \
     apt clean && rm -rf /var/lib/apt/lists/*
-
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11
 
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.20.2-linux-x86_64.sh && \
     chmod 755 cmake-3.20.2-linux-x86_64.sh && \
