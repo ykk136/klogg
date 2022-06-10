@@ -4,8 +4,8 @@ RUN apt update -y
 
 RUN apt install build-essential \
                     qtbase5-dev qt5-qmake qtbase5-dev-tools \
-                    libboost-dev libssl-dev libicu-dev \
-                    ragel ninja-build zlib1g-dev git dpkg-dev \
+                    libboost-dev libssl-dev \
+                    ragel ninja-build zlib1g-dev git \
                     wget fuse file -y && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
