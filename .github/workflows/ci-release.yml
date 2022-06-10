@@ -89,11 +89,11 @@ jobs:
         automatic_release_tag: continuous-linux
         prerelease: true
         files: |
-          ./packages-bionic-x64/*
-          ./packages-focal-x64/*
-          ./packages-jammy-x64/*
-          ./packages-oracle-x64/*
-          ./packages-appimage-x64/*
+          ./packages-bionic/*
+          ./packages-focal/*
+          ./packages-jammy/*
+          ./packages-oracle/*
+          ./packages-appimage/*
 
     - name: Release mac
       uses: "marvinpinto/action-automatic-releases@latest"
