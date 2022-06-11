@@ -8,7 +8,7 @@
 
 
 [![Github all releases](https://img.shields.io/github/downloads/variar/klogg/total?style=flat)](https://github.com/variar/klogg/releases/)
-[ ![Github](https://img.shields.io/github/v/release/variar/klogg?style=flat&label=Stable%20release)](https://github.com/variar/klogg/releases/tag/v20.12)
+[ ![Github](https://img.shields.io/github/v/release/variar/klogg?style=flat&label=Stable%20release)](https://github.com/variar/klogg/releases/latest)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/klogg.svg)](https://repology.org/project/klogg/versions)
 
@@ -82,11 +82,16 @@ Klogg has all best features of glogg:
 And on top of that klogg:
 
 * Is heavily optimized using multi-threading and SIMD
-* Supports logical combinations of search patterns
+* Supports files with more than 2147483647 lines
+* Includes much faster regular expressions search (2-4 times)
+* Allows combining regular expressions with boolean operators (AND, OR, NOT)
 * Supports many common text encodings
 * Detects file encoding automatically using [uchardet](https://www.freedesktop.org/wiki/Software/uchardet/) library (supports utf8, utf16, cp1251 and more) 
 * Can limit search operations to some part of huge file
 * Allows to configure several highlighters sets and switch between them
+* Has a list of configurable predefined regular expression patterns
+* Includes a dark mode
+* Has configurable shortcuts
 * Has a scratchpad window for taking notes and doing basic data transformations
 * Provides lots of small features that make life easier (closing tabs, copying file paths, favorite files menu, etc.)
 
@@ -95,15 +100,6 @@ Here is a small demo showing how much faster klogg is (searching in ~1Gb file st
 https://user-images.githubusercontent.com/1620716/117588567-bea39100-b12c-11eb-990a-90a667bcaeaa.mp4
 
 List of glogg issues that have been fixed/implemented in klogg can be found [here](https://github.com/variar/klogg/discussions/302).
-
-### Prominent features of dev-builds compared to latest stable release:
-* support for files with more than 2147483647 lines
-* much faster regular expressions search (2-4 times)
-* ability to combine regular expressions with boolean operators (AND, OR, NOT)
-* configurable shortcuts
-* list of configurable predefined regular expression patterns
-* better dark mode
-* build scripts allow to use more dependencies from OS packages instead of vendored versions
 
 List of all changes can be found [here](https://github.com/variar/klogg/milestone/8?closed=1).
 
@@ -115,9 +111,9 @@ This project uses [Calendar Versioning](https://calver.org/). For a list of avai
 
 ### Current stable release builds
 
-Current release is 20.12. Binaries for all platforms can be downloaded from GitHub releases.
+Binaries for all platforms can be downloaded from GitHub releases.
 
-[ ![Release](https://img.shields.io/github/v/release/variar/klogg?style=flat)](https://github.com/variar/klogg/releases/tag/v20.12)
+[ ![Release](https://img.shields.io/github/v/release/variar/klogg?style=flat)](https://github.com/variar/klogg/releases/latest)
 
 #### Windows
 Windows installer is also available from:
