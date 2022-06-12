@@ -268,7 +268,8 @@ if(UNIX)
       DESTINATION ${CMAKE_INSTALL_DOCDIR}
     )
 
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/klogg.desktop DESTINATION share/applications)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/dev.filimonov.klogg.desktop DESTINATION share/applications)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/dev.filimonov.klogg.metainfo.xml DESTINATION share/metainfo)
 
     set(CPACK_GENERATOR DEB)
 
@@ -283,10 +284,10 @@ if(UNIX)
     set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
     set(CPACK_RPM_PACKAGE_LICENSE "GPLv3")
     set(CPACK_RPM_PACKAGE_AUTOREQ YES)
-    #set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase >= ${KLOGG_QT_VERSION}")
     set(CPACK_RPM_PACKAGE_URL "http://github.com/variar/klogg")
     set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
         /usr/share/applications
+        /usr/share/metainfo
         /usr/share/icons
         /usr/share/icons/hicolor
         /usr/share/icons/hicolor/16x16
@@ -304,7 +305,10 @@ endif()
 add_custom_target(
   installation
   SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/packaging/windows/klogg.nsi
-          ${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/klogg.desktop
+          ${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/dev.filimonov.klogg.desktop
+          ${CMAKE_CURRENT_SOURCE_DIR}/packaging/linux/dev.filimonov.klogg.metainfo.xml
+          ${CMAKE_CURRENT_SOURCE_DIR}/packaging/osx/distribution.xml
+          ${CMAKE_CURRENT_SOURCE_DIR}/packaging/description.txt
           ${CMAKE_CURRENT_SOURCE_DIR}/cmake/MacOSXBundleInfo.plist.in
 )
 
