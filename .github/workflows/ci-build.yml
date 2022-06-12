@@ -242,14 +242,15 @@ jobs:
           echo "SSL_DIR=${{ github.workspace }}\openssl-1.1\${{ matrix.config.arch }}\bin" >> $GITHUB_ENV
           echo "SSL_ARCH=${{ matrix.config.ssl_arch }}" >> $GITHUB_ENV 
 
+      - uses: ./.github/actions/agent-setup
+      - uses: ./.github/actions/klogg-version
+      - uses: ./.github/actions/prepare-workspace-env
+      
       - name: Prepare dev cmd
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{ matrix.config.arch }}
 
-      - uses: ./.github/actions/agent-setup
-      - uses: ./.github/actions/klogg-version
-      - uses: ./.github/actions/prepare-workspace-env
       - uses: ./.github/actions/agent-build
       - uses: ./.github/actions/agent-run-tests
       - uses: ./.github/actions/agent-package-win
