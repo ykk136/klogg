@@ -129,24 +129,6 @@ endif()
 
 if(KLOGG_USE_SENTRY)
   if(NOT WIN32)
-
-    add_custom_command(
-      TARGET klogg
-      POST_BUILD
-      COMMAND ${SYMS_TOOLS}/dump_syms $<TARGET_FILE:klogg> > ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/klogg.sym
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMENT "Generating symbols for $<TARGET_FILE:klogg>"
-    )
-
-    add_custom_command(
-      TARGET klogg_portable
-      POST_BUILD
-      COMMAND ${SYMS_TOOLS}/dump_syms $<TARGET_FILE:klogg_portable> >
-              ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/klogg_portable.sym
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMENT "Generating symbols for $<TARGET_FILE:klogg_portable>"
-    )
-
     if(APPLE)
       find_program(DSYMUTIL dsymutil)
       add_custom_command(
@@ -164,7 +146,54 @@ if(KLOGG_USE_SENTRY)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Generating symbols for $<TARGET_FILE:klogg_portable>"
       )
+    else()
+      find_program(OBJCOPY objcopy)
+      add_custom_command(
+        TARGET klogg
+        POST_BUILD
+        COMMAND ${OBJCOPY} --only-keep-debug --compress-debug-sections=zlib $<TARGET_FILE:klogg>
+                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/klogg.debug
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating symbols for $<TARGET_FILE:klogg>"
+      )
+      add_custom_command(
+        TARGET klogg
+        POST_BUILD
+        COMMAND ${OBJCOPY} --strip-debug --strip-unneeded $<TARGET_FILE:klogg>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Stripping $<TARGET_FILE:klogg>"
+      )
+      add_custom_command(
+        TARGET klogg
+        POST_BUILD
+        COMMAND ${OBJCOPY} --add-gnu-debuglink=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/klogg.debug $<TARGET_FILE:klogg>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Linking symbols for $<TARGET_FILE:klogg>"
+      )
 
+      add_custom_command(
+        TARGET klogg_portable
+        POST_BUILD
+        COMMAND ${OBJCOPY} --only-keep-debug --compress-debug-sections=zlib $<TARGET_FILE:klogg_portable>
+                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/klogg_portable.debug
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating symbols for $<TARGET_FILE:klogg>"
+      )
+      add_custom_command(
+        TARGET klogg_portable
+        POST_BUILD
+        COMMAND ${OBJCOPY} --strip-debug --strip-unneeded $<TARGET_FILE:klogg_portable>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Stripping $<TARGET_FILE:klogg_portable>"
+      )
+      add_custom_command(
+        TARGET klogg_portable
+        POST_BUILD
+        COMMAND ${OBJCOPY} --add-gnu-debuglink=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/klogg_portable.debug
+                $<TARGET_FILE:klogg_portable>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Linking symbols for $<TARGET_FILE:klogg_portable>"
+      )
     endif()
 
     add_custom_command(

@@ -50,11 +50,11 @@ jobs:
     - name: Upload symbols linux
       shell: sh
       run: |
-        sentry-cli upload-dif ./packages-bionic-x64/klogg_bionic.sym 
-        sentry-cli upload-dif ./packages-focal-x64/klogg_focal.sym 
-        sentry-cli upload-dif ./packages-jammy-x64/klogg_jammy.sym 
-        sentry-cli upload-dif ./packages-oracle-x64/klogg_oracle.sym
-        sentry-cli upload-dif ./packages-appimage-x64/klogg_appimage.sym 
+        sentry-cli upload-dif ./packages-bionic-x64/klogg_bionic.debug 
+        sentry-cli upload-dif ./packages-focal-x64/klogg_focal.debug
+        sentry-cli upload-dif ./packages-jammy-x64/klogg_jammy.debug
+        sentry-cli upload-dif ./packages-oracle-x64/klogg_oracle.debug
+        sentry-cli upload-dif ./packages-appimage-x64/klogg_appimage.debug 
 
     - name: Upload symbols mac
       shell: sh
