@@ -196,8 +196,8 @@ message("LTO ${KLOGG_USE_LTO}")
 
 if(APPLE)
   if(${KLOGG_OSX_DEPLOYMENT_TARGET})
-     set(CMAKE_OSX_DEPLOYMENT_TARGET ${KLOGG_OSX_DEPLOYMENT_TARGET})
-     message("OSX target ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET ${KLOGG_OSX_DEPLOYMENT_TARGET})
+    message("OSX target ${CMAKE_OSX_DEPLOYMENT_TARGET}")
   endif()
 endif()
 
@@ -253,6 +253,10 @@ if(UNIX)
 
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/app/images/hicolor/32x32/klogg.png
             DESTINATION share/icons/hicolor/32x32/apps
+    )
+
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/app/images/hicolor/48x48/klogg.png
+            DESTINATION share/icons/hicolor/48x48/apps
     )
 
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/app/images/hicolor/scalable/klogg.svg
