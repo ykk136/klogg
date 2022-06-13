@@ -33,8 +33,8 @@ Thanks to all people who help develop _klogg_
  - Dmitry Afanasiev
  - Ilya Shvetsov
  - Gustav Andersson
+ - Herman Semenov
  - Jeff Jensen
- - Jonathan Lightjohn
  - Jonathan Wakely
  - Marcin Twardak
  - neurocod
