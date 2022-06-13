@@ -8,7 +8,7 @@
 
 
 [![Github all releases](https://img.shields.io/github/downloads/variar/klogg/total?style=flat)](https://github.com/variar/klogg/releases/)
-[ ![Github](https://img.shields.io/github/v/release/variar/klogg?style=flat&label=Stable%20release)](https://github.com/variar/klogg/releases/latest)
+[ ![Github](https://img.shields.io/github/v/release/variar/klogg?style=flat&label=Stable%20release&)](https://github.com/variar/klogg/releases/latest)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/klogg.svg)](https://repology.org/project/klogg/versions)
 
@@ -16,7 +16,7 @@ Check [GitHub releases](https://github.com/variar/klogg/releases/latest) for Win
 
 Development status
 
-[![Next milestone](https://img.shields.io/github/milestones/progress-percent/variar/klogg/8?style=flat)](https://github.com/variar/klogg/milestone/8)
+[![Next milestone](https://img.shields.io/github/milestones/progress-percent/variar/klogg/8?style=flat&)](https://github.com/variar/klogg/milestone/8)
 [![Ready for testing](https://img.shields.io/github/issues-raw/variar/klogg/status:%20ready%20for%20testing?color=green&label=issues%20ready%20for%20testing&style=flat)](https://github.com/variar/klogg/issues?q=is%3Aopen+is%3Aissue+label%3A%22status%3A+ready+for+testing%22)
 [![Need documentation](https://img.shields.io/github/issues-search/variar/klogg?color=yellow&label=features%20need%20documentation&query=is%3Aissue%20label%3A%22status%3A%20need%20documentation%22&style=flat)](https://github.com/variar/klogg/issues?q=is%3Aissue+label%3A%22status%3A+need+documentation%22)
 [![GitHub commits](https://img.shields.io/github/commits-since/variar/klogg/v20.12.svg?style=flat)](https://github.com/variar/klogg/commits/)
@@ -42,6 +42,8 @@ page for how to use Klogg.
 | Windows | Linux | Mac |
 | ------------- |------------- | ------------- |
 | [continuous-win](https://github.com/variar/klogg/releases/tag/continuous-win) | [continuous-linux](https://github.com/variar/klogg/releases/tag/continuous-linux) | [continuous-osx](https://github.com/variar/klogg/releases/tag/continuous-osx) |
+
+I try to keep a [changelog](CHANGELOG.md) with monthly changes. 
 
 ## Table of Contents
 
