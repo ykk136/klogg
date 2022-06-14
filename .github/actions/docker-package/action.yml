@@ -26,6 +26,7 @@ runs:
       shell: sh
       run: |
         docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cp ./output/klogg.debug ./packages/klogg_${{ matrix.config.artifacts_id }}.debug"
+        docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cp ./output/klogg ./packages/klogg_${{ matrix.config.artifacts_id }}"
 
     - name: Copy deps
       if: ${{ matrix.config.os == 'ubuntu_appimage' }}
