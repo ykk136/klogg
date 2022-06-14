@@ -58,9 +58,6 @@ static constexpr auto BugTemplate = "#### What did you do?\n\n\n"
                                     "#### What did you expect to see?\n\n\n"
                                     "#### What did you see instead?\n\n\n";
 
-static constexpr auto BugLabel = "type: bug";
-static constexpr auto CrashLabel = "type: crash";
-
 static constexpr auto ExceptionAskUserAction
     = "Ooops! Something unexpected happend. Create issue on Github?";
 
@@ -82,19 +79,15 @@ void IssueReporter::reportIssue( IssueTemplate issueTemplate, const QString& inf
 {
 
     QString body = DetailsHeader;
-    QString label;
     switch ( issueTemplate ) {
     case IssueTemplate::Bug:
         body.append( BugTemplate );
-        label = BugLabel;
         break;
     case IssueTemplate::Crash:
         body.append( QString( CrashTemplate ).arg( information ) );
-        label = CrashLabel;
         break;
     case IssueTemplate::Exception:
         body.append( QString( ExceptionTemplate ).arg( information ) );
-        label = CrashLabel;
         break;
     }
 
@@ -116,7 +109,6 @@ void IssueReporter::reportIssue( IssueTemplate issueTemplate, const QString& inf
     body.append( QString( LibraryVersionsFooter ).arg( qVersion(), TBB_runtime_version() ) );
 
     QUrlQuery query;
-    query.addQueryItem( "labels", label );
     query.addQueryItem( "body", body );
 
     QUrl url( "https://github.com/variar/klogg/issues/new" );
