@@ -121,7 +121,7 @@ Binaries for all platforms can be downloaded from GitHub releases.
 Windows installer is also available from:
 
 * [ ![Chocolatey](https://img.shields.io/chocolatey/v/klogg?style=flat)](https://chocolatey.org/packages/klogg)
-* [Scoop Extras bucket](https://scoopsearch.github.io/#/apps?q=klogg)
+* [ ![Scoop Extras bucket](https://img.shields.io/scoop/v/klogg?bucket=extras)](https://scoopsearch.github.io/#/apps?q=klogg)
 * [Winget package](https://winget.run/pkg/variar/klogg) 
 
 #### Mac OS
