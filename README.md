@@ -133,14 +133,19 @@ Package for Mac can be installed from Homebrew
 It is recommended to use klogg package from distribution-specific [repositories](https://repology.org/project/klogg/versions).
 
 Generic packages are available from klogg DEB and RPM repositories hosted at JFrog Artifactory.
-They are built to run on Ubuntu 16.04 and Centos 8 (x86-64 only).
+They are built to run on Ubuntu 18.04/20.04/22.04 and Centos 7 (x86-64 only).
 
-For DEB add klogg artifactory repository, then install from apt:
+For DEB add klogg artifactory repository (replace `<ubuntu_release>` with one of `bionic`, `focal`, `jammy`):
 ```
-echo deb [trusted=yes] https://favpackage.jfrog.io/artifactory/klogg_deb stable utils | sudo tee -a /etc/apt/sources.list
+echo deb [trusted=yes] https://favpackage.jfrog.io/artifactory/klogg_deb <ubuntu_release> utils | sudo tee -a /etc/apt/sources.list
+```
+
+Then install using apt
+```
 sudo apt-get update
-sudo apt-get install klogg
+sudo apt install klogg
 ```
+
 
 For RPM create klogg repo file in `/etc/yum.repos.d/klogg-rpm.repo` with this content:
 ```
