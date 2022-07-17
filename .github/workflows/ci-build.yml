@@ -46,6 +46,17 @@ jobs:
       fail-fast: false
       matrix:
         config:
+          - os: oraclelinux
+            os_version: 7
+            arch: x64
+            check_command: yum install -y --setopt tsflags=test /usr/local/klogg*.rpm
+            cpack_gen: RPM
+            artifacts_id: oracle7
+            package_suffix: rpm
+            check_container: oraclelinux:7
+            container_root: docker/oracle7
+            container: variar/klogg_oracle7
+            cmake_opts: -DKLOGG_USE_SENTRY=OFF -DKLOGG_USE_LTO=OFF -DKLOGG_USE_HYPERSCAN=OFF
 
           - os: oraclelinux
             os_version: 8
