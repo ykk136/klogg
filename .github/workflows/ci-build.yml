@@ -26,7 +26,7 @@ on:
 jobs:
   SaveVersion:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/klogg-version
@@ -119,7 +119,7 @@ jobs:
             cmake_opts: -DKLOGG_USE_LTO=OFF -DCMAKE_PREFIX_PATH=/opt/qt515/
 
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
 
@@ -152,15 +152,15 @@ jobs:
       matrix:
         config:
           - os: macos
-            os_version: 10.15
+            os_version: 11
             qt_version: 5.15.2
             qt_modules:
             arch: x64
             artifacts_id: macos-qt5
             cmake_opts: -DKLOGG_OSX_DEPLOYMENT_TARGET=10.14
           - os: macos
-            os_version: 10.15
-            qt_version: 6.2.4
+            os_version: 11
+            qt_version: 6.4.3
             qt_modules: qt5compat
             arch: x64
             artifacts_id: macos-qt6
@@ -206,7 +206,7 @@ jobs:
       matrix:
         config:
           - os: windows
-            os_version: 2019
+            os_version: 2022
             qt_version: 5.15.2
             arch: x64
             ssl_arch: -x64
@@ -214,8 +214,8 @@ jobs:
             artifacts_id: windows-x64-qt5
 
           - os: windows
-            os_version: 2019
-            qt_version: 6.2.4
+            os_version: 2022
+            qt_version: 6.4.3
             qt_modules: qt5compat
             arch: x64
             ssl_arch: -x64
@@ -223,7 +223,7 @@ jobs:
             artifacts_id: windows-x64-qt6
 
           - os: windows
-            os_version: 2019
+            os_version: 2022
             qt_version: 5.15.2
             arch: x86
             qt_arch: win32_msvc2019
@@ -244,7 +244,7 @@ jobs:
       - name: Download openssl
         if: ${{ steps.cache-openssl.outputs.cache-hit != 'true' }} 
         run: |
-          Invoke-WebRequest -Uri "https://mirror.firedaemon.com/OpenSSL/openssl-1.1.1n.zip" -OutFile openssl.zip
+          Invoke-WebRequest -Uri "https://mirror.firedaemon.com/OpenSSL/openssl-1.1.1t.zip" -OutFile openssl.zip
           7z x openssl.zip 
 
       - name: Set openssl paths
