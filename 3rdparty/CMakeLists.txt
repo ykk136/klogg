@@ -87,7 +87,7 @@ cpmaddpackage(
   NAME
   Uchardet
   GIT_REPOSITORY
-  https://gitlab.freedesktop.org/uchardet/uchardet
+  git@gitlab.freedesktop.org:uchardet/uchardet.git
   VERSION
   0.0.7
   EXCLUDE_FROM_ALL
