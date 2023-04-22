@@ -737,7 +737,7 @@ void AbstractLogView::keyPressEvent( QKeyEvent* keyEvent )
 
     const auto text = keyEvent->text();
 
-    if ( keyEvent->modifiers() == Qt::NoModifier && text.count() == 1 ) {
+    if ( keyEvent->modifiers() == Qt::NoModifier && text.size() == 1 ) {
         const auto character = text.at( 0 ).toLatin1();
         if ( ( ( character > '0' ) && ( character <= '9' ) )
              || ( !digitsBuffer_.isEmpty() && character == '0' ) ) {
