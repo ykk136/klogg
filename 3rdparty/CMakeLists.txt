@@ -86,8 +86,8 @@ endif()
 cpmaddpackage(
   NAME
   Uchardet
-  GITHUB_REPOSITORY
-  freedesktop/Uchardet
+  GIT_REPOSITORY
+  https://gitlab.freedesktop.org/uchardet/uchardet
   VERSION
   0.0.7
   EXCLUDE_FROM_ALL
