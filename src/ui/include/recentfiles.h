@@ -36,8 +36,8 @@ class RecentFiles final : public Persistable<RecentFiles, session_settings> {
     void addRecent( const QString& text );
     void removeRecent( const QString& text );
     void removeAll();
-    int  getNumberItemsToShow() const;
-    int  filesHistoryMaxItems() const;
+    int getNumberItemsToShow() const;
+    int filesHistoryMaxItems() const;
     void setFilesHistoryMaxItems( const int recentFilesItems );
 
     // Returns a list of recent files (latest loaded first)
