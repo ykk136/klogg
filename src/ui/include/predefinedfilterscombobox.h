@@ -74,12 +74,13 @@ class PredefinedFiltersComboBox final : public QComboBox {
     PredefinedFiltersCollection filtersCollection_;
 
     QStandardItemModel* model_;
-    struct {
-        QString lastOne;
-        QString newOne;
-        bool useLogicalCombining;
-    } searchPattern_;
-    bool ignoreCollecting_;
+    struct SearchPatternState {
+        QString lastOne_;
+        QString newOne_;
+        bool useLogicalCombining_{false};
+    }; 
+    SearchPatternState searchPattern_;
+    bool ignoreCollecting_{false};
 };
 
 #endif

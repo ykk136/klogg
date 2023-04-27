@@ -1299,6 +1299,7 @@ void CrawlerWidget::setup()
     if ( defaultEncodingMib >= 0 ) {
         encodingMib_ = defaultEncodingMib;
     }
+    updatePredefinedFiltersWidget();
 }
 
 void CrawlerWidget::registerShortcuts()

@@ -114,29 +114,29 @@ void PredefinedFiltersComboBox::populatePredefinedFilters()
 
 void PredefinedFiltersComboBox::updateSearchPattern( const QString newSearchPattern, bool useLogicalCombining )
 {
-    searchPattern_.newOne = newSearchPattern;
-    searchPattern_.useLogicalCombining = useLogicalCombining;
+    searchPattern_.newOne_ = newSearchPattern;
+    searchPattern_.useLogicalCombining_ = useLogicalCombining;
 }
 
 void PredefinedFiltersComboBox::showPopup()
 {
-    if ( searchPattern_.newOne == searchPattern_.lastOne ) {
+    if ( searchPattern_.newOne_ == searchPattern_.lastOne_ ) {
         QComboBox::showPopup();
         return;
     }
 
-    searchPattern_.lastOne = searchPattern_.newOne;
+    searchPattern_.lastOne_ = searchPattern_.newOne_;
 
-    QString searchPattern = searchPattern_.newOne;
-    QString delim( "\\|" );
+    QString searchPattern = searchPattern_.newOne_;
+    QString delimeter( "\\|" );
 
-    if ( searchPattern_.useLogicalCombining ) {
-        delim = R"(" or ")";
+    if ( searchPattern_.useLogicalCombining_ ) {
+        delimeter = R"(" or ")";
         // Remove " at the beginning and at the end
-        searchPattern.remove( 0, 1 ).remove( searchPattern.length() - 1, 1 );
+        searchPattern = searchPattern.mid(1, searchPattern.length() - 1);
     }
 
-    QStringList list = searchPattern.split( QRegularExpression( delim ) );
+    QStringList list = searchPattern.split( QRegularExpression( delimeter ) );
 
     const auto totalRows = model_->rowCount();
 
