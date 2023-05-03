@@ -775,8 +775,8 @@
     </message>
     <message>
         <location filename="../../ui/include/optionsdialog.ui" line="287"/>
-        <source>language</source>
-        <translation>language</translation>
+        <source>Language</source>
+        <translation>Language</translation>
     </message>
     <message>
         <location filename="../../ui/include/optionsdialog.ui" line="312"/>
