@@ -314,13 +314,13 @@ void CrawlerWidget::goToLine()
 void CrawlerWidget::doSetData( std::shared_ptr<LogData> logData,
                                std::shared_ptr<LogFilteredData> filteredData )
 {
-    logData_ = std::move(logData);
-    logFilteredData_ = std::move(filteredData);
+    logData_ = std::move( logData );
+    logFilteredData_ = std::move( filteredData );
 }
 
 void CrawlerWidget::doSetQuickFindPattern( std::shared_ptr<QuickFindPattern> qfp )
 {
-    quickFindPattern_ = std::move(qfp);
+    quickFindPattern_ = std::move( qfp );
 }
 
 void CrawlerWidget::doSetSavedSearches( SavedSearches* saved_searches )
@@ -386,7 +386,8 @@ void CrawlerWidget::startNewSearch()
 
 void CrawlerWidget::updatePredefinedFiltersWidget()
 {
-    predefinedFilters_->updateSearchPattern( searchLineEdit_->currentText(), booleanButton_->isChecked() );
+    predefinedFilters_->updateSearchPattern( searchLineEdit_->currentText(),
+                                             booleanButton_->isChecked() );
 }
 
 void CrawlerWidget::stopSearch()
@@ -471,10 +472,14 @@ void CrawlerWidget::updateFilteredView( LinesCount nbMatches, int progress,
         // Search in progress
         // We ignore 0% and 100% to avoid a flash when the search is very short
         if ( progress > 0 ) {
+            // Some languages translate the plural the same as the singular, so use the full string
+
             searchInfoLine_->setText(
-                tr( "Search in progress (%1 %)... %2 match%3 found so far." )
-                    .arg( QString::number( progress ), QString::number( nbMatches.get() ),
-                          QLatin1String( nbMatches.get() > 1 ? "es" : "" ) ) );
+                tr( "Search in progress (%1 %)..." ).arg( QString::number( progress ) )
+                + ( nbMatches.get() > 1 ? tr( " %1 matches found so far." )
+                                              .arg( QString::number( nbMatches.get() ) )
+                                        : tr( " %1 match found so far." )
+                                              .arg( QString::number( nbMatches.get() ) ) ) );
 
             searchInfoLine_->displayGauge( progress );
         }
@@ -1004,31 +1009,31 @@ void CrawlerWidget::setup()
     searchInfoLine_->setContentsMargins( 2, 2, 2, 2 );
 
     matchCaseButton_ = new QToolButton();
-    matchCaseButton_->setToolTip( "Match case" );
+    matchCaseButton_->setToolTip( tr( "Match case" ) );
     matchCaseButton_->setCheckable( true );
     matchCaseButton_->setFocusPolicy( Qt::NoFocus );
     matchCaseButton_->setContentsMargins( 2, 2, 2, 2 );
 
     useRegexpButton_ = new QToolButton();
-    useRegexpButton_->setToolTip( "Use regex" );
+    useRegexpButton_->setToolTip( tr( "Use regex" ) );
     useRegexpButton_->setCheckable( true );
     useRegexpButton_->setFocusPolicy( Qt::NoFocus );
     useRegexpButton_->setContentsMargins( 2, 2, 2, 2 );
 
     inverseButton_ = new QToolButton();
-    inverseButton_->setToolTip( "Inverse match" );
+    inverseButton_->setToolTip( tr( "Inverse match" ) );
     inverseButton_->setCheckable( true );
     inverseButton_->setFocusPolicy( Qt::NoFocus );
     inverseButton_->setContentsMargins( 2, 2, 2, 2 );
 
     booleanButton_ = new QToolButton();
-    booleanButton_->setToolTip( "Enable regular expression logical combining" );
+    booleanButton_->setToolTip( tr( "Enable regular expression logical combining" ) );
     booleanButton_->setCheckable( true );
     booleanButton_->setFocusPolicy( Qt::NoFocus );
     booleanButton_->setContentsMargins( 2, 2, 2, 2 );
 
     searchRefreshButton_ = new QToolButton();
-    searchRefreshButton_->setToolTip( "Auto-refresh" );
+    searchRefreshButton_->setToolTip( tr( "Auto-refresh" ) );
     searchRefreshButton_->setCheckable( true );
     searchRefreshButton_->setFocusPolicy( Qt::NoFocus );
     searchRefreshButton_->setContentsMargins( 2, 2, 2, 2 );
@@ -1044,9 +1049,9 @@ void CrawlerWidget::setup()
     searchLineEdit_->lineEdit()->setMaxLength( std::numeric_limits<int>::max() / 1024 );
     searchLineEdit_->setContentsMargins( 2, 2, 2, 2 );
 
-    QAction* clearSearchHistoryAction = new QAction( "Clear search history", this );
-    QAction* editSearchHistoryAction = new QAction( "Edit search history", this );
-    QAction* saveAsPredefinedFilterAction = new QAction( "Save as Filter", this );
+    QAction* clearSearchHistoryAction = new QAction( tr( "Clear search history" ), this );
+    QAction* editSearchHistoryAction = new QAction( tr( "Edit search history" ), this );
+    QAction* saveAsPredefinedFilterAction = new QAction( tr( "Save as Filter" ), this );
 
     searchLineContextMenu_ = searchLineEdit_->lineEdit()->createStandardContextMenu();
     searchLineContextMenu_->addSeparator();
@@ -1062,7 +1067,7 @@ void CrawlerWidget::setup()
     clearButton_->setText( tr( "Clear search text" ) );
     clearButton_->setAutoRaise( true );
     clearButton_->setContentsMargins( 2, 2, 2, 2 );
-    
+
     searchButton_ = new QToolButton();
     searchButton_->setText( tr( "Search" ) );
     searchButton_->setAutoRaise( true );
@@ -1127,9 +1132,7 @@ void CrawlerWidget::setup()
              &CrawlerWidget::searchTextChangeHandler );
 
     connect( searchLineEdit_, QOverload<int>::of( &QComboBox::currentIndexChanged ), this,
-             [ this ]( auto ) {
-                 updatePredefinedFiltersWidget();
-             } );
+             [ this ]( auto ) { updatePredefinedFiltersWidget(); } );
 
     connect( predefinedFilters_, &PredefinedFiltersComboBox::filterChanged, this,
              &CrawlerWidget::setSearchPatternFromPredefinedFilters );
@@ -1289,7 +1292,7 @@ void CrawlerWidget::setup()
              [ this ]() { Q_EMIT sendToScratchpad( logMainView_->getSelection() ); } );
     connect( filteredView_, &AbstractLogView::sendSelectionToScratchpad, this,
              [ this ]() { Q_EMIT sendToScratchpad( filteredView_->getSelection() ); } );
-    
+
     connect( logMainView_, &AbstractLogView::replaceScratchpadWithSelection, this,
              [ this ]() { Q_EMIT replaceDataInScratchpad( logMainView_->getSelection() ); } );
     connect( filteredView_, &AbstractLogView::replaceScratchpadWithSelection, this,
@@ -1484,9 +1487,9 @@ void CrawlerWidget::printSearchInfoMessage( LinesCount nbMatches )
         break;
     case SearchState::Static:
     case SearchState::Autorefreshing:
-        text = tr( "%1 match%2 found." )
-                   .arg( nbMatches.get() )
-                   .arg( nbMatches.get() > 1 ? "es" : "" );
+        // Some languages translate the plural the same as the singular, so use the full string
+        text = nbMatches.get() > 1 ? tr( "%1 matches found" ).arg( nbMatches.get() )
+                                   : tr( "%1 match found" ).arg( nbMatches.get() );
         break;
     case SearchState::FileTruncated:
     case SearchState::TruncatedAutorefreshing:
@@ -1524,8 +1527,8 @@ void CrawlerWidget::updateEncoding()
         return codec ? codec : QTextCodec::codecForLocale();
     }();
 
-    QString encodingPrefix = encodingMib_ ? "Displayed as %1" : "Detected as %1";
-    encodingText_ = tr( encodingPrefix.arg( textCodec->name().constData() ).toLatin1() );
+    QString encodingPrefix = encodingMib_ ? tr( "Displayed as %1" ) : tr( "Detected as %1" );
+    encodingText_ = encodingPrefix.arg( textCodec->name().constData() );
 
     logData_->interruptLoading();
 
