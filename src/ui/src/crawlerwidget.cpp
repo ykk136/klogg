@@ -234,7 +234,7 @@ std::vector<QObject*> CrawlerWidget::doGetAllSearchables() const
 // Update the state of the parent
 void CrawlerWidget::doSendAllStateSignals()
 {
-    Q_EMIT updateLineNumber( currentLineNumber_ );
+    Q_EMIT newSelection( currentLineNumber_, 0, 0, 0 );
     if ( !loadingInProgress_ )
         Q_EMIT loadingFinished( LoadingStatus::Successful );
 }
@@ -517,16 +517,19 @@ void CrawlerWidget::updateFilteredView( LinesCount nbMatches, int progress,
     }
 }
 
-void CrawlerWidget::jumpToMatchingLine( LineNumber filteredLineNb )
+void CrawlerWidget::jumpToMatchingLine( LineNumber filteredLineNb, uint64_t nLines,
+                                        uint64_t startCol, uint64_t nSymbols )
 {
     const auto mainViewLine = logFilteredData_->getMatchingLineNumber( filteredLineNb );
-    logMainView_->selectAndDisplayLine( mainViewLine ); // FIXME: should be done with a signal.
+    logMainView_->selectPortionAndDisplayLine( mainViewLine, nLines, startCol,
+                                               nSymbols ); // FIXME: should be done with a signal.
 }
 
-void CrawlerWidget::updateLineNumberHandler( LineNumber line )
+void CrawlerWidget::updateLineNumberHandler( LineNumber line, uint64_t nLines, uint64_t startCol,
+                                             uint64_t nSymbols )
 {
     currentLineNumber_ = line;
-    Q_EMIT updateLineNumber( line );
+    Q_EMIT newSelection( line, nLines, startCol, nSymbols );
 }
 
 void CrawlerWidget::markLinesFromMain( const std::vector<LineNumber>& lines )
@@ -1159,7 +1162,7 @@ void CrawlerWidget::setup()
 
     connect( filteredView_, &FilteredView::newSelection, this, &CrawlerWidget::jumpToMatchingLine );
 
-    connect( logMainView_, &LogMainView::updateLineNumber, this,
+    connect( logMainView_, &LogMainView::newSelection, this,
              &CrawlerWidget::updateLineNumberHandler );
 
     connect( logMainView_, &LogMainView::markLines, this, &CrawlerWidget::markLinesFromMain );
