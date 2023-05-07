@@ -4,153 +4,164 @@
 <context>
     <name>AbstractLogView</name>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="425"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="424"/>
         <source>Copy the selection</source>
         <translation>拷贝选中内容</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="424"/>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1799"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="423"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1831"/>
         <source>&amp;Copy</source>
         <translation>拷贝(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="415"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="413"/>
         <source>&amp;Copy this line</source>
         <translation>拷贝当前行(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="469"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="414"/>
+        <source>Copy this line with line number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/abstractlogview.cpp" line="426"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1835"/>
+        <source>Copy with line numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/abstractlogview.cpp" line="470"/>
         <source>None</source>
         <translation type="unfinished">无</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="505"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="506"/>
         <source>Clear all</source>
         <translation>清除全部标记</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1291"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1313"/>
         <source>Saving content to %1</source>
         <translation type="unfinished">将内容保存到 %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1803"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1840"/>
         <source>&amp;Mark</source>
         <translation>标记(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1806"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1843"/>
         <source>Save to file</source>
         <translation>保存到文件</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1810"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1847"/>
         <source>Save selected to file</source>
         <translation>保存选中内容到文件</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1817"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1854"/>
         <source>Find &amp;next</source>
         <translation>查找下一个(&amp;n)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1819"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1856"/>
         <source>Find the next occurrence</source>
         <translation>查找下一个匹配项</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1823"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1860"/>
         <source>Find &amp;previous</source>
         <translation>查找上一个(&amp;p)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1824"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1861"/>
         <source>/</source>
         <translation>/</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1825"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1862"/>
         <source>Find the previous occurrence</source>
         <translation>查找上一个匹配项</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1829"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1866"/>
         <source>&amp;Replace search</source>
         <translation type="unfinished">替换(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1830"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1867"/>
         <source>Replace the search expression with the selection</source>
         <translation type="unfinished">用选择内容替换搜索表达式</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1834"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1871"/>
         <source>&amp;Add to search</source>
         <translation type="unfinished">添加到搜索(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1835"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1872"/>
         <source>Add the selection to the current search</source>
         <translation type="unfinished">将选择添加到搜索</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1839"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1876"/>
         <source>&amp;Exclude from search</source>
         <translation>从搜索中排除所选内容(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1840"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1877"/>
         <source>Excludes the selection from search</source>
         <translation type="unfinished">从搜索中排除所选内容</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1844"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1881"/>
         <source>Set search start</source>
         <translation>设置搜索起点</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1848"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1885"/>
         <source>Set search end</source>
         <translation>设置搜索终点</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1852"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1889"/>
         <source>Clear search limits</source>
         <translation type="unfinished">清除搜索限制</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1856"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1893"/>
         <source>Set selection start</source>
         <translation>设置选择起点</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1860"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1897"/>
         <source>Set selection end</source>
         <translation>设置选择终点</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1864"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1901"/>
         <source>Save splitter position</source>
         <translation type="unfinished">设置为默认窗口分割线位置</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1868"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1905"/>
         <source>Send to scratchpad</source>
         <translation>追加到暂存器</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1872"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1909"/>
         <source>Replace scratchpad</source>
         <translation>替换暂存器</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1877"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1914"/>
         <source>Highlighters</source>
         <translation type="unfinished">高亮显示</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1878"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1915"/>
         <source>Color labels</source>
         <translation type="unfinished">颜色标签</translation>
     </message>
@@ -183,97 +194,97 @@
         <translation type="unfinished"> 已找到 %1 的匹配.</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="953"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="956"/>
         <source>Marks and matches</source>
         <translation>标记和匹配</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="958"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="961"/>
         <source>Marks</source>
         <translation>仅标记</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="962"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="965"/>
         <source>Matches</source>
         <translation>仅匹配</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1012"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1015"/>
         <source>Match case</source>
         <translation type="unfinished">匹配大小写</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1018"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1021"/>
         <source>Use regex</source>
         <translation type="unfinished">使用正则匹配</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1024"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1027"/>
         <source>Inverse match</source>
         <translation type="unfinished">反转匹配</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1030"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1033"/>
         <source>Enable regular expression logical combining</source>
         <translation type="unfinished">启用正则表达式逻辑组合</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1036"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1039"/>
         <source>Auto-refresh</source>
         <translation type="unfinished">自动刷新</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1052"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1055"/>
         <source>Clear search history</source>
         <translation type="unfinished">清空搜索历史</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1053"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1056"/>
         <source>Edit search history</source>
         <translation type="unfinished">编辑搜索历史</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1054"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1057"/>
         <source>Save as Filter</source>
         <translation type="unfinished">保存过滤器</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1067"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1070"/>
         <source>Clear search text</source>
         <translation type="unfinished">清除正在搜索的文本</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1072"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1075"/>
         <source>Search</source>
         <translation>搜索</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1441"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1444"/>
         <source>Error in expression</source>
         <translation type="unfinished">表达式错误</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1491"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1494"/>
         <source>%1 matches found</source>
         <translation type="unfinished">找到%1个匹配</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1492"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1495"/>
         <source>%1 match found</source>
         <translation type="unfinished">找到%1个匹配</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1496"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1499"/>
         <source>File truncated on disk</source>
         <translation type="unfinished">磁盘中文件被截断</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1530"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1533"/>
         <source>Displayed as %1</source>
         <translation type="unfinished">转换至编码: %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1530"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1533"/>
         <source>Detected as %1</source>
         <translation type="unfinished">检测到编码: %1</translation>
     </message>
@@ -456,22 +467,22 @@
         <translation>打开URL作为日志文件</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2020"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2042"/>
         <source>Select item to remove from favorites</source>
         <translation type="unfinished">选择从收藏中移除的项目</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2063"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2085"/>
         <source>klogg -- switch to file</source>
         <translation>klogg -- 切换到已打开的文件</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2212"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2234"/>
         <source>klogg - generate crash dump</source>
         <translation>klogg - 生成崩溃记录</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2213"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2235"/>
         <source>This will shutdown klogg and generate diagnostic crash dump. Continue?</source>
         <translation>关闭klogg并产生诊断性的崩溃信息。是否继续？</translation>
     </message>
@@ -502,7 +513,7 @@
     </message>
     <message>
         <location filename="../../ui/src/mainwindow.cpp" line="896"/>
-        <location filename="../../ui/src/mainwindow.cpp" line="1643"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1665"/>
         <source>All files (*)</source>
         <translation>全部文件 (*)</translation>
     </message>
@@ -578,85 +589,95 @@
         <translation>klogg文档</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1296"/>
-        <source>Line %1/%2</source>
-        <translation>行 %1/%2</translation>
-    </message>
-    <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1643"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1665"/>
         <source>Open file from archive</source>
         <translation type="unfinished">从压缩包中打开文件</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1766"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1788"/>
         <source>Untitled</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1776"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1798"/>
         <source>%1 - %2%3</source>
         <translation>%1 - %2%3</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1589"/>
-        <location filename="../../ui/src/mainwindow.cpp" line="1628"/>
-        <location filename="../../ui/src/mainwindow.cpp" line="1653"/>
-        <location filename="../../ui/src/mainwindow.cpp" line="1776"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1611"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1650"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1675"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1798"/>
         <source>klogg</source>
         <translation>klogg</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1318"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1298"/>
+        <source>Ln:%1/%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/mainwindow.cpp" line="1303"/>
+        <source>Ln:%1/%2 Col:%3 Sel:%4|%5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/mainwindow.cpp" line="1312"/>
+        <source>Ln:%1/%2 Sel:%4|%5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/mainwindow.cpp" line="1340"/>
         <source> - Indexing lines... (%1 %)</source>
         <translation type="unfinished"> - 正在索引行... (%1 %)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1351"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1373"/>
         <source>Not enough memory.</source>
         <translation type="unfinished">内存不足.</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1353"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1375"/>
         <source>The system does not have enough memory to hold the index for this file. The file will now be closed.</source>
         <translation type="unfinished">系统内存不, 无法来记录文件索引。文件将被关闭。</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1589"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1611"/>
         <source>Extract archive to temp folder?</source>
         <translation>将存档解压缩到临时文件夹？</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1601"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1623"/>
         <source>Extracting %1</source>
         <translation type="unfinished">正在解压缩 %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1629"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1651"/>
         <source>Failed to decompress %1</source>
         <translation type="unfinished">解压失败 %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1654"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1676"/>
         <source>Failed to extract %1</source>
         <translation type="unfinished">提取 %1 失败</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1776"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1798"/>
         <source> (build </source>
         <translation> （构建 </translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1803"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1825"/>
         <source>&amp;%1 %2</source>
         <translation>&amp;%1 %2</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1874"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1896"/>
         <source>modified on %1</source>
         <translation type="unfinished">修改于 %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2019"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2041"/>
         <source>Remove from favorites</source>
         <translation>从收藏中移除</translation>
     </message>

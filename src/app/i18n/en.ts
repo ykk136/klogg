@@ -4,153 +4,164 @@
 <context>
     <name>AbstractLogView</name>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="425"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="424"/>
         <source>Copy the selection</source>
         <translation>Copy the selection</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="424"/>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1799"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="423"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1831"/>
         <source>&amp;Copy</source>
         <translation>&amp;Copy</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="415"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="413"/>
         <source>&amp;Copy this line</source>
         <translation>&amp;Copy this line</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="469"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="414"/>
+        <source>Copy this line with line number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/abstractlogview.cpp" line="426"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1835"/>
+        <source>Copy with line numbers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/abstractlogview.cpp" line="470"/>
         <source>None</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="505"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="506"/>
         <source>Clear all</source>
         <translation>Clear all</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1291"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1313"/>
         <source>Saving content to %1</source>
         <translation>Saving content to %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1803"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1840"/>
         <source>&amp;Mark</source>
         <translation>&amp;Mark</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1806"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1843"/>
         <source>Save to file</source>
         <translation>Save to file</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1810"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1847"/>
         <source>Save selected to file</source>
         <translation>Save selected to file</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1817"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1854"/>
         <source>Find &amp;next</source>
         <translation>Find &amp;next</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1819"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1856"/>
         <source>Find the next occurrence</source>
         <translation>Find the next occurrence</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1823"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1860"/>
         <source>Find &amp;previous</source>
         <translation>Find &amp;previous</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1824"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1861"/>
         <source>/</source>
         <translation>/</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1825"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1862"/>
         <source>Find the previous occurrence</source>
         <translation>Find the previous occurrence</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1829"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1866"/>
         <source>&amp;Replace search</source>
         <translation>&amp;Replace search</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1830"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1867"/>
         <source>Replace the search expression with the selection</source>
         <translation>Replace the search expression with the selection</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1834"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1871"/>
         <source>&amp;Add to search</source>
         <translation>&amp;Add to search</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1835"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1872"/>
         <source>Add the selection to the current search</source>
         <translation>Add the selection to the current search</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1839"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1876"/>
         <source>&amp;Exclude from search</source>
         <translation>&amp;Exclude from search</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1840"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1877"/>
         <source>Excludes the selection from search</source>
         <translation>Excludes the selection from search</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1844"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1881"/>
         <source>Set search start</source>
         <translation>Set search start</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1848"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1885"/>
         <source>Set search end</source>
         <translation>Set search end</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1852"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1889"/>
         <source>Clear search limits</source>
         <translation>Clear search limits</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1856"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1893"/>
         <source>Set selection start</source>
         <translation>Set selection start</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1860"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1897"/>
         <source>Set selection end</source>
         <translation>Set selection end</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1864"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1901"/>
         <source>Save splitter position</source>
         <translation>Save splitter position</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1868"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1905"/>
         <source>Send to scratchpad</source>
         <translation>Send to scratchpad</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1872"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1909"/>
         <source>Replace scratchpad</source>
         <translation>Replace scratchpad</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1877"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1914"/>
         <source>Highlighters</source>
         <translation>Highlighters</translation>
     </message>
     <message>
-        <location filename="../../ui/src/abstractlogview.cpp" line="1878"/>
+        <location filename="../../ui/src/abstractlogview.cpp" line="1915"/>
         <source>Color labels</source>
         <translation>Color labels</translation>
     </message>
@@ -183,97 +194,97 @@
         <translation> %1 match found so far.</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="953"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="956"/>
         <source>Marks and matches</source>
         <translation>Marks and matches</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="958"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="961"/>
         <source>Marks</source>
         <translation>Marks</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="962"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="965"/>
         <source>Matches</source>
         <translation>Matches</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1012"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1015"/>
         <source>Match case</source>
         <translation>Match case</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1018"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1021"/>
         <source>Use regex</source>
         <translation>Use regex</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1024"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1027"/>
         <source>Inverse match</source>
         <translation>Inverse match</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1030"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1033"/>
         <source>Enable regular expression logical combining</source>
         <translation>Enable regular expression logical combining</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1036"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1039"/>
         <source>Auto-refresh</source>
         <translation>Auto-refresh</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1052"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1055"/>
         <source>Clear search history</source>
         <translation>Clear search history</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1053"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1056"/>
         <source>Edit search history</source>
         <translation>Edit search history</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1054"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1057"/>
         <source>Save as Filter</source>
         <translation>Save as Filter</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1067"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1070"/>
         <source>Clear search text</source>
         <translation>Clear search text</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1072"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1075"/>
         <source>Search</source>
         <translation>Search</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1441"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1444"/>
         <source>Error in expression</source>
         <translation>Error in expression</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1491"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1494"/>
         <source>%1 matches found</source>
         <translation>%1 matches found</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1492"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1495"/>
         <source>%1 match found</source>
         <translation>%1 match found</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1496"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1499"/>
         <source>File truncated on disk</source>
         <translation>File truncated on disk</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1530"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1533"/>
         <source>Displayed as %1</source>
         <translation>Displayed as %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/crawlerwidget.cpp" line="1530"/>
+        <location filename="../../ui/src/crawlerwidget.cpp" line="1533"/>
         <source>Detected as %1</source>
         <translation>Detected as %1</translation>
     </message>
@@ -482,7 +493,7 @@
     </message>
     <message>
         <location filename="../../ui/src/mainwindow.cpp" line="896"/>
-        <location filename="../../ui/src/mainwindow.cpp" line="1643"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1665"/>
         <source>All files (*)</source>
         <translation>All files (*)</translation>
     </message>
@@ -558,105 +569,115 @@
         <translation>klogg documentation</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1296"/>
-        <source>Line %1/%2</source>
-        <translation>Line %1/%2</translation>
+        <location filename="../../ui/src/mainwindow.cpp" line="1298"/>
+        <source>Ln:%1/%2</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1318"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1303"/>
+        <source>Ln:%1/%2 Col:%3 Sel:%4|%5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/mainwindow.cpp" line="1312"/>
+        <source>Ln:%1/%2 Sel:%4|%5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/src/mainwindow.cpp" line="1340"/>
         <source> - Indexing lines... (%1 %)</source>
         <translation> - Indexing lines... (%1 %)</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1351"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1373"/>
         <source>Not enough memory.</source>
         <translation>Not enough memory.</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1353"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1375"/>
         <source>The system does not have enough memory to hold the index for this file. The file will now be closed.</source>
         <translation>The system does not have enough memory to hold the index for this file. The file will now be closed.</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1589"/>
-        <location filename="../../ui/src/mainwindow.cpp" line="1628"/>
-        <location filename="../../ui/src/mainwindow.cpp" line="1653"/>
-        <location filename="../../ui/src/mainwindow.cpp" line="1776"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1611"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1650"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1675"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1798"/>
         <source>klogg</source>
         <translation>klogg</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1589"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1611"/>
         <source>Extract archive to temp folder?</source>
         <translation>Extract archive to temp folder?</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1601"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1623"/>
         <source>Extracting %1</source>
         <translation>Extracting %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1629"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1651"/>
         <source>Failed to decompress %1</source>
         <translation>Failed to decompress %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1643"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1665"/>
         <source>Open file from archive</source>
         <translation>Open file from archive</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1654"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1676"/>
         <source>Failed to extract %1</source>
         <translation>Failed to extract %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1766"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1788"/>
         <source>Untitled</source>
         <translation>Untitled</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1776"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1798"/>
         <source>%1 - %2%3</source>
         <translation>%1 - %2%3</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1776"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1798"/>
         <source> (build </source>
         <translation> (build </translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1803"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1825"/>
         <source>&amp;%1 %2</source>
         <translation>&amp;%1 %2</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="1874"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="1896"/>
         <source>modified on %1</source>
         <translation>modified on %1</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2019"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2041"/>
         <source>Remove from favorites</source>
         <translation>Remove from favorites</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2020"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2042"/>
         <source>Select item to remove from favorites</source>
         <translation>Select item to remove from favorites</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2063"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2085"/>
         <source>klogg -- switch to file</source>
         <translation>klogg -- switch to file</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2212"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2234"/>
         <source>klogg - generate crash dump</source>
         <translation>klogg - generate crash dump</translation>
     </message>
     <message>
-        <location filename="../../ui/src/mainwindow.cpp" line="2213"/>
+        <location filename="../../ui/src/mainwindow.cpp" line="2235"/>
         <source>This will shutdown klogg and generate diagnostic crash dump. Continue?</source>
         <translation>This will shutdown klogg and generate diagnostic crash dump. Continue?</translation>
     </message>
