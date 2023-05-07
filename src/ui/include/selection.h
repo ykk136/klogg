@@ -160,7 +160,7 @@ class Selection {
     FilePosition getPreviousPosition() const;
 
   private:
-    QList<std::pair<QString, LineNumber>>
+    std::map<LineNumber, QString>
     getSelectionWithLineNumbers( const AbstractLogData* logData ) const;
 
   private:

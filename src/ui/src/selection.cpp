@@ -26,6 +26,7 @@
 #include <numeric>
 
 #include "abstractlogdata.h"
+#include "linetypes.h"
 #include "log.h"
 #include "selection.h"
 
@@ -158,11 +159,11 @@ QString Selection::getSelectedText( const AbstractLogData* logData, bool lineNum
 
     const auto selectionSizeEstimate = std::accumulate(
         selectionData.begin(), selectionData.end(), static_cast<int>( selectionData.size() ),
-        []( const auto& acc, const auto& next ) { return acc + next.first.size(); } );
+        []( const auto& acc, const auto& next ) { return acc + next.second.size(); } );
 
     text.reserve( selectionSizeEstimate );
 
-    for ( const auto& line : selectionData ) {
+    for ( const auto& [ lineNumber, line ] : selectionData ) {
         if ( !text.isEmpty() ) {
 #if defined( Q_OS_WIN )
             text.append( QChar::CarriageReturn );
@@ -171,39 +172,39 @@ QString Selection::getSelectedText( const AbstractLogData* logData, bool lineNum
         }
 
         if ( lineNumbers ) {
-            text.append( QStringLiteral( "%1: " ).arg( line.second.get() ) + line.first );
+            text.append( QStringLiteral( "%1: %2" ).arg( lineNumber.get() ).arg( line ) );
         }
         else {
-            text.append( line.first );
+            text.append( line );
         }
     }
 
     return text;
 }
 
-QList<std::pair<QString, LineNumber>>
+std::map<LineNumber, QString>
 Selection::getSelectionWithLineNumbers( const AbstractLogData* logData ) const
 {
-    QList<std::pair<QString, LineNumber>> selectionData;
+    std::map<LineNumber, QString> selectionData;
 
     if ( selectedLine_.has_value() ) {
-        selectionData.append( { logData->getLineString( *selectedLine_ ),
-                                logData->getLineNumber( selectedLine_.value() ) } );
+        selectionData.emplace( logData->getLineNumber( selectedLine_.value() ),
+                               logData->getLineString( *selectedLine_ ) );
     }
     else if ( selectedPartial_.line.has_value() ) {
-        selectionData.append(
-            { logData->getExpandedLineString( *selectedPartial_.line )
-                  .mid( selectedPartial_.startColumn,
-                        ( selectedPartial_.endColumn - selectedPartial_.startColumn ) + 1 ),
-              logData->getLineNumber( selectedPartial_.line.value() ) } );
+        selectionData.emplace(
+            logData->getLineNumber( selectedPartial_.line.value() ),
+            logData->getExpandedLineString( *selectedPartial_.line )
+                .mid( selectedPartial_.startColumn,
+                      ( selectedPartial_.endColumn - selectedPartial_.startColumn ) + 1 ) );
     }
     else if ( selectedRange_.startLine.has_value() ) {
         const auto list = logData->getLines( *selectedRange_.startLine, selectedRange_.size() );
         LineNumber ln = *selectedRange_.startLine;
 
         for ( const auto& line : list ) {
-            selectionData.append( { line, logData->getLineNumber( ln ) } );
-            ln += LineNumber( 1 );
+            selectionData.emplace( logData->getLineNumber( ln ), line );
+            ln += 1_lnum;
         }
     }
 
