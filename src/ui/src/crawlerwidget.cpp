@@ -1110,7 +1110,7 @@ void CrawlerWidget::setup()
     // Default search checkboxes
     auto& config = Configuration::get();
     searchRefreshButton_->setChecked( config.isSearchAutoRefreshDefault() );
-    matchCaseButton_->setChecked( config.isSearchIgnoreCaseDefault() ? false : true );
+    matchCaseButton_->setChecked( !config.isSearchIgnoreCaseDefault() );
     useRegexpButton_->setChecked( config.mainRegexpType() == SearchRegexpType::ExtendedRegexp );
 
     // Manually call the handler as it is not called when changing the state programmatically

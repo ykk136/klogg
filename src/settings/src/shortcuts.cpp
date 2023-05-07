@@ -308,7 +308,7 @@ void ShortcutAction::registerShortcut( const ConfiguredShortcuts& configuredShor
     }
 }
 
-void ShortcutAction::registerShortcut( const QString key,
+void ShortcutAction::registerShortcut( const QString& key,
                                        std::map<QString, QShortcut*>& shortcutsStorage,
                                        QWidget* shortcutsParent, Qt::ShortcutContext context,
                                        const std::function<void()>& func )
