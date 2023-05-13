@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <random>
 #include <vector>
+#include <array>
 
 #include <configuration.h>
 
