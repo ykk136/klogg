@@ -42,8 +42,6 @@ add_custom_target(lupdate
     COMMENT "Updating translations"
 )
 
-#add_qt_translations_resource(QT_RES ca es eu gl)
-
 set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cli.h ${CMAKE_CURRENT_SOURCE_DIR}/klogg.qrc ${KLOGG_I18N_RES})
 
 set(KLOGG_UI_SOURCES
@@ -70,9 +68,9 @@ if(KLOGG_OVERRIDE_MALLOC)
   endif()
 endif()
 
-add_executable(klogg ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES} ${KLOGG_I18N_RES} ${QT_I18N_RES})
-add_executable(klogg_portable ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES} ${KLOGG_I18N_RES} ${QT_I18N_RES})
-add_executable(klogg_grep ${MAIN_SOURCES} ${KLOGG_GREP_SOURCES} ${KLOGG_I18N_RES} ${QT_I18N_RES})
+add_executable(klogg ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES})
+add_executable(klogg_portable ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES})
+add_executable(klogg_grep ${MAIN_SOURCES} ${KLOGG_GREP_SOURCES})
 
 add_dependencies(ci_build klogg klogg_grep)
 
