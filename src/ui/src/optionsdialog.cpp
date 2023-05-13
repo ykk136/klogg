@@ -413,20 +413,25 @@ void OptionsDialog::changeQfColor()
 
 void OptionsDialog::checkShortcutsOnDuplicate() const
 {
-    static const int PRIMARY_COL = 1;
-    static const int SECONDARY_COL = 2;
+    static constexpr int PRIMARY_COL = 1;
+    static constexpr int SECONDARY_COL = 2;
+
+    if ( !shortcutsTable->rowCount() ) {
+        return;
+    }
+
+    const auto DEFAULT_BACKGROUND = shortcutsTable->item( 0, PRIMARY_COL )->background();
 
     for ( auto shortcutRow = 0; shortcutRow < shortcutsTable->rowCount(); ++shortcutRow ) {
-        static auto DEFAULT_BACKGROUND
-            = shortcutsTable->item( shortcutRow, PRIMARY_COL )->background();
         shortcutsTable->item( shortcutRow, PRIMARY_COL )->setBackground( DEFAULT_BACKGROUND );
         shortcutsTable->item( shortcutRow, SECONDARY_COL )->setBackground( DEFAULT_BACKGROUND );
     }
 
     std::unordered_map<std::string, std::pair<int, int>> uniqueShortcuts;
+    bool hasDuplicateShortcuts = false;
     for ( auto shortcutRow = 0; shortcutRow < shortcutsTable->rowCount(); ++shortcutRow ) {
 
-        auto check = [ &uniqueShortcuts, shortcutRow, this ]( int ncol ) {
+        auto hasDuplicates = [ &uniqueShortcuts, shortcutRow, this ]( int ncol ) {
             auto keySequence = static_cast<KeySequencePresenter*>(
                                    shortcutsTable->cellWidget( shortcutRow, ncol ) )
                                    ->keySequence();
@@ -439,9 +444,6 @@ void OptionsDialog::checkShortcutsOnDuplicate() const
                         ->setBackground( Qt::red );
                     shortcutsTable->item( shortcutRow, ncol )->setBackground( Qt::red );
 
-                    buttonBox->button( QDialogButtonBox::Ok )->setEnabled( false );
-                    buttonBox->button( QDialogButtonBox::Apply )->setEnabled( false );
-
                     return true;
                 }
 
@@ -452,12 +454,13 @@ void OptionsDialog::checkShortcutsOnDuplicate() const
             return false;
         };
 
-        if ( check( PRIMARY_COL ) || check( SECONDARY_COL ) )
-            return;
+        if ( hasDuplicates( PRIMARY_COL ) || hasDuplicates( SECONDARY_COL ) ) {
+            hasDuplicateShortcuts = true;
+        }
     }
 
-    buttonBox->button( QDialogButtonBox::Ok )->setEnabled( true );
-    buttonBox->button( QDialogButtonBox::Apply )->setEnabled( true );
+    buttonBox->button( QDialogButtonBox::Ok )->setEnabled( !hasDuplicateShortcuts );
+    buttonBox->button( QDialogButtonBox::Apply )->setEnabled( !hasDuplicateShortcuts );
 }
 
 int OptionsDialog::updateTranslate()
