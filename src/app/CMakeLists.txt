@@ -12,16 +12,39 @@ add_custom_command(
   DEPENDS maddy ${DOCUMENTATION_FILE}
 )
 
-file(GLOB TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/i18n/*.ts)
-set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/i18n")
+set(TS_FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/i18n/en.ts
+  ${CMAKE_CURRENT_SOURCE_DIR}/i18n/zh-CN.ts
+)
+
 find_package(Qt${QT_VERSION_MAJOR}LinguistTools REQUIRED)
 if (${QT_VERSION_MAJOR} EQUAL 5)
-  qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR}/src ${TS_FILES} OPTIONS -recursive -no-obsolete)
+  qt5_add_translation(QM_FILES ${TS_FILES})
 else (${QT_VERSION_MAJOR} EQUAL 6)
-  qt6_create_translation(QM_FILES ${CMAKE_SOURCE_DIR}/src ${TS_FILES} OPTIONS -recursive -no-obsolete)
+  qt6_add_translation(QM_FILES ${TS_FILES})
 endif()
 
-set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cli.h ${CMAKE_CURRENT_SOURCE_DIR}/klogg.qrc)
+set(KLOGG_I18N_RES ${CMAKE_CURRENT_BINARY_DIR}/app_translations.qrc)
+file(WRITE ${KLOGG_I18N_RES} "<!DOCTYPE RCC><RCC version=\"1.0\">\n <qresource prefix=\"/i18n\">\n")
+foreach(klogg_lang ${QM_FILES})
+    get_filename_component(klogg_lang_filename ${klogg_lang} NAME)
+    file(APPEND ${KLOGG_I18N_RES} "  <file>${klogg_lang_filename}</file>\n")
+endforeach()
+file(APPEND ${KLOGG_I18N_RES} " </qresource>\n</RCC>\n")
+
+if (NOT TARGET Qt${QT_VERSION_MAJOR}::lupdate)
+    message(FATAL_ERROR "The package \"Qt${QT_VERSION_MAJOR}LinguistTools\" is required.")
+endif()
+set(Qt_LUPDATE_EXECUTABLE Qt${QT_VERSION_MAJOR}::lupdate)
+add_custom_target(lupdate
+    COMMAND ${Qt_LUPDATE_EXECUTABLE} -recursive -no-obsolete ${CMAKE_SOURCE_DIR}/src -ts ${TS_FILES}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+    COMMENT "Updating translations"
+)
+
+#add_qt_translations_resource(QT_RES ca es eu gl)
+
+set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cli.h ${CMAKE_CURRENT_SOURCE_DIR}/klogg.qrc ${KLOGG_I18N_RES})
 
 set(KLOGG_UI_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/messagereceiver.h
@@ -47,9 +70,9 @@ if(KLOGG_OVERRIDE_MALLOC)
   endif()
 endif()
 
-add_executable(klogg ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES})
-add_executable(klogg_portable ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES})
-add_executable(klogg_grep ${MAIN_SOURCES} ${KLOGG_GREP_SOURCES})
+add_executable(klogg ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES} ${KLOGG_I18N_RES} ${QT_I18N_RES})
+add_executable(klogg_portable ${OS_BUNDLE} ${MAIN_SOURCES} ${KLOGG_UI_SOURCES} ${KLOGG_I18N_RES} ${QT_I18N_RES})
+add_executable(klogg_grep ${MAIN_SOURCES} ${KLOGG_GREP_SOURCES} ${KLOGG_I18N_RES} ${QT_I18N_RES})
 
 add_dependencies(ci_build klogg klogg_grep)
 
