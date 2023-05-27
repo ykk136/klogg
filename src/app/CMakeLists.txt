@@ -14,7 +14,7 @@ add_custom_command(
 
 set(TS_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/i18n/en.ts
-  ${CMAKE_CURRENT_SOURCE_DIR}/i18n/zh-CN.ts
+  ${CMAKE_CURRENT_SOURCE_DIR}/i18n/zh_CN.ts
 )
 
 find_package(Qt${QT_VERSION_MAJOR}LinguistTools REQUIRED)
@@ -24,25 +24,25 @@ else (${QT_VERSION_MAJOR} EQUAL 6)
   qt6_add_translation(QM_FILES ${TS_FILES})
 endif()
 
-set(KLOGG_I18N_RES ${CMAKE_CURRENT_BINARY_DIR}/app_translations.qrc)
-file(WRITE ${KLOGG_I18N_RES} "<!DOCTYPE RCC><RCC version=\"1.0\">\n <qresource prefix=\"/i18n\">\n")
-foreach(klogg_lang ${QM_FILES})
-    get_filename_component(klogg_lang_filename ${klogg_lang} NAME)
-    file(APPEND ${KLOGG_I18N_RES} "  <file>${klogg_lang_filename}</file>\n")
-endforeach()
-file(APPEND ${KLOGG_I18N_RES} " </qresource>\n</RCC>\n")
-
 if (NOT TARGET Qt${QT_VERSION_MAJOR}::lupdate)
     message(FATAL_ERROR "The package \"Qt${QT_VERSION_MAJOR}LinguistTools\" is required.")
 endif()
 set(Qt_LUPDATE_EXECUTABLE Qt${QT_VERSION_MAJOR}::lupdate)
+set(Qt_LCONVERT_EXECUTABLE Qt${QT_VERSION_MAJOR}::lconvert)
 add_custom_target(lupdate
     COMMAND ${Qt_LUPDATE_EXECUTABLE} -recursive -no-obsolete ${CMAKE_SOURCE_DIR}/src -ts ${TS_FILES}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
     COMMENT "Updating translations"
 )
 
-set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cli.h ${CMAKE_CURRENT_SOURCE_DIR}/klogg.qrc ${KLOGG_I18N_RES})
+include(TranslationUtils)
+add_app_translations_resource(KLOGG_I18N_RES ${QM_FILES})
+add_qt_translations_resource(KLOGG_QT_TRANSLATION_RES zh_CN)
+
+set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cli.h
+                 ${CMAKE_CURRENT_SOURCE_DIR}/klogg.qrc 
+                 ${KLOGG_I18N_RES}
+                 ${KLOGG_QT_TRANSLATION_RES})
 
 set(KLOGG_UI_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/messagereceiver.h

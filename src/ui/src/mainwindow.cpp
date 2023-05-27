@@ -49,6 +49,7 @@
 #include <cmath>
 #include <iterator>
 #include <qaction.h>
+#include <qapplication.h>
 
 #ifdef Q_OS_WIN
 #define WIN32_LEAN_AND_MEAN
@@ -117,6 +118,7 @@ static constexpr auto ClipboardMaxTry = 5;
 } // namespace
 
 QTranslator MainWindow::mTranslator;
+QTranslator MainWindow::mQtTranslator;
 
 MainWindow::MainWindow( WindowSession session )
     : session_( std::move( session ) )
@@ -423,9 +425,23 @@ int MainWindow::installLanguage( QString lang )
         return -1;
     }
 
-    QString path( ":/i18n/" + lang + ".qm" );
-    QResource locale( path );
-    if ( !mTranslator.load( locale.data(), (int)locale.size() ) ) {
+    QApplication::removeTranslator(&mTranslator);
+    QApplication::removeTranslator(&mQtTranslator);
+
+    QString qtPath( ":/i18n/qt_" + lang + ".qm" );
+    QResource qtTranslations( qtPath );
+    if ( !mQtTranslator.load( qtTranslations.data(), (int)qtTranslations.size() ) ) {
+        LOG_ERROR << "load fail";
+        return -1;
+    }
+    if ( !QApplication::installTranslator( &mQtTranslator ) ) {
+        LOG_ERROR << "install fail";
+        return -1;
+    }
+
+    QString appPath( ":/i18n/" + lang + ".qm" );
+    QResource appTranslations( appPath );
+    if ( !mTranslator.load( appTranslations.data(), (int)appTranslations.size() ) ) {
         LOG_ERROR << "load fail";
         return -1;
     }
@@ -433,6 +449,7 @@ int MainWindow::installLanguage( QString lang )
         LOG_ERROR << "install fail";
         return -1;
     }
+
     return 0;
 }
 

@@ -298,6 +298,7 @@ class MainWindow : public QMainWindow {
     SignalMux signalMux_;
 
     static QTranslator mTranslator;
+    static QTranslator mQtTranslator;
 
     // QuickFind widget
     QuickFindWidget quickFindWidget_;
