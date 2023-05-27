@@ -498,7 +498,7 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                 fillColor.setAlphaF( 1.0 );
                 pixmap.fill( fillColor );
                 colorLabelAction->setIcon( QIcon( pixmap ) );
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
                 colorLabelAction->setIconVisibleInMenu( true );
 #endif
             }
