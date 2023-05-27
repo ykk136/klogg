@@ -65,6 +65,27 @@ if(KLOGG_USE_HYPERSCAN)
     target_link_libraries(hyperscan_wrapper INTERFACE ${HYPERSCAN_LIBRARY})
     target_include_directories(hyperscan_wrapper INTERFACE ${HYPERSCAN_INCLUDE_DIR})
   endif()
+elseif(KLOGG_USE_VECTORSCAN)
+  cpmaddpackage(
+    NAME
+    vectorscan
+    GITHUB_REPOSITORY
+    VectorCamp/vectorscan
+    GIT_TAG
+    b4bba94b1a250603b0b198e0394946e32f6c3f30
+    EXCLUDE_FROM_ALL
+    YES
+  )
+  if(vectorscan_ADDED)
+    message("Adding alias for vectorscan")
+    add_library(vectorscan_wrapper INTERFACE)
+    target_link_libraries(vectorscan_wrapper INTERFACE hs)
+    target_include_directories(vectorscan_wrapper INTERFACE ${vectorscan_SOURCE_DIR}/src)
+  else()
+    add_library(vectorscan_wrapper INTERFACE)
+    target_link_libraries(vectorscan_wrapper INTERFACE ${VECTORSCAN_LIBRARY})
+    target_include_directories(vectorscan_wrapper INTERFACE ${VECTORSCAN_INCLUDE_DIR})
+  endif()
 endif()
 
 cpmaddpackage(
