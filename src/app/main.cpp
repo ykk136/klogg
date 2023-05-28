@@ -127,6 +127,8 @@ int main( int argc, char* argv[] )
     setApplicationAttributes( config.enableQtHighDpi(), config.scaleFactorRounding() );
 
     KloggApp app( argc, argv );
+
+
     MainWindow::installLanguage( config.language() );
     CliParameters parameters( app );
 
@@ -140,7 +142,7 @@ int main( int argc, char* argv[] )
     auto maxConcurrency
         = tbb::global_control::active_value( tbb::global_control::max_allowed_parallelism );
 
-    LOG_INFO << "Klogg instance " << app.instanceId()
+    LOG_INFO << "Klogg instance"
 #ifdef KLOGG_USE_MIMALLOC
              << ", mimalloc v" << mi_version()
 #endif
@@ -158,7 +160,7 @@ int main( int argc, char* argv[] )
     }
 
     if ( !parameters.multi_instance && app.isSecondary() ) {
-        LOG_INFO << "Found another klogg, pid " << app.primaryPid();
+        LOG_INFO << "Found another klogg";
         app.sendFilesToPrimaryInstance( parameters.filenames );
     }
     else {

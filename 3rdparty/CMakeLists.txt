@@ -180,18 +180,25 @@ endif()
 
 cpmaddpackage(
   NAME
-  SingleApplication
+  KDSingleApplication
   GITHUB_REPOSITORY
-  itay-grudev/SingleApplication
-  VERSION
-  3.3.4
+  KDAB/KDSingleApplication
+  GIT_TAG
+  bebcdc423ff1aa02fb9a915f18685f72263e53ff
   DOWNLOAD_ONLY
   YES
 )
-if(SingleApplication_ADDED)
-  add_subdirectory(${SingleApplication_SOURCE_DIR} ${CMAKE_BINARY_DIR}/SingleApplication EXCLUDE_FROM_ALL)
-  set_property(TARGET SingleApplication PROPERTY AUTOMOC ON)
+if(KDSingleApplication_ADDED)
+  add_library(
+    kdsingleapp STATIC ${KDSingleApplication_SOURCE_DIR}/src/kdsingleapplication.cpp
+                     ${KDSingleApplication_SOURCE_DIR}/src/kdsingleapplication_localsocket.cpp
+  )
+
+  target_include_directories(kdsingleapp PUBLIC ${KDSingleApplication_SOURCE_DIR}/src)
+  target_link_libraries(kdsingleapp Qt${QT_VERSION_MAJOR}::Core)
+  set_target_properties(kdsingleapp PROPERTIES AUTOMOC ON)
 endif()
+
 
 cpmaddpackage(
   NAME

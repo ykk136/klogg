@@ -58,7 +58,7 @@ set(MAIN_LIBS
     klogg_logdata
     klogg_crash_handler
     roaring
-    SingleApplication
+    kdsingleapp
 )
 
 if(KLOGG_OVERRIDE_MALLOC)

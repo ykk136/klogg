@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <iterator>
 #include <numeric>
+#include <qapplication.h>
 #include <stack>
 
 #include <QApplication>
@@ -50,22 +51,19 @@
 #include "session.h"
 #include "uuid.h"
 
-#include <singleapplication.h>
+#include <kdsingleapplication.h>
 
 #include "mainwindow.h"
 #include "messagereceiver.h"
 #include "versionchecker.h"
 
-class KloggApp : public SingleApplication {
+class KloggApp : public QApplication {
 
     Q_OBJECT
 
   public:
     KloggApp( int& argc, char* argv[] )
-        : SingleApplication( argc, argv, true,
-                             SingleApplication::SecondaryNotification
-                                 | SingleApplication::ExcludeAppPath
-                                 | SingleApplication::ExcludeAppVersion )
+        : QApplication( argc, argv)
     {
         QFontDatabase::addApplicationFont( ":/fonts/DejaVuSansMono.ttf" );
 
@@ -86,8 +84,8 @@ class KloggApp : public SingleApplication {
         qRegisterMetaType<QFNotificationInterrupted>( "QFNotificationInterrupted" );
         qRegisterMetaType<QuickFindMatcher>( "QuickFindMatcher" );
 
-        if ( isPrimary() ) {
-            QObject::connect( this, &SingleApplication::receivedMessage, &messageReceiver_,
+        if ( singleApplication_.isPrimaryInstance() ) {
+            QObject::connect( &singleApplication_, &KDSingleApplication::messageReceived, &messageReceiver_,
                               &MessageReceiver::receiveMessage, Qt::QueuedConnection );
 
             QObject::connect( &messageReceiver_, &MessageReceiver::loadFile, this,
@@ -100,6 +98,10 @@ class KloggApp : public SingleApplication {
                          newVersionNotification( new_version, url, changes );
                      } );
         }
+    }
+
+    bool isSecondary() const {
+        return !singleApplication_.isPrimaryInstance();
     }
 
     void sendFilesToPrimaryInstance( std::vector<QString> filenames )
@@ -118,13 +120,13 @@ class KloggApp : public SingleApplication {
 
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 12, 0 )
             auto cbor = QCborValue::fromVariant( data );
-            this->sendMessage( cbor.toCbor(), 5000 );
+            singleApplication_.sendMessageWithTimeout( cbor.toCbor(), 5000 );
 #else
             auto json = QJsonDocument::fromVariant( data );
             this->sendMessage( json.toBinaryData(), 5000 );
 #endif
 
-            QTimer::singleShot( 100, this, &SingleApplication::quit );
+            QTimer::singleShot( 100, this, &QApplication::quit );
         } );
     }
 
@@ -320,6 +322,7 @@ class KloggApp : public SingleApplication {
     }
 
   private:
+    KDSingleApplication singleApplication_;
     std::unique_ptr<CrashHandler> crashHandler_;
 
     MessageReceiver messageReceiver_;
