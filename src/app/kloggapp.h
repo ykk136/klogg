@@ -51,6 +51,11 @@
 #include "session.h"
 #include "uuid.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
+template <typename T> static inline
+T* qGetPtrHelper(const std::unique_ptr<T> &p) { return p.get(); }
+#endif
+
 #include <kdsingleapplication.h>
 
 #include "mainwindow.h"
