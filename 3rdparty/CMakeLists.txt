@@ -196,6 +196,8 @@ if(KDSingleApplication_ADDED)
 
   target_include_directories(kdsingleapp PUBLIC ${KDSingleApplication_SOURCE_DIR}/src)
   target_link_libraries(kdsingleapp Qt${QT_VERSION_MAJOR}::Core)
+  target_compile_definitions(kdsingleapp PUBLIC KDSINGLEAPPLICATION_STATIC_BUILD)
+
   set_target_properties(kdsingleapp PROPERTIES AUTOMOC ON)
 endif()
 

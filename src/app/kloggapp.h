@@ -230,7 +230,7 @@ class KloggApp : public QApplication {
             }
         }
 
-        return SingleApplication::event( event );
+        return QApplication::event( event );
     }
 #endif
 
