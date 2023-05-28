@@ -107,7 +107,8 @@ class KloggApp : public QApplication {
     void sendFilesToPrimaryInstance( std::vector<QString> filenames )
     {
 #ifdef Q_OS_WIN
-        ::AllowSetForegroundWindow( static_cast<DWORD>( primaryPid() ) );
+        TODO: fix pid passing
+        //::AllowSetForegroundWindow( static_cast<DWORD>( primaryPid() ) );
 #endif
 
         QTimer::singleShot( 100, [ files = std::move( filenames ), this ] {
@@ -222,7 +223,7 @@ class KloggApp : public QApplication {
             QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>( event );
             LOG_INFO << "File open request " << openEvent->file();
 
-            if ( isPrimary() ) {
+            if ( !isSecondary() ) {
                 loadFileNonInteractive( openEvent->file() );
             }
             else {
