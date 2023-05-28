@@ -107,7 +107,7 @@ class KloggApp : public QApplication {
     void sendFilesToPrimaryInstance( std::vector<QString> filenames )
     {
 #ifdef Q_OS_WIN
-        TODO: fix pid passing
+        // TODO: fix pid passing
         //::AllowSetForegroundWindow( static_cast<DWORD>( primaryPid() ) );
 #endif
 
