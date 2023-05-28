@@ -51,11 +51,6 @@
 #include "session.h"
 #include "uuid.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
-template <typename T> static inline
-T* qGetPtrHelper(const std::unique_ptr<T> &p) { return p.get(); }
-#endif
-
 #include <kdsingleapplication.h>
 
 #include "mainwindow.h"
@@ -129,7 +124,7 @@ class KloggApp : public QApplication {
             singleApplication_.sendMessageWithTimeout( cbor.toCbor(), 5000 );
 #else
             auto json = QJsonDocument::fromVariant( data );
-            this->sendMessage( json.toBinaryData(), 5000 );
+            singleApplication_.sendMessageWithTimeout( json.toBinaryData(), 5000 );
 #endif
 
             QTimer::singleShot( 100, this, &QApplication::quit );
