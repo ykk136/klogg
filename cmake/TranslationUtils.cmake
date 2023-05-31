@@ -46,7 +46,6 @@ endfunction()
 function(ADD_QT_TRANSLATIONS_RESOURCE res_file)
     set(_languages ${ARGN})
     set(_res_file ${CMAKE_CURRENT_BINARY_DIR}/qt_translations.qrc)
-    set(_patterns qtbase qt)
     # get qt translation dir
     get_target_property (KLOGG_QT_QMAKE_EXECUTABLE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
     execute_process(COMMAND ${KLOGG_QT_QMAKE_EXECUTABLE} -query "QT_INSTALL_TRANSLATIONS"
@@ -61,13 +60,20 @@ function(ADD_QT_TRANSLATIONS_RESOURCE res_file)
     foreach(_lang ${_languages})
         set(_infiles)
         set(_out qt_${_lang}.qm)
-        foreach(_pat ${_patterns})
-            set(_file "${_srcdir}/${_pat}_${_lang}.qm")
-            if (EXISTS ${_file})
-                list(APPEND _infiles ${_file})
-            endif()
-        endforeach()
+        file(GLOB _infiles
+            "${TRANSLATION_DIR}/*_${_lang}.qm"
+        )
         if(_infiles)
+            list(FILTER _infiles INCLUDE REGEX  "${TRANSLATION_DIR}/qt.*_${_lang}.qm")
+            set(_qt_main_qm "${TRANSLATION_DIR}/qt_${_lang}.qm")
+            list(FIND _infiles "${_qt_main_qm}" _qt_main_qm_index)
+            if (${_qt_main_qm_index} GREATER -1)
+                list(REMOVE_AT _infiles ${_qt_main_qm_index})
+                list(APPEND _infiles ${_qt_main_qm}) 
+            endif()
+
+            message("Found Qt translations ${_infiles}")
+
             add_custom_command(OUTPUT ${_out}
                 COMMAND ${Qt_LCONVERT_EXECUTABLE}
                 ARGS -i ${_infiles} -o ${_out}
