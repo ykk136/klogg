@@ -46,7 +46,7 @@ endfunction()
 function(ADD_QT_TRANSLATIONS_RESOURCE res_file)
     set(_languages ${ARGN})
     set(_res_file ${CMAKE_CURRENT_BINARY_DIR}/qt_translations.qrc)
-    set(_patterns qtbase qtmultimedia qtscript qtxmlpatterns qt)
+    set(_patterns qtbase qt)
     # get qt translation dir
     get_target_property (QT_QMAKE_EXECUTABLE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
     execute_process(COMMAND ${QT_QMAKE_EXECUTABLE} -query "QT_INSTALL_TRANSLATIONS"
