@@ -8,7 +8,7 @@ RUN apt-get update -y && \
     apt-get update -y
 
 RUN apt-get install build-essential \
-                    qt515base qt515svg qt515tools qt515imageformats \
+                    qt515base qt515svg qt515tools qt515imageformats qt515translations \
                     mesa-common-dev libglu1-mesa-dev \
                     libboost-dev libicu-dev libssl-dev \
                     ragel ninja-build zlib1g-dev git \
