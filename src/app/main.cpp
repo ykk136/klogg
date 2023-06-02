@@ -160,7 +160,7 @@ int main( int argc, char* argv[] )
     }
 
     if ( !parameters.multi_instance && app.isSecondary() ) {
-        LOG_INFO << "Found another klogg";
+        LOG_INFO << "Found another klogg, pid " << app.primaryPid();
         app.sendFilesToPrimaryInstance( parameters.filenames );
     }
     else {

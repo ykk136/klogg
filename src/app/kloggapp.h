@@ -104,11 +104,15 @@ class KloggApp : public QApplication {
         return !singleApplication_.isPrimaryInstance();
     }
 
+    qint64 primaryPid() const {
+        return singleApplication_.primaryPid();
+    }
+
     void sendFilesToPrimaryInstance( std::vector<QString> filenames )
     {
 #ifdef Q_OS_WIN
         // TODO: fix pid passing
-        //::AllowSetForegroundWindow( static_cast<DWORD>( primaryPid() ) );
+        ::AllowSetForegroundWindow( static_cast<DWORD>( primaryPid() ) );
 #endif
 
         QTimer::singleShot( 100, [ files = std::move( filenames ), this ] {

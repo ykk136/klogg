@@ -184,7 +184,7 @@ cpmaddpackage(
   GITHUB_REPOSITORY
   variar/KDSingleApplication
   GIT_TAG
-  6862c3d23e1ca796e9aed785a55c6e4b0b8f1efc
+  5b30db30266f92bc01f1439777803ce8dbf16c79
   DOWNLOAD_ONLY
   YES
 )
