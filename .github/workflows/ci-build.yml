@@ -215,7 +215,7 @@ jobs:
 
           - os: windows
             os_version: 2022
-            qt_version: 6.4.3
+            qt_version: 6.5.1
             qt_modules: qt5compat
             arch: x64
             ssl_arch: -x64
