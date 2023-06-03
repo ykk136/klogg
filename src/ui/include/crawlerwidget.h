@@ -54,11 +54,11 @@
 #include <QVBoxLayout>
 
 #include "colorlabelsmanager.h"
+#include "filteredview.h"
+#include "iconloader.h"
 #include "loadingstatus.h"
 #include "logdata.h"
 #include "logfiltereddata.h"
-#include "filteredview.h"
-#include "iconloader.h"
 #include "logmainview.h"
 #include "overview.h"
 #include "predefinedfilterscombobox.h"
@@ -106,6 +106,8 @@ class CrawlerWidget : public QSplitter,
 
     // Returns whether follow is enabled in this crawler
     bool isFollowEnabled() const;
+
+    bool isTextWrapEnabled() const;
 
     void registerShortcuts();
 
@@ -156,16 +158,18 @@ class CrawlerWidget : public QSplitter,
     void loadingFinished( LoadingStatus status );
     // Sent when follow mode is enabled/disabled
     void followSet( bool checked );
+    // Sent when text wrap mode is enabled/disabled
+    void textWrapSet( bool checked );
     // Sent up to the MainWindow to enable/disable the follow mode
     void followModeChanged( bool follow );
     // Sent up when the current line number is updated
     void newSelection( LineNumber startLine, uint64_t nLines, uint64_t startCol,
-                           uint64_t nSymbols );
+                       uint64_t nSymbols );
     // Sent up when user wants to save new predefined filter from current search
     void saveCurrentSearchAsPredefinedFilter( QString newFilter );
 
-    void sendToScratchpad(QString);
-    void replaceDataInScratchpad(QString);
+    void sendToScratchpad( QString );
+    void replaceDataInScratchpad( QString );
 
     // "auto-refresh" check has been changed
     void searchRefreshChanged( bool isRefreshing );

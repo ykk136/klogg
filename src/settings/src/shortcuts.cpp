@@ -65,6 +65,8 @@ const std::map<std::string, QStringList>& ShortcutAction::defaultShortcuts()
         shortcuts.emplace( MainWindowFollowFile, QStringList()
                                                      << QKeySequence( Qt::Key_F ).toString()
                                                      << QKeySequence( Qt::Key_F10 ).toString() );
+        shortcuts.emplace( MainWindowTextWrap, QStringList()
+                                                     << QKeySequence( Qt::Key_W ).toString() );
         shortcuts.emplace( MainWindowReload, getKeyBindings( QKeySequence::Refresh ) );
         shortcuts.emplace( MainWindowStop, getKeyBindings( QKeySequence::Cancel ) );
         shortcuts.emplace( MainWindowScratchpad, QStringList() );
@@ -193,6 +195,7 @@ QString ShortcutAction::actionName( const std::string& action )
                            QApplication::tr( "Paste text from clipboard" ) );
         shortcuts.emplace( MainWindowOpenFromUrl, QApplication::tr( "Open file from URL" ) );
         shortcuts.emplace( MainWindowFollowFile, QApplication::tr( "Monitor file changes" ) );
+        shortcuts.emplace( MainWindowTextWrap, QApplication::tr( "Toggle text wrap" ) );
         shortcuts.emplace( MainWindowReload, QApplication::tr( "Reload file" ) );
         shortcuts.emplace( MainWindowStop, QApplication::tr( "Stop file loading" ) );
         shortcuts.emplace( MainWindowScratchpad, QApplication::tr( "Open scratchpad" ) );

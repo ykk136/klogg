@@ -178,6 +178,8 @@ class MainWindow : public QMainWindow {
     void optionsChanged();
     // Is emitted when the 'follow' option is enabled/disabled
     void followSet( bool checked );
+    // Is emitted when the 'text wrap' option is enabled/disabled
+    void textWrapSet( bool checked );
     // Is emitted before the QuickFind box is activated,
     // to allow crawlers to get search in the right view.
     void enteringQuickFind();
@@ -263,6 +265,7 @@ class MainWindow : public QMainWindow {
     QAction* lineNumbersVisibleInMainAction;
     QAction* lineNumbersVisibleInFilteredAction;
     QAction* followAction;
+    QAction* textWrapAction;
     QAction* reloadAction;
     QAction* stopAction;
     QAction* editHighlightersAction;

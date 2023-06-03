@@ -155,6 +155,7 @@ MainWindow::MainWindow( WindowSession session )
 
     // Send actions to the crawlerwidget
     signalMux_.connect( this, SIGNAL( followSet( bool ) ), SIGNAL( followSet( bool ) ) );
+    signalMux_.connect( this, SIGNAL( textWrapSet( bool ) ), SIGNAL( textWrapSet( bool ) ) );
     signalMux_.connect( this, SIGNAL( optionsChanged() ), SLOT( applyConfiguration() ) );
     signalMux_.connect( this, SIGNAL( enteringQuickFind() ), SLOT( enteringQuickFind() ) );
     signalMux_.connect( &quickFindWidget_, SIGNAL( close() ), SLOT( exitingQuickFind() ) );
@@ -367,6 +368,7 @@ void MainWindow::reTranslateUI()
         transAction( action::lineNumbersVisibleInFilteredText ) );
 
     followAction->setText( transAction( action::followText ) );
+    textWrapAction->setText( transAction( action::wrapText ) );
     reloadAction->setText( transAction( action::reloadText ) );
     stopAction->setText( transAction( action::stopText ) );
 
@@ -425,8 +427,8 @@ int MainWindow::installLanguage( QString lang )
         return -1;
     }
 
-    QApplication::removeTranslator(&mTranslator);
-    QApplication::removeTranslator(&mQtTranslator);
+    QApplication::removeTranslator( &mTranslator );
+    QApplication::removeTranslator( &mQtTranslator );
 
     QString qtPath( ":/i18n/qt_" + lang + ".qm" );
     QResource qtTranslations( qtPath );
@@ -565,6 +567,11 @@ void MainWindow::createActions()
     followAction->setEnabled( config.anyFileWatchEnabled() );
     connect( followAction, &QAction::toggled, this, &MainWindow::followSet );
 
+    textWrapAction = new QAction( tr( action::wrapText ), this );
+    textWrapAction->setCheckable( true );
+    textWrapAction->setEnabled( true );
+    connect( textWrapAction, &QAction::toggled, this, &MainWindow::textWrapSet );
+
     reloadAction = new QAction( tr( action::reloadText ), this );
     signalMux_.connect( reloadAction, SIGNAL( triggered() ), SLOT( reload() ) );
 
@@ -701,6 +708,7 @@ void MainWindow::updateShortcuts()
     setShortcuts( openClipboardAction, ShortcutAction::MainWindowOpenFromClipboard );
     setShortcuts( openUrlAction, ShortcutAction::MainWindowOpenFromUrl );
     setShortcuts( followAction, ShortcutAction::MainWindowFollowFile );
+    setShortcuts( textWrapAction, ShortcutAction::MainWindowTextWrap );
     setShortcuts( reloadAction, ShortcutAction::MainWindowReload );
     setShortcuts( stopAction, ShortcutAction::MainWindowStop );
     setShortcuts( showScratchPadAction, ShortcutAction::MainWindowScratchpad );
@@ -770,6 +778,8 @@ void MainWindow::createMenus()
     viewMenu->addSeparator();
     viewMenu->addAction( lineNumbersVisibleInMainAction );
     viewMenu->addAction( lineNumbersVisibleInFilteredAction );
+    viewMenu->addSeparator();
+    viewMenu->addAction( textWrapAction );
     viewMenu->addSeparator();
     viewMenu->addAction( followAction );
     viewMenu->addSeparator();
@@ -1884,8 +1894,8 @@ void MainWindow::updateMenuBarFromDocument( const CrawlerWidget* crawler )
         ( *encodingItem )->setChecked( true );
     }
 
-    bool follow = crawler->isFollowEnabled();
-    followAction->setChecked( follow );
+    followAction->setChecked( crawler->isFollowEnabled() );
+    textWrapAction->setChecked( crawler->isTextWrapEnabled() );
 }
 
 // Update the top info line from the session
@@ -2069,7 +2079,7 @@ void MainWindow::removeFromFavorites( const QString& pathToRemove )
     auto& favoriteFiles = FavoriteFiles::get();
     const auto& favorites = favoriteFiles.favorites();
     const auto selectedFile = std::find_if( favorites.begin(), favorites.end(),
-                                            [pathToRemove](const DisplayFilePath& f) {
+                                            [ pathToRemove ]( const DisplayFilePath& f ) {
                                                 return f.nativeFullPath() == pathToRemove;
                                             } );
 
@@ -2143,10 +2153,11 @@ void MainWindow::selectOpenedFile()
                  }
                  const auto& selectedPath
                      = model->data( view->selectionModel()->selectedIndexes().front() ).toString();
-                 const auto selectedFile = std::find_if( openedFiles.begin(), openedFiles.end(),
-                                                         [selectedPath](const DisplayFilePath& f) {
-                                                             return f.nativeFullPath() == selectedPath;
-                                                         } );
+                 const auto selectedFile
+                     = std::find_if( openedFiles.begin(), openedFiles.end(),
+                                     [ selectedPath ]( const DisplayFilePath& f ) {
+                                         return f.nativeFullPath() == selectedPath;
+                                     } );
 
                  if ( selectedFile != openedFiles.end() ) {
                      loadFile( selectedFile->fullPath() );

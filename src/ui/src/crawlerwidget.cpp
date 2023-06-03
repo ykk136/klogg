@@ -207,6 +207,11 @@ bool CrawlerWidget::isFollowEnabled() const
     return logMainView_->isFollowEnabled();
 }
 
+bool CrawlerWidget::isTextWrapEnabled() const
+{
+    return logMainView_->isTextWrapEnabled();
+}
+
 void CrawlerWidget::reloadPredefinedFilters() const
 {
     predefinedFilters_->populatePredefinedFilters();
@@ -1195,6 +1200,9 @@ void CrawlerWidget::setup()
              &CrawlerWidget::followModeChanged );
     connect( filteredView_, &FilteredView::followModeChanged, this,
              &CrawlerWidget::followModeChanged );
+
+    connect( this, &CrawlerWidget::textWrapSet, logMainView_, &LogMainView::textWrapSet );
+    connect( this, &CrawlerWidget::textWrapSet, filteredView_, &FilteredView::textWrapSet );
 
     // Detect activity in the views
     connect( logMainView_, &LogMainView::activity, this, &CrawlerWidget::activityDetected );

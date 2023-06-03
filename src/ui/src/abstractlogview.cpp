@@ -56,9 +56,6 @@
 #include <memory>
 #include <numeric>
 #include <optional>
-#include <qobjectdefs.h>
-#include <qpen.h>
-#include <qwidget.h>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -80,6 +77,7 @@
 #include <QRect>
 #include <QScrollBar>
 #include <QShortcut>
+#include <QStringRef>
 #include <QtCore>
 
 #include <tbb/flow_graph.h>
@@ -180,10 +178,14 @@ int countDigits( uint64_t x )
 int textWidth( const QFontMetrics& fm, const QString& text )
 {
 #if ( QT_VERSION >= QT_VERSION_CHECK( 5, 11, 0 ) )
-    return fm.horizontalAdvance( text );
+    return fm.horizontalAdvance(text);
 #else
     return fm.width( text );
 #endif
+}
+int textWidth( const QFontMetrics& fm, const QStringRef& text )
+{
+    return textWidth(fm, QString::fromRawData( text.data(), static_cast<int>( text.size() ) ));
 }
 
 std::unique_ptr<QPainter> pixmapPainter( QPaintDevice* paintDevice, const QFont& font )
@@ -205,63 +207,189 @@ QFontMetrics pixmapFontMetrics( const QFont& font )
     return devicePainter->fontMetrics();
 }
 
+class WrappedLinesContainer {
+  public:
+    explicit WrappedLinesContainer( const QString& longLine, int visibleColumns )
+    {
+        QStringRef lineToWrap( &longLine );
+        while ( lineToWrap.size() > visibleColumns ) {
+            wrappedLines_.push_back( lineToWrap.left( visibleColumns ) );
+            lineToWrap = lineToWrap.mid( visibleColumns );
+        }
+        if ( lineToWrap.size() > 0 ) {
+            wrappedLines_.push_back( lineToWrap );
+        }
+    }
+
+    std::vector<QStringRef> splitChunks( size_t start, size_t length ) const
+    {
+        std::vector<QStringRef> resultChunks;
+
+        size_t wrappedLineIndex = 0;
+        size_t positionInWrappedLine = start;
+        while ( positionInWrappedLine
+                > static_cast<size_t>( wrappedLines_[ wrappedLineIndex ].size() ) ) {
+            positionInWrappedLine
+                -= static_cast<size_t>( wrappedLines_[ wrappedLineIndex ].size() );
+            wrappedLineIndex++;
+            if ( wrappedLineIndex >= wrappedLines_.size() ) {
+                return resultChunks;
+            }
+        }
+
+        size_t chunkLength = length;
+        while ( positionInWrappedLine + chunkLength
+                > static_cast<size_t>( wrappedLines_[ wrappedLineIndex ].size() ) ) {
+            resultChunks.push_back( wrappedLines_[ wrappedLineIndex ].mid(
+                static_cast<int>( positionInWrappedLine ) ) );
+            wrappedLineIndex++;
+            positionInWrappedLine = 0;
+            chunkLength -= static_cast<size_t>( resultChunks.back().size() );
+            if ( wrappedLineIndex >= wrappedLines_.size() ) {
+                return resultChunks;
+            }
+        }
+
+        if ( chunkLength > 0 ) {
+            resultChunks.push_back( wrappedLines_[ wrappedLineIndex ].mid(
+                static_cast<int>( positionInWrappedLine ), static_cast<int>( chunkLength ) ) );
+        }
+
+        return resultChunks;
+    }
+
+    std::vector<QStringRef> wrappedLines_;
+};
+
+class LineChunk {
+  public:
+    LineChunk( size_t firstCol, size_t endCol, QColor foreColor, QColor backColor )
+        : start_{ firstCol }
+        , end_{ endCol }
+        , foreColor_{ foreColor }
+        , backColor_{ backColor }
+    {
+    }
+
+    size_t start() const
+    {
+        return start_;
+    }
+    size_t end() const
+    {
+        return end_;
+    }
+
+    size_t length() const
+    {
+        return end_ - start_ + 1;
+    }
+
+    QColor foreColor() const
+    {
+        return foreColor_;
+    }
+
+    QColor backColor() const
+    {
+        return backColor_;
+    }
+
+  private:
+    size_t start_ = {};
+    size_t end_ = {};
+
+    QColor foreColor_;
+    QColor backColor_;
+};
+
+// Utility class for syntax colouring.
+// It stores the chunks of line to draw
+// each chunk having a different colour
+class LineDrawer {
+  public:
+    explicit LineDrawer( const QColor& backColor )
+        : backColor_( backColor )
+    {
+    }
+
+    // Add a chunk of line using the given colours.
+    // Both first_col and last_col are included
+    // An empty chunk will be ignored.
+    // the first column will be set to 0 if negative
+    // The column are relative to the screen
+    void addChunk( size_t firstCol, size_t lastCol, const QColor& fore, const QColor& back )
+    {
+        const auto length = lastCol - firstCol + 1;
+
+        if ( length > 0 ) {
+            chunks_.emplace_back( firstCol, lastCol, fore, back );
+        }
+    }
+    void addChunk( const LineChunk& chunk )
+    {
+        addChunk( chunk.start(), chunk.end(), chunk.foreColor(), chunk.backColor() );
+    }
+
+    // Draw the current line of text using the given painter,
+    // in the passed block (in pixels)
+    // The line must be cut to fit on the screen.
+    // leftExtraBackgroundPx is the an extra margin to start drawing
+    // the coloured // background, going all the way to the element
+    // left of the line looks better.
+    void draw( QPainter* painter, int initialXPos, int initialYPos, int lineWidth,
+               const WrappedLinesContainer& wrappedLines, int leftExtraBackgroundPx )
+    {
+        QFontMetrics fm = painter->fontMetrics();
+        const int fontHeight = fm.height();
+        const int fontAscent = fm.ascent();
+
+        int xPos = initialXPos;
+        int yPos = initialYPos;
+        for ( const auto& chunk : chunks_ ) {
+            // Draw each chunk
+            // LOG_DEBUG << "Chunk: " << chunk.start() << " " << chunk.length();
+            auto wrappedChunks = wrappedLines.splitChunks( chunk.start(), chunk.length() );
+            bool isFirstLine = true;
+            for ( auto chunkText : wrappedChunks ) {
+                if ( !isFirstLine ) {
+                    xPos = initialXPos;
+                    yPos += fontHeight;
+                }
+                isFirstLine = false;
+                auto chunkWidth = textWidth( fm, chunkText );
+                if ( xPos == initialXPos ) {
+                    // First chunk, we extend the left background a bit,
+                    // it looks prettier.
+                    painter->fillRect( xPos - leftExtraBackgroundPx, yPos,
+                                       chunkWidth + leftExtraBackgroundPx, fontHeight,
+                                       chunk.backColor() );
+                }
+                else {
+                    // other chunks...
+                    painter->fillRect( xPos, yPos, chunkWidth, fontHeight, chunk.backColor() );
+                }
+                painter->setPen( chunk.foreColor() );
+                painter->drawText( xPos, yPos + fontAscent,
+                                   QString::fromRawData( chunkText.data(),
+                                                         static_cast<int>( chunkText.size() ) ) );
+                xPos += chunkWidth;
+            }
+        }
+
+        // Draw the empty block at the end of the line
+        int blankWidth = lineWidth - xPos;
+
+        if ( blankWidth > 0 )
+            painter->fillRect( xPos, yPos, blankWidth, fontHeight, backColor_ );
+    }
+
+  private:
+    std::vector<LineChunk> chunks_;
+    QColor backColor_;
+};
+
 } // namespace
-
-inline void LineDrawer::addChunk( int firstCol, int lastCol, const QColor& fore,
-                                  const QColor& back )
-{
-    if ( firstCol < 0 ) {
-        firstCol = 0;
-    }
-
-    const auto length = lastCol - firstCol + 1;
-
-    if ( length > 0 ) {
-        chunks_.emplace_back( firstCol, lastCol, fore, back );
-    }
-}
-
-inline void LineDrawer::addChunk( const LineChunk& chunk )
-{
-    addChunk( chunk.start(), chunk.end(), chunk.foreColor(), chunk.backColor() );
-}
-
-inline void LineDrawer::draw( QPainter* painter, int initialXPos, int initialYPos, int lineWidth,
-                              const QString& line, int leftExtraBackgroundPx )
-{
-    QFontMetrics fm = painter->fontMetrics();
-    const int fontHeight = fm.height();
-    const int fontAscent = fm.ascent();
-
-    int xPos = initialXPos;
-    int yPos = initialYPos;
-
-    for ( const auto& chunk : chunks_ ) {
-        // Draw each chunk
-        // LOG_DEBUG << "Chunk: " << chunk.start() << " " << chunk.length();
-        const auto cutline = line.mid( chunk.start(), chunk.length() );
-        const int chunkWidth = textWidth( fm, cutline );
-        if ( xPos == initialXPos ) {
-            // First chunk, we extend the left background a bit,
-            // it looks prettier.
-            painter->fillRect( xPos - leftExtraBackgroundPx, yPos,
-                               chunkWidth + leftExtraBackgroundPx, fontHeight, chunk.backColor() );
-        }
-        else {
-            // other chunks...
-            painter->fillRect( xPos, yPos, chunkWidth, fontHeight, chunk.backColor() );
-        }
-        painter->setPen( chunk.foreColor() );
-        painter->drawText( xPos, yPos + fontAscent, cutline );
-        xPos += chunkWidth;
-    }
-
-    // Draw the empty block at the end of the line
-    int blankWidth = lineWidth - xPos;
-
-    if ( blankWidth > 0 )
-        painter->fillRect( xPos, yPos, blankWidth, fontHeight, backColor_ );
-}
 
 void DigitsBuffer::reset()
 {
@@ -498,7 +626,7 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
                 fillColor.setAlphaF( 1.0 );
                 pixmap.fill( fillColor );
                 colorLabelAction->setIcon( QIcon( pixmap ) );
-#if defined(Q_OS_WIN) || QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+#if defined( Q_OS_WIN ) || QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
                 colorLabelAction->setIconVisibleInMenu( true );
 #endif
             }
@@ -1163,6 +1291,13 @@ void AbstractLogView::followSet( bool checked )
         jumpToBottom();
 }
 
+void AbstractLogView::textWrapSet( bool checked )
+{
+    useTextWrap_ = checked;
+    updateScrollBars();
+    forceRefresh();
+}
+
 void AbstractLogView::refreshOverview()
 {
     assert( overviewWidget_ );
@@ -1314,7 +1449,7 @@ void AbstractLogView::saveLinesToFile( LineNumber begin, LineNumber end )
     std::vector<std::pair<LineNumber, LinesCount>> offsets;
     auto lineOffset = begin;
     const auto chunkSize = 5000_lcount;
-    offsets.reserve( ( end - (lineOffset + chunkSize) ).get() );
+    offsets.reserve( ( end - ( lineOffset + chunkSize ) ).get() );
 
     for ( ; lineOffset + chunkSize < end; lineOffset += LineNumber( chunkSize.get() ) ) {
         offsets.emplace_back( lineOffset, chunkSize );
@@ -1624,14 +1759,13 @@ int AbstractLogView::getNbVisibleCols() const
 // Converts the mouse x, y coordinates to the line number in the file
 OptionalLineNumber AbstractLogView::convertCoordToLine( int yPos ) const
 {
-    const auto offset = ( yPos - drawingTopOffset_ ) / charHeight_;
-    const auto linesOffset
-        = LinesCount( static_cast<LinesCount::UnderlyingType>( std::abs( offset ) ) );
-    if ( offset >= 0 ) {
-        return firstLine_ + linesOffset;
+    const auto offset = std::abs( ( yPos - drawingTopOffset_ ) / charHeight_ );
+    const auto wrappedLineInfoIndex = static_cast<size_t>( std::floor( offset ) );
+    if ( wrappedLineInfoIndex < wrappedLinesNumbers_.size() ) {
+        return wrappedLinesNumbers_[ wrappedLineInfoIndex ].first;
     }
     else {
-        return firstLine_ - linesOffset;
+        return OptionalLineNumber{};
     }
 }
 
@@ -1639,12 +1773,16 @@ OptionalLineNumber AbstractLogView::convertCoordToLine( int yPos ) const
 // This function ensure the pos exists in the file.
 AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& pos ) const
 {
-    auto line = convertCoordToLine( pos.y() ).value_or( LineNumber{} );
+    const auto offset = std::abs( ( pos.y() - drawingTopOffset_ ) / charHeight_ );
+    auto [ line, wrappedLine ]
+        = wrappedLinesNumbers_[ static_cast<size_t>( std::floor( offset ) ) ];
     if ( line >= logData_->getNbLine() )
         line = LineNumber( logData_->getNbLine().get() ) - 1_lcount;
 
     const auto lineText = logData_->getExpandedLineString( line );
-    const auto visibleText = lineText.mid( firstCol_, getNbVisibleCols() + 1 );
+    WrappedLinesContainer wrapped{ lineText, getNbVisibleCols() };
+
+    const auto visibleText = wrapped.wrappedLines_[ wrappedLine ];
 
     std::vector<int> possibleColumns( static_cast<size_t>( visibleText.length() ) );
     std::iota( possibleColumns.begin(), possibleColumns.end(), 0 );
@@ -1660,8 +1798,14 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
 
     const auto length = static_cast<LineLength::UnderlyingType>( lineText.length() );
 
-    auto column = columnIt != possibleColumns.end() ? *columnIt : length;
-    column += ( firstCol_ - 1 );
+    auto column = (columnIt != possibleColumns.end() ? *columnIt : length) - 1;
+    if ( useTextWrap_ ) {
+        column += getNbVisibleCols() * static_cast<int>( wrappedLine );
+    }
+    else {
+        column += firstCol_ ;
+    }
+
     column = std::clamp( column, 0, length - 1 );
 
     LOG_DEBUG << "AbstractLogView::convertCoordToFilePos col=" << column << " line=" << line;
@@ -1975,8 +2119,10 @@ void AbstractLogView::updateScrollBars()
                    static_cast<LinesCount::UnderlyingType>( std::numeric_limits<int>::max() ) ) ) );
     }
 
-    const int hScrollMaxValue
-        = qMax( 0, static_cast<int>( logData_->getMaxLength().get() ) - getNbVisibleCols() + 1 );
+    const int hScrollMaxValue = useTextWrap_
+                                    ? 0
+                                    : qMax( 0, static_cast<int>( logData_->getMaxLength().get() )
+                                                   - getNbVisibleCols() + 1 );
 
     horizontalScrollBar()->setRange( 0, hScrollMaxValue );
     horizontalScrollBar()->setPageStep( getNbVisibleCols() * 7 / 8 );
@@ -1994,7 +2140,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
     const int fontHeight = charHeight_;
     const int fontAscent = painter->fontMetrics().ascent();
-    const int nbCols = getNbVisibleCols();
+    const int nbVisibleCols = getNbVisibleCols();
 
     const int paintDeviceHeight
         = static_cast<int>( std::floor( paintDevice->height() / viewport()->devicePixelRatio() ) );
@@ -2130,13 +2276,13 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                         } );
     }
 
-    // Then draw each line
+    // Position in pixel of the base line of the line to print
+    int yPos = 0;
+    wrappedLinesNumbers_.clear();
     for ( auto currentLine = 0_lcount; currentLine < nbLines; ++currentLine ) {
         const auto lineNumber = firstLine_ + currentLine;
         const QString logLine = logData_->getLineString( lineNumber );
 
-        // Position in pixel of the base line of the line to print
-        const int yPos = static_cast<int>( currentLine.get() ) * fontHeight;
         const int xPos = contentStartPosX + ContentMarginWidth;
 
         std::vector<HighlightedMatch> highlighterMatches;
@@ -2217,7 +2363,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
         // string to print, cut to fit the length and position of the view
         const QString expandedLine = expandedLines[ currentLine.get() ];
-        const QString cutLine = expandedLine.mid( firstCol_, nbCols );
+        const QString cutLine = expandedLine.mid( firstCol_, nbVisibleCols );
 
         // Has the line got elements to be highlighted
         std::vector<HighlightedMatch> quickFindMatches;
@@ -2234,62 +2380,69 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                                         palette.color( QPalette::Highlight ) );
         }
 
-        painter->fillRect( xPos - ContentMarginWidth, yPos, viewport()->width(), fontHeight,
+        const int wrappedLineLength = useTextWrap_ ? nbVisibleCols : expandedLine.size() + 1;
+        WrappedLinesContainer wrappedContainer{ expandedLine, wrappedLineLength };
+        painter->fillRect( xPos - ContentMarginWidth, yPos, viewport()->width(),
+                           fontHeight * static_cast<int>( wrappedContainer.wrappedLines_.size() ),
                            backColor );
 
+        LineDrawer lineDrawer( backColor );
         if ( !allHighlights.empty() ) {
-            // We use the LineDrawer and its chunks because the
-            // line has to be somehow highlighted
-            LineDrawer lineDrawer( backColor );
-
-            auto foreColors = std::vector<QColor>( static_cast<size_t>( nbCols + 1 ), foreColor );
-            auto backColors = std::vector<QColor>( static_cast<size_t>( nbCols + 1 ), backColor );
+            auto foreColors
+                = std::vector<QColor>( static_cast<size_t>( expandedLine.size() + 1 ), foreColor );
+            auto backColors
+                = std::vector<QColor>( static_cast<size_t>( expandedLine.size() + 1 ), backColor );
 
             for ( const auto& match : allHighlights ) {
-                const auto start = match.startColumn() - firstCol_;
-                const auto end = start + match.length();
+                if ( !useTextWrap_ ) {
+                    const auto start = match.startColumn() - firstCol_;
+                    const auto end = start + match.length();
 
-                // Ignore matches that are *completely* outside view area
-                if ( ( start < 0 && end < 0 ) || start >= nbCols )
-                    continue;
+                    // Ignore matches that are *completely* outside view area
+                    if ( ( start < 0 && end < 0 ) || start >= nbVisibleCols )
+                        continue;
+                }
 
-                const auto firstColumn = static_cast<size_t>( qMax( start, 0 ) );
-                const auto lastColumn
-                    = static_cast<size_t>( qMin( start + match.length(), nbCols ) );
-
-                for ( auto column = firstColumn; column < lastColumn; ++column ) {
-                    foreColors[ column ] = match.foreColor();
-                    backColors[ column ] = match.backColor();
+                for ( auto column = match.startColumn();
+                      column < match.startColumn() + match.length(); ++column ) {
+                    foreColors[ static_cast<size_t>( column ) ] = match.foreColor();
+                    backColors[ static_cast<size_t>( column ) ] = match.backColor();
                 }
             }
 
             std::vector<LineChunk> highlightChunks;
-            auto lastMatchStart = 0;
-            for ( auto column = 0u; column < foreColors.size() - 1; ++column ) {
+            const size_t firstVisibleColumn = useTextWrap_ ? 0u : static_cast<size_t>( firstCol_ );
+            size_t lastMatchStart = firstVisibleColumn;
+            for ( auto column = firstVisibleColumn; column < foreColors.size() - 1; ++column ) {
                 if ( foreColors[ column ] != foreColors[ column + 1 ]
                      || backColors[ column ] != backColors[ column + 1 ] ) {
-                    lineDrawer.addChunk( { lastMatchStart, static_cast<int>( column ),
-                                           foreColors[ column ], backColors[ column ] } );
-                    lastMatchStart = static_cast<int>( column + 1 );
+                    lineDrawer.addChunk(
+                        { lastMatchStart, column, foreColors[ column ], backColors[ column ] } );
+                    lastMatchStart = column + 1;
                 }
             }
-            if ( lastMatchStart < nbCols ) {
-                lineDrawer.addChunk(
-                    { lastMatchStart, nbCols, foreColors.back(), backColors.back() } );
+            if ( useTextWrap_ ) {
+                lineDrawer.addChunk( { lastMatchStart, static_cast<size_t>( expandedLine.size() ),
+                                       foreColors.back(), backColors.back() } );
             }
-
-            lineDrawer.draw( painter.get(), xPos, yPos, viewport()->width(), cutLine,
-                             ContentMarginWidth );
+            else if ( lastMatchStart < static_cast<size_t>( nbVisibleCols ) ) {
+                lineDrawer.addChunk( { lastMatchStart, static_cast<size_t>( nbVisibleCols ),
+                                       foreColors.back(), backColors.back() } );
+            }
         }
         else {
-            // Nothing to be highlighted, we print the whole line!
-            // painter->fillRect( xPos - ContentMarginWidth, yPos, viewport()->width(), fontHeight,
-            //                   backColor );
-            // (the rectangle is extended on the left to cover the small
-            // margin, it looks better (LineDrawer does the same) )
-            painter->setPen( foreColor );
-            painter->drawText( xPos, yPos + fontAscent, cutLine );
+            if ( useTextWrap_ ) {
+                lineDrawer.addChunk(
+                    { 0, static_cast<size_t>( expandedLine.size() ), foreColor, backColor } );
+            }
+            else {
+                lineDrawer.addChunk( { static_cast<size_t>( firstCol_ ),
+                                       static_cast<size_t>( nbVisibleCols ), foreColor,
+                                       backColor } );
+            }
         }
+        lineDrawer.draw( painter.get(), xPos, yPos, viewport()->width(), wrappedContainer,
+                         ContentMarginWidth );
 
         if ( ( selection_.isLineSelected( lineNumber ) && selection_.isSingleLine() )
              || selection_.getPortionForLine( lineNumber ).isValid() ) {
@@ -2348,6 +2501,14 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             painter->setPen( Qt::white );
             painter->drawText( lineNumberAreaStartX + LineNumberPadding, yPos + fontAscent,
                                lineNumberStr );
+        }
+        for ( auto i = 0u; i < wrappedContainer.wrappedLines_.size(); ++i ) {
+            wrappedLinesNumbers_.push_back( std::make_pair( lineNumber, i ) );
+        }
+
+        yPos += fontHeight * static_cast<int>( wrappedContainer.wrappedLines_.size() );
+        if ( yPos > viewport()->height() ) {
+            break;
         }
     } // For each line
 }
