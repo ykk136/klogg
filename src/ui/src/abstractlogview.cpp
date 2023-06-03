@@ -2380,7 +2380,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                                         palette.color( QPalette::Highlight ) );
         }
 
-        const int wrappedLineLength = useTextWrap_ ? nbVisibleCols : expandedLine.size() + 1;
+        const auto wrappedLineLength = useTextWrap_ ? nbVisibleCols : static_cast<int>(expandedLine.size() + 1);
         WrappedLinesContainer wrappedContainer{ expandedLine, wrappedLineLength };
         painter->fillRect( xPos - ContentMarginWidth, yPos, viewport()->width(),
                            fontHeight * static_cast<int>( wrappedContainer.wrappedLines_.size() ),
