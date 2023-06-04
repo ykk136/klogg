@@ -2,7 +2,7 @@ set(QAPPLICATION_CLASS QApplication)
 
 include(CPM)
 
-cpmaddpackage("gh:simdutf/simdutf@3.2.8")
+cpmaddpackage("gh:simdutf/simdutf@3.2.13")
 
 if(APPLE)
   cpmaddpackage(
