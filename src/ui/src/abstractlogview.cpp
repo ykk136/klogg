@@ -178,14 +178,17 @@ int countDigits( uint64_t x )
 int textWidth( const QFontMetrics& fm, const QString& text )
 {
 #if ( QT_VERSION >= QT_VERSION_CHECK( 5, 11, 0 ) )
-    return fm.horizontalAdvance(text);
+    return fm.horizontalAdvance( text );
 #else
     return fm.width( text );
 #endif
 }
 int textWidth( const QFontMetrics& fm, const QStringRef& text )
 {
-    return textWidth(fm, QString::fromRawData( text.data(), static_cast<int>( text.size() ) ));
+    if ( text.isEmpty() ) {
+        return 0;
+    }
+    return textWidth( fm, QString::fromRawData( text.data(), static_cast<int>( text.size() ) ) );
 }
 
 std::unique_ptr<QPainter> pixmapPainter( QPaintDevice* paintDevice, const QFont& font )
@@ -211,19 +214,29 @@ class WrappedLinesContainer {
   public:
     explicit WrappedLinesContainer( const QString& longLine, int visibleColumns )
     {
-        QStringRef lineToWrap( &longLine );
-        while ( lineToWrap.size() > visibleColumns ) {
-            wrappedLines_.push_back( lineToWrap.left( visibleColumns ) );
-            lineToWrap = lineToWrap.mid( visibleColumns );
+        if ( longLine.isEmpty() ) {
+            wrappedLines_.push_back( QStringRef{ &longLine } );
         }
-        if ( lineToWrap.size() > 0 ) {
-            wrappedLines_.push_back( lineToWrap );
+        else {
+            QStringRef lineToWrap( &longLine );
+            while ( lineToWrap.size() > visibleColumns ) {
+                wrappedLines_.push_back( lineToWrap.left( visibleColumns ) );
+                lineToWrap = lineToWrap.mid( visibleColumns );
+            }
+            if ( lineToWrap.size() > 0 ) {
+                wrappedLines_.push_back( lineToWrap );
+            }
         }
     }
 
     std::vector<QStringRef> splitChunks( size_t start, size_t length ) const
     {
         std::vector<QStringRef> resultChunks;
+        if ( wrappedLines_.size() == 1 ) {
+            resultChunks.push_back( wrappedLines_.front().mid( static_cast<int>( start ),
+                                                               static_cast<int>( length ) ) );
+            return resultChunks;
+        }
 
         size_t wrappedLineIndex = 0;
         size_t positionInWrappedLine = start;
@@ -357,6 +370,11 @@ class LineDrawer {
                     yPos += fontHeight;
                 }
                 isFirstLine = false;
+
+                if ( chunkText.isEmpty() ) {
+                    continue;
+                }
+
                 auto chunkWidth = textWidth( fm, chunkText );
                 if ( xPos == initialXPos ) {
                     // First chunk, we extend the left background a bit,
@@ -369,10 +387,12 @@ class LineDrawer {
                     // other chunks...
                     painter->fillRect( xPos, yPos, chunkWidth, fontHeight, chunk.backColor() );
                 }
+
                 painter->setPen( chunk.foreColor() );
                 painter->drawText( xPos, yPos + fontAscent,
                                    QString::fromRawData( chunkText.data(),
                                                          static_cast<int>( chunkText.size() ) ) );
+
                 xPos += chunkWidth;
             }
         }
@@ -1761,7 +1781,7 @@ OptionalLineNumber AbstractLogView::convertCoordToLine( int yPos ) const
 {
     const auto offset = std::abs( ( yPos - drawingTopOffset_ ) / charHeight_ );
     const auto wrappedLineInfoIndex = static_cast<size_t>( std::floor( offset ) );
-    if ( wrappedLineInfoIndex < wrappedLinesNumbers_.size() ) {
+    if ( wrappedLineInfoIndex < wrappedLinesNumbers_.size() && !wrappedLinesNumbers_.empty() ) {
         return wrappedLinesNumbers_[ wrappedLineInfoIndex ].first;
     }
     else {
@@ -1774,8 +1794,11 @@ OptionalLineNumber AbstractLogView::convertCoordToLine( int yPos ) const
 AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& pos ) const
 {
     const auto offset = std::abs( ( pos.y() - drawingTopOffset_ ) / charHeight_ );
-    auto [ line, wrappedLine ]
-        = wrappedLinesNumbers_[ static_cast<size_t>( std::floor( offset ) ) ];
+
+    const auto wrappedLineInfoIndex = std::clamp( static_cast<size_t>( std::floor( offset ) ), 0ul,
+                                                  wrappedLinesNumbers_.size() - 1 );
+
+    auto [ line, wrappedLine ] = wrappedLinesNumbers_[ wrappedLineInfoIndex ];
     if ( line >= logData_->getNbLine() )
         line = LineNumber( logData_->getNbLine().get() ) - 1_lcount;
 
@@ -1798,12 +1821,12 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
 
     const auto length = static_cast<LineLength::UnderlyingType>( lineText.length() );
 
-    auto column = (columnIt != possibleColumns.end() ? *columnIt : length) - 1;
+    auto column = ( columnIt != possibleColumns.end() ? *columnIt : length ) - 1;
     if ( useTextWrap_ ) {
         column += getNbVisibleCols() * static_cast<int>( wrappedLine );
     }
     else {
-        column += firstCol_ ;
+        column += firstCol_;
     }
 
     column = std::clamp( column, 0, length - 1 );
@@ -2380,7 +2403,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                                         palette.color( QPalette::Highlight ) );
         }
 
-        const auto wrappedLineLength = useTextWrap_ ? nbVisibleCols : static_cast<int>(expandedLine.size() + 1);
+        const auto wrappedLineLength
+            = useTextWrap_ ? nbVisibleCols : static_cast<int>( expandedLine.size() + 1 );
         WrappedLinesContainer wrappedContainer{ expandedLine, wrappedLineLength };
         painter->fillRect( xPos - ContentMarginWidth, yPos, viewport()->width(),
                            fontHeight * static_cast<int>( wrappedContainer.wrappedLines_.size() ),
@@ -2444,6 +2468,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         lineDrawer.draw( painter.get(), xPos, yPos, viewport()->width(), wrappedContainer,
                          ContentMarginWidth );
 
+        const auto finalLineHeight
+            = fontHeight * static_cast<int>( wrappedContainer.wrappedLines_.size() );
         if ( ( selection_.isLineSelected( lineNumber ) && selection_.isSingleLine() )
              || selection_.getPortionForLine( lineNumber ).isValid() ) {
             auto selectionPen = QPen( palette.color( QPalette::Highlight ) );
@@ -2452,8 +2478,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             painter->drawLine( xPos - ContentMarginWidth + 1, yPos, viewport()->width(), yPos );
             selectionPen.setWidth( 5 );
             painter->setPen( selectionPen );
-            painter->drawLine( xPos - ContentMarginWidth + 2, yPos + fontHeight,
-                               viewport()->width(), yPos + fontHeight );
+            painter->drawLine( xPos - ContentMarginWidth + 2, yPos + finalLineHeight,
+                               viewport()->width(), yPos + finalLineHeight );
         }
 
         // Then draw the bullet
@@ -2506,7 +2532,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             wrappedLinesNumbers_.push_back( std::make_pair( lineNumber, i ) );
         }
 
-        yPos += fontHeight * static_cast<int>( wrappedContainer.wrappedLines_.size() );
+        yPos += finalLineHeight;
         if ( yPos > viewport()->height() ) {
             break;
         }
