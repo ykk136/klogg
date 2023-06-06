@@ -2432,7 +2432,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                 auto matchEnd = match.startColumn() + match.length();
                 auto matchLengthInString = match.length();
                 if ( matchEnd >= expandedLine.size() ) {
-                    matchLengthInString = expandedLine.size() - match.startColumn();
+                    matchLengthInString
+                        = static_cast<int>( expandedLine.size() ) - match.startColumn();
                 }
                 if ( matchLengthInString > 0 ) {
                     std::fill_n( foreColors.begin() + match.startColumn(), matchLengthInString,
