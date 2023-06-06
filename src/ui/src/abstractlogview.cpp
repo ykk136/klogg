@@ -2491,7 +2491,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                     foreColor, backColor );
             }
             else {
-                lineDrawer.addChunk( LineLength{ firstCol_ }, LineLength{ nbVisibleCols },
+                lineDrawer.addChunk( LineLength{ firstCol_ }, LineLength{ firstCol_ + nbVisibleCols },
                                      foreColor, backColor );
             }
         }
