@@ -1837,7 +1837,7 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         column += firstCol_;
     }
 
-    column = std::clamp( column, 0, length - 1 );
+    column = std::clamp( column, 0, std::max( 0, length - 1 ) );
 
     LOG_DEBUG << "AbstractLogView::convertCoordToFilePos col=" << column << " line=" << line;
     return FilePos{ line, column };
@@ -2405,7 +2405,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
         // Is there something selected in the line?
         const auto selectionPortion = selection_.getPortionForLine( lineNumber );
-        if ( selectionPortion.isValid() && !expandedLine.isEmpty() ) {
+        if ( selectionPortion.isValid() ) {
             allHighlights.emplace_back( selectionPortion.startColumn(), selectionPortion.length(),
                                         palette.color( QPalette::HighlightedText ),
                                         palette.color( QPalette::Highlight ) );
@@ -2422,17 +2422,24 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                            backColor );
 
         LineDrawer lineDrawer( backColor );
-        if ( !allHighlights.empty() ) {
+        if ( !allHighlights.empty() && !expandedLine.isEmpty() ) {
             auto foreColors
                 = std::vector<QColor>( static_cast<size_t>( expandedLine.size() ), foreColor );
             auto backColors
                 = std::vector<QColor>( static_cast<size_t>( expandedLine.size() ), backColor );
 
             for ( const auto& match : allHighlights ) {
-                std::fill_n( foreColors.begin() + match.startColumn(), match.length(),
-                             match.foreColor() );
-                std::fill_n( backColors.begin() + match.startColumn(), match.length(),
-                             match.backColor() );
+                auto matchEnd = match.startColumn() + match.length();
+                auto matchLengthInString = match.length();
+                if ( matchEnd >= expandedLine.size() ) {
+                    matchLengthInString = expandedLine.size() - match.startColumn();
+                }
+                if ( matchLengthInString > 0 ) {
+                    std::fill_n( foreColors.begin() + match.startColumn(), matchLengthInString,
+                                 match.foreColor() );
+                    std::fill_n( backColors.begin() + match.startColumn(), matchLengthInString,
+                                 match.backColor() );
+                }
             }
 
             const auto firstVisibleColumn = useTextWrap_ ? 0 : firstCol_;
