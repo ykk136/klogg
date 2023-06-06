@@ -59,7 +59,7 @@ class Portion {
 
     bool isValid() const
     {
-        return !!line_;
+        return !!line_ && endColumn_ >= startColumn_;
     }
 
     int length() const
