@@ -1803,8 +1803,8 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
 {
     const auto offset = std::abs( ( pos.y() - drawingTopOffset_ ) / charHeight_ );
 
-    const auto wrappedLineInfoIndex = std::clamp( static_cast<size_t>( std::floor( offset ) ), 0ul,
-                                                  wrappedLinesNumbers_.size() - 1 );
+    const auto wrappedLineInfoIndex = std::clamp( static_cast<size_t>( std::floor( offset ) ),
+                                                  size_t{ 0 }, wrappedLinesNumbers_.size() - 1 );
 
     auto [ line, wrappedLine ] = wrappedLinesNumbers_[ wrappedLineInfoIndex ];
     if ( line >= logData_->getNbLine() )
@@ -2484,8 +2484,10 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         }
         else {
             if ( useTextWrap_ ) {
-                lineDrawer.addChunk( 0_length, LineLength{ expandedLine.size() }, foreColor,
-                                     backColor );
+                lineDrawer.addChunk(
+                    0_length,
+                    LineLength{ static_cast<LineLength::UnderlyingType>( expandedLine.size() ) },
+                    foreColor, backColor );
             }
             else {
                 lineDrawer.addChunk( LineLength{ firstCol_ }, LineLength{ nbVisibleCols },
