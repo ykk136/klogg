@@ -56,6 +56,7 @@
 #include <memory>
 #include <numeric>
 #include <optional>
+#include <qcolor.h>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -2423,10 +2424,9 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
         LineDrawer lineDrawer( backColor );
         if ( !allHighlights.empty() && !expandedLine.isEmpty() ) {
-            auto foreColors
-                = std::vector<QColor>( static_cast<size_t>( expandedLine.size() ), foreColor );
-            auto backColors
-                = std::vector<QColor>( static_cast<size_t>( expandedLine.size() ), backColor );
+            auto highlightColors = std::vector<std::pair<QColor, QColor>>(
+                static_cast<size_t>( expandedLine.size() ),
+                std::make_pair( foreColor, backColor ) );
 
             for ( const auto& match : allHighlights ) {
                 auto matchEnd = match.startColumn() + match.length();
@@ -2436,24 +2436,24 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                         = static_cast<int>( expandedLine.size() ) - match.startColumn();
                 }
                 if ( matchLengthInString > 0 ) {
-                    std::fill_n( foreColors.begin() + match.startColumn(), matchLengthInString,
-                                 match.foreColor() );
-                    std::fill_n( backColors.begin() + match.startColumn(), matchLengthInString,
-                                 match.backColor() );
+                    std::fill_n( highlightColors.begin() + match.startColumn(), matchLengthInString,
+                                 std::make_pair( match.foreColor(), match.backColor() ) );
                 }
             }
 
-            const auto firstVisibleColumn = useTextWrap_ ? 0 : firstCol_;
-            std::vector<size_t> columnIndexes( foreColors.size() );
+            std::vector<size_t> columnIndexes( highlightColors.size() );
             std::iota( columnIndexes.begin(), columnIndexes.end(), 0 );
+
             auto columnIndexIt = columnIndexes.begin();
+
+            const auto firstVisibleColumn = std::clamp( useTextWrap_ ? 0 : firstCol_, 0,
+                                                        static_cast<int>( expandedLine.size() ) );
             std::advance( columnIndexIt, firstVisibleColumn );
             while ( columnIndexIt != columnIndexes.end() ) {
                 auto highlightDiffColumnIt = std::adjacent_find(
                     columnIndexIt, columnIndexes.end(),
-                    [ &foreColors, &backColors ]( auto lhsColumn, auto rhsColumn ) {
-                        return foreColors[ lhsColumn ] != foreColors[ rhsColumn ]
-                               || backColors[ lhsColumn ] != backColors[ rhsColumn ];
+                    [ &highlightColors ]( auto lhsColumn, auto rhsColumn ) {
+                        return highlightColors[ lhsColumn ] != highlightColors[ rhsColumn ];
                     } );
 
                 if ( highlightDiffColumnIt != columnIndexes.end() ) {
@@ -2463,7 +2463,8 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                         LineLength{
                             static_cast<LineLength::UnderlyingType>( highlightChunkStart ) },
                         LineLength{ static_cast<LineLength::UnderlyingType>( highlightChunkEnd ) },
-                        foreColors[ highlightChunkStart ], backColors[ highlightChunkStart ] );
+                        highlightColors[ highlightChunkStart ].first,
+                        highlightColors[ highlightChunkStart ].second );
 
                     columnIndexIt = highlightDiffColumnIt + 1;
                 }
@@ -2475,11 +2476,12 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                 const auto lastHighlightChunkStart = *columnIndexIt;
                 const auto lastHighlightChunkEnd = *columnIndexes.rbegin();
                 if ( lastHighlightChunkEnd >= lastHighlightChunkStart ) {
-                    lineDrawer.addChunk( LineLength{ static_cast<LineLength::UnderlyingType>(
-                                             lastHighlightChunkStart ) },
-                                         LineLength{ static_cast<LineLength::UnderlyingType>(
-                                             lastHighlightChunkEnd ) },
-                                         foreColors.back(), backColors.back() );
+                    lineDrawer.addChunk(
+                        LineLength{
+                            static_cast<LineLength::UnderlyingType>( lastHighlightChunkStart ) },
+                        LineLength{
+                            static_cast<LineLength::UnderlyingType>( lastHighlightChunkEnd ) },
+                        highlightColors.back().first, highlightColors.back().second );
                 }
             }
         }
@@ -2491,8 +2493,9 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                     foreColor, backColor );
             }
             else {
-                lineDrawer.addChunk( LineLength{ firstCol_ }, LineLength{ firstCol_ + nbVisibleCols },
-                                     foreColor, backColor );
+                lineDrawer.addChunk( LineLength{ firstCol_ },
+                                     LineLength{ firstCol_ + nbVisibleCols }, foreColor,
+                                     backColor );
             }
         }
         lineDrawer.draw( painter.get(), xPos, yPos, viewport()->width(), wrappedLineView,
