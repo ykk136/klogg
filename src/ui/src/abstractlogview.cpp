@@ -1812,9 +1812,14 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         line = LineNumber( logData_->getNbLine().get() ) - 1_lcount;
 
     const auto lineText = logData_->getExpandedLineString( line );
-    WrappedLinesView wrapped{ lineText, getNbVisibleCols() };
-
-    const auto visibleText = wrapped.wrappedLines_[ wrappedLine ];
+    QStringRef visibleText;
+    if ( useTextWrap_ ) {
+        WrappedLinesView wrapped{ lineText, getNbVisibleCols() };
+        visibleText = wrapped.wrappedLines_[ wrappedLine ];
+    }
+    else {
+        visibleText = QStringRef( &lineText ).mid( firstCol_, getNbVisibleCols() );
+    }
 
     std::vector<int> possibleColumns( static_cast<size_t>( visibleText.length() ) );
     std::iota( possibleColumns.begin(), possibleColumns.end(), 0 );
@@ -1828,7 +1833,7 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
             return width < p.x();
         } );
 
-    const auto length = static_cast<LineLength::UnderlyingType>( lineText.length() );
+    const auto length = static_cast<LineLength::UnderlyingType>( visibleText.length() );
 
     auto column = ( columnIt != possibleColumns.end() ? *columnIt : length ) - 1;
     if ( useTextWrap_ ) {
@@ -1838,7 +1843,8 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         column += firstCol_;
     }
 
-    column = std::clamp( column, 0, std::max( 0, length - 1 ) );
+    column = std::clamp(
+        column, 0, std::max( 0, static_cast<LineLength::UnderlyingType>( lineText.size() ) - 1 ) );
 
     LOG_DEBUG << "AbstractLogView::convertCoordToFilePos col=" << column << " line=" << line;
     return FilePos{ line, column };
