@@ -471,6 +471,8 @@ AbstractLogView::AbstractLogView( const AbstractLogData* newLogData,
 {
     setViewport( nullptr );
 
+    useTextWrap_ = Configuration::get().useTextWrap();
+
     // Hovering
     setMouseTracking( true );
 

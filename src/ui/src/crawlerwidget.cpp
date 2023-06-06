@@ -629,6 +629,9 @@ void CrawlerWidget::applyConfiguration()
     logMainView_->updateFont( font );
     filteredView_->updateFont( font );
 
+    logMainView_->textWrapSet(config.useTextWrap());
+    filteredView_->textWrapSet(config.useTextWrap());
+
     // Update the SearchLine (history)
     updateSearchCombo();
 

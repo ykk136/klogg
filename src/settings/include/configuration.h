@@ -455,6 +455,15 @@ class Configuration final : public Persistable<Configuration> {
         allowFollowOnScroll_ = enable;
     }
 
+    bool useTextWrap() const
+    {
+        return useTextWrap_;
+    }
+    void setUseTextWrap( bool enable )
+    {
+        useTextWrap_ = enable;
+    }
+
     bool autoRunSearchOnPatternChange() const
     {
         return autoRunSearchOnPatternChange_;
@@ -576,6 +585,8 @@ class Configuration final : public Persistable<Configuration> {
     int defaultEncodingMib_ = -1;
 
     bool qfIgnoreCase_ = false;
+
+    bool useTextWrap_ = false;
 
     std::map<std::string, QStringList> shortcuts_;
 

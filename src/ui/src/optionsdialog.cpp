@@ -292,6 +292,7 @@ void OptionsDialog::updateDialogFromConfig()
         fontSizeBox->setCurrentIndex( sizeIndex );
 
     fontSmoothCheckBox->setChecked( config.forceFontAntialiasing() );
+    wrapTextCheckBox->setChecked( config.useTextWrap() );
     enableQtHiDpiCheckBox->setChecked( config.enableQtHighDpi() );
     scaleRoundingComboBox->setCurrentIndex( config.scaleFactorRounding() - 1 );
 
@@ -477,6 +478,7 @@ void OptionsDialog::updateConfigFromDialog()
     QFont font = QFont( fontFamilyBox->currentText(), ( fontSizeBox->currentText() ).toInt() );
     config.setMainFont( font );
     config.setForceFontAntialiasing( fontSmoothCheckBox->isChecked() );
+    config.setUseTextWrap( wrapTextCheckBox->isChecked() );
     config.setEnableQtHighDpi( enableQtHiDpiCheckBox->isChecked() );
     config.setScaleFactorRounding( scaleRoundingComboBox->currentIndex() + 1 );
 

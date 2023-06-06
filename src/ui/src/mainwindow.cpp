@@ -1189,6 +1189,8 @@ void MainWindow::options()
         newWindowAction->setVisible( config.allowMultipleWindows() );
         followAction->setEnabled( config.anyFileWatchEnabled() );
 
+        textWrapAction->setChecked( config.useTextWrap() );
+
         updateShortcuts();
         updateRecentFileActions();
     } );

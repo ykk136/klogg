@@ -263,6 +263,8 @@ void Configuration::retrieveFromStorage( QSettings& settings )
               .value( "view.hideAnsiColorSequences", DefaultConfiguration.hideAnsiColorSequences_ )
               .toBool();
 
+    useTextWrap_ = settings.value( "view.textWrap", DefaultConfiguration.useTextWrap() ).toBool();
+
     style_ = settings.value( "view.style", DefaultConfiguration.style_ ).toString();
 
     auto styles = StyleManager::availableStyles();
@@ -330,7 +332,6 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "mainFont.family", fi.family() );
     settings.setValue( "mainFont.size", fi.pointSize() );
     settings.setValue( "mainFont.antialiasing", forceFontAntialiasing_ );
-    settings.setValue( "view.language", language_ );
 
     settings.setValue( "regexpType.engine", static_cast<int>( regexpEngine_ ) );
 
@@ -380,6 +381,8 @@ void Configuration::saveToStorage( QSettings& settings ) const
     settings.setValue( "view.lineNumbersVisibleInFiltered", lineNumbersVisibleInFiltered_ );
     settings.setValue( "view.minimizeToTray", minimizeToTray_ );
     settings.setValue( "view.style", style_ );
+    settings.setValue( "view.language", language_ );
+    settings.setValue( "view.textWrap", useTextWrap_ );
 
     settings.setValue( "view.qtHiDpi", enableQtHighDpi_ );
     settings.setValue( "view.scaleFactorRounding", scaleFactorRounding_ );
