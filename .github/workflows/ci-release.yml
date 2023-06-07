@@ -60,7 +60,10 @@ jobs:
         rm -rf ./packages-jammy/klogg_jammy
         rm -rf ./packages-oracle/klogg_oracle
         rm -rf ./packages-oracle/klogg_oracle7
-        rm -rf ./packages-appimage/klogg_appimage
+        cd ./packages-appimage
+        mv klogg_appimage klogg
+        tar -czvf klogg_bin.tar.gz klogg
+        rm klogg
 
     - name: Upload symbols mac
       shell: sh
