@@ -127,6 +127,11 @@ else()
   target_include_directories(uchardet_wrapper INTERFACE ${UCHARDET_INCLUDE_DIR})
 endif()
 
+if(${QT_VERSION_MAJOR} EQUAL 6) 
+set(_TMP_CPM_USE_LOCAL_PACKAGES ${CPM_USE_LOCAL_PACKAGES})
+set(CPM_USE_LOCAL_PACKAGES OFF)
+endif()
+
 cpmaddpackage(
   NAME
   KF5Archive
@@ -141,6 +146,10 @@ if(NOT KF5Archive_ADDED)
   find_package(KF5Archive)
   add_library(klogg_karchive INTERFACE)
   target_link_libraries(klogg_karchive INTERFACE KF5::Archive)
+endif()
+
+if(${QT_VERSION_MAJOR} EQUAL 6) 
+set(CPM_USE_LOCAL_PACKAGES ${_TMP_CPM_USE_LOCAL_PACKAGES})
 endif()
 
 cpmaddpackage(

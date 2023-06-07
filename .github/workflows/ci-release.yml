@@ -101,6 +101,7 @@ jobs:
           ./packages-oracle/*
           ./packages-oracle7/*
           ./packages-appimage/*
+          ./klogg_version/klogg_version.txt
 
     - name: Release mac
       uses: "marvinpinto/action-automatic-releases@latest"

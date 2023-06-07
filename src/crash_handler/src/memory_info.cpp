@@ -89,6 +89,7 @@ uint64_t usedMemory()
 #include <unistd.h>
 
 #include <array>
+#include <cstdio>
 
 uint64_t systemPhysicalMemory()
 {
