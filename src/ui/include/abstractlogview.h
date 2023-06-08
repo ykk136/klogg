@@ -437,6 +437,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     QFontMetrics pixmapFontMetrics_;
 
     LinesCount getNbVisibleLines() const;
+    LinesCount getNbBottomWrappedVisibleLines() const;
     int getNbVisibleCols() const;
 
     FilePos convertCoordToFilePos( const QPoint& pos ) const;

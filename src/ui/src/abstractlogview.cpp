@@ -1949,9 +1949,10 @@ void AbstractLogView::jumpToTop()
 // Jump to the last line
 void AbstractLogView::jumpToBottom()
 {
-    const auto newTopLine = ( logData_->getNbLine().get() < getNbVisibleLines().get() )
-                                ? 0
-                                : logData_->getNbLine().get() - getNbVisibleLines().get() + 1;
+    const auto newTopLine
+        = ( logData_->getNbLine().get() < getNbVisibleLines().get() )
+              ? 0
+              : logData_->getNbLine().get() - getNbBottomWrappedVisibleLines().get() + 1;
 
     // This will also trigger a scrollContents event
     verticalScrollBar()->setValue( lineNumberToVerticalScroll( LineNumber( newTopLine ) ) );
@@ -2146,16 +2147,40 @@ void AbstractLogView::considerMouseHovering( int xPos, int yPos )
     }
 }
 
+LinesCount AbstractLogView::getNbBottomWrappedVisibleLines() const
+{
+    const auto visibleLines = getNbVisibleLines();
+
+    if ( useTextWrap_ ) {
+        const auto totalLines = logData_->getNbLine();
+
+        LinesCount wrappedLinesCount{ 0 };
+        LinesCount offset = 0_lcount;
+        for ( ; offset < visibleLines && offset < totalLines && wrappedLinesCount < visibleLines;
+              ++offset ) {
+            LineNumber line = LineNumber{ totalLines.get() } - offset;
+            wrappedLinesCount += LinesCount{ static_cast<LinesCount::UnderlyingType>(
+                logData_->getLineLength( line ).get() / getNbVisibleCols() + 1 ) };
+        }
+
+        return offset;
+    }
+    return visibleLines;
+}
+
 void AbstractLogView::updateScrollBars()
 {
     if ( logData_->getNbLine() < getNbVisibleLines() ) {
         verticalScrollBar()->setRange( 0, 0 );
     }
     else {
+        const auto visibleWrappedLines = getNbBottomWrappedVisibleLines();
+        const auto wrappedLinesScrollAdjust = ( getNbVisibleLines() - visibleWrappedLines ).get();
+
         verticalScrollBar()->setRange(
             0, static_cast<int>( qMin(
                    logData_->getNbLine().get() - getNbVisibleLines().get()
-                       + LinesCount::UnderlyingType{ 1 },
+                       + LinesCount::UnderlyingType{ 1 } + wrappedLinesScrollAdjust,
                    static_cast<LinesCount::UnderlyingType>( std::numeric_limits<int>::max() ) ) ) );
     }
 
