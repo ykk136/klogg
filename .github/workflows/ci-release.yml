@@ -60,9 +60,8 @@ jobs:
         rm -rf ./packages-jammy/klogg_jammy
         rm -rf ./packages-oracle/klogg_oracle
         rm -rf ./packages-oracle/klogg_oracle7
-        cd ./packages-appimage
-        mv klogg_appimage klogg
-        tar -czvf klogg_bin.tar.gz klogg
+        rm -rf ./packages-appimage/klogg_appimage
+        ar p  ./packages-focal/klogg-$KLOGG_VERSION-focal.deb data.tar.gz > ./packages-focal/klogg_bin.tar.gz
         rm klogg
 
     - name: Upload symbols mac
