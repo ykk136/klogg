@@ -204,7 +204,7 @@ if(KLOGG_USE_SENTRY)
       add_custom_command(
         TARGET klogg_portable
         POST_BUILD
-        COMMAND ${OBJCOPY} --only-keep-debug --compress-debug-sections=zlib $<TARGET_FILE:klogg_portable>
+        COMMAND ${OBJCOPY} --only-keep-debug $<TARGET_FILE:klogg_portable>
                 ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/klogg_portable.debug
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Generating symbols for $<TARGET_FILE:klogg>"
