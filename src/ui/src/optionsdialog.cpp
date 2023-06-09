@@ -657,13 +657,9 @@ void OptionsDialog::buildShortcutsTable( bool useDefaultsOnly )
     shortcutsTable->setRowCount( 0 );
 
     const auto& config = Configuration::get();
-
-    auto shortcuts = config.shortcuts();
-
-    const auto& defaultShortcuts = ShortcutAction::defaultShortcuts();
-
-    for ( const auto& [ action, keys ] : defaultShortcuts ) {
-        if ( useDefaultsOnly || shortcuts.count( action ) == 0 ) {
+    auto shortcuts = ShortcutAction::defaultShortcuts();
+    if ( !useDefaultsOnly ) {
+        for ( const auto& [ action, keys ] : config.shortcuts() ) {
             shortcuts[ action ] = keys;
         }
     }
@@ -696,7 +692,7 @@ void OptionsDialog::buildShortcutsTable( bool useDefaultsOnly )
     shortcutsTable->setHorizontalHeaderItem( 1, new QTableWidgetItem( tr( "Primary shortcut" ) ) );
     shortcutsTable->setHorizontalHeaderItem( 2,
                                              new QTableWidgetItem( tr( "Secondary shortcut" ) ) );
-    
+
     // in case if user set duplicate keys and after restores defaults
     // it is need to enable back standard buttons
     checkShortcutsOnDuplicate();
