@@ -100,7 +100,7 @@ jobs:
         mkdir ./packages-bin
         mv ./packages-appimage/klogg_deps.tar.gz ./packages-bin
         ar p  ./packages-focal/klogg-$KLOGG_VERSION-focal.deb data.tar.gz > ./packages-bin/klogg_bin.tar.gz
-        mv ./klogg_version/klogg_version.txt > ./packages-bin
+        mv ./klogg_version/klogg_version.txt ./packages-bin
 
     - name: Prepare checksums
       shell: sh
