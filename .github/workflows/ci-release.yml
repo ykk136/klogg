@@ -55,14 +55,9 @@ jobs:
         sentry-cli upload-dif ./packages-jammy/klogg_jammy.debug ./packages-jammy/klogg_jammy
         sentry-cli upload-dif ./packages-oracle/klogg_oracle.debug ./packages-oracle/klogg_oracle
         sentry-cli upload-dif ./packages-appimage/klogg_appimage.debug  ./packages-appimage/klogg_appimage
-        rm -rf ./packages-bionic/klogg_bionic 
-        rm -rf ./packages-focal/klogg_focal
-        rm -rf ./packages-jammy/klogg_jammy
-        rm -rf ./packages-oracle/klogg_oracle
-        rm -rf ./packages-oracle/klogg_oracle7
-        rm -rf ./packages-appimage/klogg_appimage
-        ar p  ./packages-focal/klogg-$KLOGG_VERSION-focal.deb data.tar.gz > ./packages-focal/klogg_bin.tar.gz
-        rm klogg
+        
+        
+        
 
     - name: Upload symbols mac
       shell: sh
@@ -79,6 +74,44 @@ jobs:
         sentry-cli upload-dif ./packages-windows-x86-qt5/klogg-$KLOGG_VERSION-x86-Qt5-pdb.zip 
         sentry-cli upload-dif ./packages-windows-x64-qt6/klogg-$KLOGG_VERSION-x64-Qt6-pdb.zip
 
+    - name: Cleanup release artifacts
+      shell: sh
+      run: |
+        rm -rf ./packages-bionic/klogg_bionic 
+        rm -rf ./packages-focal/klogg_focal
+        rm -rf ./packages-jammy/klogg_jammy
+        rm -rf ./packages-oracle/klogg_oracle
+        rm -rf ./packages-oracle/klogg_oracle7
+        rm -rf ./packages-appimage/klogg_appimage
+        rm -rf ./packages-macos-qt5/klogg-Qt5.app
+        rm -rf ./packages-macos-qt6/klogg-Qt6.app
+        mkdir ./linux-debug
+        mv ./packages-bionic/klogg_bionic.debug ./linux-debug
+        mv ./packages-focal/klogg_focal.debug ./linux-debug
+        mv ./packages-jammy/klogg_jammy.debug ./linux-debug
+        mv ./packages-oracle/klogg_oracle.debug ./linux-debug
+        mv ./packages-appimage/klogg_appimage.debug ./linux-debug
+        tar -cJf ./linux-debug/linux_symbols.tar.xz ./linux-debug/*
+        rm ./linux-debug/*.debug
+
+    - name: Prepare binary artifacts
+      shell: sh
+      run: |
+        mkdir ./packages-bin
+        mv ./packages-appimage/klogg_deps.tar.gz ./packages-bin
+        ar p  ./packages-focal/klogg-$KLOGG_VERSION-focal.deb data.tar.gz > ./packages-bin/klogg_bin.tar.gz
+        mv ./klogg_version/klogg_version.txt > ./packages-bin
+
+    - name: Prepare checksums
+      shell: sh
+      run: |
+        sha256sum --binary ./packages-bin/* > ./packages-bin/sha256_klogg_bin.txt
+        sha256sum --binary ./packages-bionic/* > ./packages-bionic/sha256_bionic.txt
+        sha256sum --binary ./packages-focal/* > ./packages-focal/sha256_focal.txt
+        sha256sum --binary ./packages-jammy/* > ./packages-jammy/sha256_jammy.txt
+        sha256sum --binary ./packages-oracle/* > ./packages-oracle/sha256_oracle.txt
+        sha256sum --binary ./packages-appimage/* > ./packages-appimage/sha256_appimage.txt
+        
     - name: Release win
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
@@ -103,7 +136,8 @@ jobs:
           ./packages-oracle/*
           ./packages-oracle7/*
           ./packages-appimage/*
-          ./klogg_version/klogg_version.txt
+          ./packages-bin/*
+          ./linux-debug/*
 
     - name: Release mac
       uses: "marvinpinto/action-automatic-releases@latest"
