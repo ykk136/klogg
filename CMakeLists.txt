@@ -313,11 +313,11 @@ add_custom_target(
 )
 
 add_custom_target(
-  docs
+  klogg_docs
   SOURCES ${README_FILE}
           ${COPYING_FILE}
           ${NOTICE_FILE}
           ${DOCUMENTATION_FILE}
 )
 
-add_custom_target(stuff SOURCES .clang-format .clang-tidy .cmake-format)
+add_custom_target(klogg_stuff SOURCES .clang-format .clang-tidy .cmake-format)
