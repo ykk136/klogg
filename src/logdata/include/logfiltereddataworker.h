@@ -42,11 +42,12 @@
 #include <QObject>
 
 #include <qthreadpool.h>
-#include <roaring.hh>
-#include <roaring64map.hh>
+
 
 #ifndef Q_MOC_RUN
 #include <tbb/task_group.h>
+#include <roaring.hh>
+#include <roaring64map.hh>
 #endif
 
 #include "atomicflag.h"
