@@ -25,7 +25,7 @@ runs:
     - name: Copy sym
       shell: sh
       run: |
-        docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && xz ./output/klogg.debug 
+        docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && xz ./output/klogg.debug"
         docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && mv ./output/klogg.debug.xz ./packages/klogg_${{ matrix.config.artifacts_id }}.debug.xz"
         docker run -v "$KLOGG_WORKSPACE":/usr/local ${{ matrix.config.container }} /bin/bash -c "cd /usr/local/build_root && cp ./output/klogg ./packages/klogg_${{ matrix.config.artifacts_id }}"
 
