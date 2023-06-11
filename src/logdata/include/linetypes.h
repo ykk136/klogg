@@ -50,7 +50,7 @@ struct OffsetInFile : type_safe::strong_typedef<OffsetInFile, int64_t>,
                       type_safe::strong_typedef_op::equality_comparison<OffsetInFile> {
     using strong_typedef::strong_typedef;
 
-    using UnderlyingType = type_safe::underlying_type<OffsetInFile>;
+    using UnderlyingType = int64_t;
 
     template<typename T = UnderlyingType>
     T get() const {
@@ -72,7 +72,7 @@ struct LinesCount : type_safe::strong_typedef<LinesCount, uint64_t>,
                       type_safe::strong_typedef_op::equality_comparison<LinesCount> {
     using strong_typedef::strong_typedef;
 
-    using UnderlyingType = type_safe::underlying_type<LinesCount>;
+    using UnderlyingType = uint64_t;
 
     template<typename T = UnderlyingType>
     T get() const {
@@ -93,7 +93,7 @@ struct LineNumber : type_safe::strong_typedef<LineNumber, uint64_t>,
                     type_safe::strong_typedef_op::equality_comparison<LineNumber> {
     using strong_typedef::strong_typedef;
 
-    using UnderlyingType = type_safe::underlying_type<LineNumber>;
+    using UnderlyingType = uint64_t;
 
     template<typename T = UnderlyingType>
     T get() const {
@@ -113,7 +113,7 @@ struct LineLength : type_safe::strong_typedef<LineLength, int>,
                       type_safe::strong_typedef_op::equality_comparison<LineLength> {
     using strong_typedef::strong_typedef;
 
-    using UnderlyingType = type_safe::underlying_type<LineLength>;
+    using UnderlyingType = int;
 
     template<typename T = UnderlyingType>
     T get() const {

@@ -28,6 +28,7 @@
 #include <random>
 #include <vector>
 #include <array>
+#include <iostream>
 
 #include <configuration.h>
 
