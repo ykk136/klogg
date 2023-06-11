@@ -90,26 +90,21 @@ jobs:
         mv ./packages-jammy/klogg_jammy.debug ./linux-debug
         mv ./packages-oracle/klogg_oracle.debug ./linux-debug
         mv ./packages-appimage/klogg_appimage.debug ./linux-debug
-        tar -cJf ./linux-debug/linux_symbols.tar.xz ./linux-debug/*
+        tar -cJf ./linux-debug/klogg-$KLOGG_VERSION-symbols.tar.xz ./linux-debug/*
         rm ./linux-debug/*.debug
 
     - name: Prepare binary artifacts
       shell: sh
       run: |
         mkdir ./packages-bin
-        mv ./packages-appimage/klogg_deps.tar.xz ./packages-bin
-        ar p  ./packages-focal/klogg-$KLOGG_VERSION-focal.deb data.tar.gz > ./packages-bin/klogg_bin.tar.gz
+        mv ./packages-appimage/klogg_deps.tar.xz ./packages-bin/klogg-$KLOGG_VERSION-deps.tar.xz
+        ar p  ./packages-focal/klogg-$KLOGG_VERSION-focal.deb data.tar.gz > ./packages-bin/klogg-$KLOGG_VERSION-bin.tar.gz
         mv ./klogg_version/klogg_version.txt ./packages-bin
 
     - name: Prepare checksums
       shell: sh
       run: |
-        sha256sum --binary ./packages-bin/* > ./packages-bin/sha256_klogg_bin.txt
-        sha256sum --binary ./packages-bionic/* > ./packages-bionic/sha256_bionic.txt
-        sha256sum --binary ./packages-focal/* > ./packages-focal/sha256_focal.txt
-        sha256sum --binary ./packages-jammy/* > ./packages-jammy/sha256_jammy.txt
-        sha256sum --binary ./packages-oracle/* > ./packages-oracle/sha256_oracle.txt
-        sha256sum --binary ./packages-appimage/* > ./packages-appimage/sha256_appimage.txt
+        sha256sum --binary ./packages-bin/* ./packages-bionic/* ./packages-focal/* ./packages-jammy/* ./packages-oracle/* ./packages-appimage/*  > ./packages-bin/klogg-$KLOGG_VERSION-sha256.txt
         
     - name: Release win
       uses: "marvinpinto/action-automatic-releases@latest"
