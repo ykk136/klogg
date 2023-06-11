@@ -3,6 +3,7 @@ set(QAPPLICATION_CLASS QApplication)
 include(CPM)
 
 cpmaddpackage("gh:simdutf/simdutf@3.2.13")
+cpmaddpackage("gh:foonathan/type_safe@0.2.2")
 
 if(APPLE)
   cpmaddpackage(
@@ -90,22 +91,6 @@ endif()
 
 cpmaddpackage(
   NAME
-  NamedType
-  GITHUB_REPOSITORY
-  joboccara/NamedType
-  GIT_TAG
-  215f039574a7d5111f1a131def337f142029f896
-  DOWNLOAD_ONLY
-  YES
-)
-if(NOT TARGET NamedType)
-  message("Adding imported target for NamedType")
-  add_library(NamedType INTERFACE)
-  target_include_directories(NamedType SYSTEM INTERFACE ${NamedType_SOURCE_DIR})
-endif()
-
-cpmaddpackage(
-  NAME
   Uchardet
   GIT_REPOSITORY
   https://gitlab.freedesktop.org/uchardet/uchardet
@@ -148,7 +133,8 @@ if(NOT KF5Archive_ADDED)
   target_link_libraries(klogg_karchive INTERFACE KF5::Archive)
 endif()
 
-if(${QT_VERSION_MAJOR} EQUAL 6) 
+if(${QT_VERSION_MAJOR} EQUAL 6)
+message("Resetting CPM_USE_LOCAL_PACKAGES to ${_TMP_CPM_USE_LOCAL_PACKAGES}")
 set(CPM_USE_LOCAL_PACKAGES ${_TMP_CPM_USE_LOCAL_PACKAGES})
 endif()
 
@@ -348,10 +334,10 @@ set(klogg_cpm_targets
     simdutf
     efsw
     SingleApplication
-    NamedType
     hs
     tbb
-    exprtk
+    exprtk,
+    type_safe
 )
 foreach(target ${klogg_cpm_targets})
   if(TARGET ${target})

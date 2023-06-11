@@ -19,6 +19,7 @@
 
 #include <catch2/catch.hpp>
 
+#include "linetypes.h"
 #include "log.h"
 
 #include "linepositionarray.h"
@@ -33,7 +34,7 @@
 SCENARIO( "LinePositionArray with small number of lines", "[linepositionarray]" )
 {
 
-    std::array<LineOffset, 6> offsets = { 4_offset,     8_offset, 10_offset,
+    std::array<OffsetInFile, 6> offsets = { 4_offset,     8_offset, 10_offset,
                                           345_offset,   // A longer (>128) line
                                           20000_offset, // An even longer (>16384) line
                                           20020_offset };
@@ -163,18 +164,18 @@ SCENARIO( "LinePositionArray with full block of lines", "[linepositionarray]" )
         // Add 255 lines (of various sizes)
         const int lines = 255;
         for ( int i = 0; i < lines; ++i )
-            line_array.append( LineOffset( i * 4 ) );
+            line_array.append(OffsetInFile( i * 4 ) );
         // Line no 256
-        line_array.append( LineOffset( 255 * 4 ) );
+        line_array.append(OffsetInFile( 255 * 4 ) );
 
         WHEN( "Adding line after block" )
         {
             // Add line no 257
-            line_array.append( LineOffset( 255 * 4 + 10 ) );
+            line_array.append(OffsetInFile( 255 * 4 + 10 ) );
 
             THEN( "Correct offset is returned" )
             {
-                REQUIRE( line_array.at( 256 ) == LineOffset( 255 * 4 + 10 ) );
+                REQUIRE( line_array.at( 256 ) ==OffsetInFile( 255 * 4 + 10 ) );
             }
         }
 
@@ -183,11 +184,11 @@ SCENARIO( "LinePositionArray with full block of lines", "[linepositionarray]" )
             THEN( "Correct offset is returned" )
             for ( uint32_t i = 0; i < 1000; ++i ) {
                 int64_t pos = ( 257LL * 4 ) + i * 35LL;
-                line_array.append( LineOffset( pos ) );
+                line_array.append(OffsetInFile( pos ) );
                 line_array.setFakeFinalLF();
-                REQUIRE( line_array.at( 256 + i ) == LineOffset( pos ) );
-                line_array.append( LineOffset( pos + 21LL ) );
-                REQUIRE( line_array.at( 256 + i ) == LineOffset( pos + 21LL ) );
+                REQUIRE( line_array.at( 256 + i ) ==OffsetInFile( pos ) );
+                line_array.append(OffsetInFile( pos + 21LL ) );
+                REQUIRE( line_array.at( 256 + i ) ==OffsetInFile( pos + 21LL ) );
             }
         }
     }
@@ -196,15 +197,15 @@ SCENARIO( "LinePositionArray with full block of lines", "[linepositionarray]" )
 SCENARIO( "LinePositionArray with UINT32_MAX offsets", "[linepositionarray]" )
 {
 
-    std::array<LineOffset, 9> offsets = { 4_offset,
+    std::array<OffsetInFile, 9> offsets = { 4_offset,
                                           8_offset,
-                                          LineOffset( UINT32_MAX - 10 ),
-                                          LineOffset( (uint64_t)UINT32_MAX + 10LL ),
-                                          LineOffset( (uint64_t)UINT32_MAX + 30LL ),
-                                          LineOffset( (uint64_t)2 * UINT32_MAX ),
-                                          LineOffset( (uint64_t)2 * UINT32_MAX + 10LL ),
-                                          LineOffset( (uint64_t)2 * UINT32_MAX + 1000LL ),
-                                          LineOffset( (uint64_t)3 * UINT32_MAX ) };
+                                         OffsetInFile( UINT32_MAX - 10 ),
+                                         OffsetInFile( (uint64_t)UINT32_MAX + 10LL ),
+                                         OffsetInFile( (uint64_t)UINT32_MAX + 30LL ),
+                                         OffsetInFile( (uint64_t)2 * UINT32_MAX ),
+                                         OffsetInFile( (uint64_t)2 * UINT32_MAX + 10LL ),
+                                         OffsetInFile( (uint64_t)2 * UINT32_MAX + 1000LL ),
+                                         OffsetInFile( (uint64_t)3 * UINT32_MAX ) };
 
     GIVEN( "LinePositionArray with long offsets" )
     {
@@ -231,11 +232,11 @@ SCENARIO( "LinePositionArray with UINT32_MAX offsets", "[linepositionarray]" )
             THEN( "Correct offset is returned" )
             for ( uint32_t i = 0; i < 1000; ++i ) {
                 int64_t pos = 3LL * UINT32_MAX + 524LL + i * 35LL;
-                line_array.append( LineOffset( pos ) );
+                line_array.append(OffsetInFile( pos ) );
                 line_array.setFakeFinalLF();
-                REQUIRE( line_array.at( 9 + i ) == LineOffset( pos ) );
-                line_array.append( LineOffset( pos + 21LL ) );
-                REQUIRE( line_array.at( 9 + i ) == LineOffset( pos + 21LL ) );
+                REQUIRE( line_array.at( 9 + i ) ==OffsetInFile( pos ) );
+                line_array.append(OffsetInFile( pos + 21LL ) );
+                REQUIRE( line_array.at( 9 + i ) ==OffsetInFile( pos + 21LL ) );
             }
         }
     }
@@ -250,8 +251,8 @@ SCENARIO( "LinePositionArray with UINT32_MAX offsets", "[linepositionarray]" )
         WHEN( "Appending large lines" )
         {
             FastLinePositionArray other_array;
-            other_array.append( LineOffset( (uint64_t)UINT32_MAX + 10LL ) );
-            other_array.append( LineOffset( (uint64_t)UINT32_MAX + 30LL ) );
+            other_array.append(OffsetInFile( (uint64_t)UINT32_MAX + 10LL ) );
+            other_array.append(OffsetInFile( (uint64_t)UINT32_MAX + 30LL ) );
 
             line_array.append_list( other_array );
 
@@ -261,8 +262,8 @@ SCENARIO( "LinePositionArray with UINT32_MAX offsets", "[linepositionarray]" )
 
                 REQUIRE( line_array.at( 0 ) == 4_offset );
                 REQUIRE( line_array.at( 1 ) == 8_offset );
-                REQUIRE( line_array.at( 2 ) == LineOffset( (uint64_t)UINT32_MAX + 10 ) );
-                REQUIRE( line_array.at( 3 ) == LineOffset( (uint64_t)UINT32_MAX + 30 ) );
+                REQUIRE( line_array.at( 2 ) ==OffsetInFile( (uint64_t)UINT32_MAX + 10 ) );
+                REQUIRE( line_array.at( 3 ) ==OffsetInFile( (uint64_t)UINT32_MAX + 30 ) );
             }
         }
     }

@@ -49,7 +49,7 @@ target_link_libraries(
          roaring-headers-cpp
          roaring-headers
          tbb
-         NamedType
+         type_safe
          uchardet_wrapper
          kdtoolbox
          robin_hood

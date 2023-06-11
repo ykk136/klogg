@@ -60,12 +60,12 @@ class SimpleLinePositionStorage {
 
     using Cache = void*;
     // Append the passed end-of-line to the storage
-    void append( LineOffset pos )
+    void append( OffsetInFile pos )
     {
         storage_.push_back( pos );
     }
 
-    void push_back( LineOffset pos )
+    void push_back( OffsetInFile pos )
     {
         append( pos );
     }
@@ -82,12 +82,12 @@ class SimpleLinePositionStorage {
     }
 
     // Element at index
-    LineOffset at( size_t i, Cache* = nullptr ) const
+    OffsetInFile at( size_t i, Cache* = nullptr ) const
     {
         return storage_.at( i );
     }
 
-    LineOffset at( LineNumber i, Cache* = nullptr ) const
+    OffsetInFile at( LineNumber i, Cache* = nullptr ) const
     {
         return at( i.get() );
     }
@@ -104,13 +104,13 @@ class SimpleLinePositionStorage {
         storage_.pop_back();
     }
 
-    operator const std::vector<LineOffset>&() const
+    operator const std::vector<OffsetInFile>&() const
     {
         return storage_;
     }
 
   private:
-    std::vector<LineOffset> storage_;
+    std::vector<OffsetInFile> storage_;
 };
 
 // This class is a list of end of lines position,
@@ -142,7 +142,7 @@ class LinePosition {
     // Add a new line position at the given position
     // Invariant: pos must be greater than the previous one
     // (this is NOT checked!)
-    inline void append( LineOffset pos )
+    inline void append( OffsetInFile pos )
     {
         if ( fakeFinalLF_ )
             array.pop_back();
@@ -162,7 +162,7 @@ class LinePosition {
     }
 
     // Extract an element
-    inline LineOffset at( LineNumber::UnderlyingType i,
+    inline OffsetInFile at( LineNumber::UnderlyingType i,
                           typename Storage::Cache* lastPosition = nullptr ) const
     {
         const auto pos = array.at( i, lastPosition );

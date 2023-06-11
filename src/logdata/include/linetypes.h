@@ -26,30 +26,110 @@
 #include <qglobal.h>
 #include <string_view>
 
-#include <named_type.hpp>
+#include <type_safe/strong_typedef.hpp>
+#include <type_safe/narrow_cast.hpp>
 
 #include <QMetaType>
 #include <QString>
+#include <type_traits>
 
 #include "log.h"
 
-using LineOffset
-    = fluent::NamedType<int64_t, struct line_offset, fluent::Addable, fluent::Incrementable, fluent::PreIncrementable,
-                        fluent::Subtractable, fluent::Comparable, fluent::Printable>;
-
-using LineNumber = fluent::NamedType<uint64_t, struct line_number, fluent::Incrementable, fluent::PreIncrementable,
-                                     fluent::PreDecrementable, fluent::Comparable, fluent::Printable>;
-
-using LinesCount = fluent::NamedType<uint64_t, struct lines_count, fluent::Addable, fluent::Incrementable,
-                                     fluent::PreIncrementable, fluent::Subtractable,
-                                     fluent::PreDecrementable, fluent::Comparable, fluent::Printable>;
-
-using LineLength
-    = fluent::NamedType<int, struct line_length, fluent::Comparable, fluent::Printable>;
-
-inline constexpr LineOffset operator"" _offset( unsigned long long int value )
+template <typename StrongType>
+constexpr StrongType maxValue()
 {
-    return LineOffset( static_cast<LineOffset::UnderlyingType>( value ) );
+    return StrongType( std::numeric_limits<typename StrongType::UnderlyingType>::max() );
+}
+
+// Qt file reading api has qint64 type offsets
+struct OffsetInFile : type_safe::strong_typedef<OffsetInFile, int64_t>,
+                      type_safe::strong_typedef_op::addition<OffsetInFile>,
+                      type_safe::strong_typedef_op::subtraction<OffsetInFile>,
+                      type_safe::strong_typedef_op::increment<OffsetInFile>,
+                      type_safe::strong_typedef_op::relational_comparison<OffsetInFile>,
+                      type_safe::strong_typedef_op::equality_comparison<OffsetInFile> {
+    using strong_typedef::strong_typedef;
+
+    using UnderlyingType = type_safe::underlying_type<OffsetInFile>;
+
+    template<typename T = UnderlyingType>
+    T get() const {
+        if constexpr(std::is_same_v<T, UnderlyingType>) {
+            return type_safe::get(*this);
+        }
+        else {
+           return type_safe::narrow_cast<T>(type_safe::get(*this)); 
+        }
+    }
+};
+
+struct LinesCount : type_safe::strong_typedef<LinesCount, uint64_t>,
+                      type_safe::strong_typedef_op::addition<LinesCount>,
+                      type_safe::strong_typedef_op::subtraction<LinesCount>,
+                      type_safe::strong_typedef_op::increment<LinesCount>,
+                      type_safe::strong_typedef_op::decrement<LinesCount>,
+                      type_safe::strong_typedef_op::relational_comparison<LinesCount>,
+                      type_safe::strong_typedef_op::equality_comparison<LinesCount> {
+    using strong_typedef::strong_typedef;
+
+    using UnderlyingType = type_safe::underlying_type<LinesCount>;
+
+    template<typename T = UnderlyingType>
+    T get() const {
+        if constexpr(std::is_same_v<T, UnderlyingType>) {
+            return type_safe::get(*this);
+        }
+        else {
+           return type_safe::narrow_cast<T>(type_safe::get(*this)); 
+        }
+    }
+};
+Q_DECLARE_METATYPE( LinesCount )
+
+struct LineNumber : type_safe::strong_typedef<LineNumber, uint64_t>,
+                    type_safe::strong_typedef_op::increment<LineNumber>,
+                    type_safe::strong_typedef_op::decrement<LineNumber>,
+                    type_safe::strong_typedef_op::relational_comparison<LineNumber>,
+                    type_safe::strong_typedef_op::equality_comparison<LineNumber> {
+    using strong_typedef::strong_typedef;
+
+    using UnderlyingType = type_safe::underlying_type<LineNumber>;
+
+    template<typename T = UnderlyingType>
+    T get() const {
+        if constexpr(std::is_same_v<T, UnderlyingType>) {
+            return type_safe::get(*this);
+        }
+        else {
+           return type_safe::narrow_cast<T>(type_safe::get(*this)); 
+        }
+    }
+
+};
+Q_DECLARE_METATYPE( LineNumber )
+
+struct LineLength : type_safe::strong_typedef<LineLength, int>,
+                      type_safe::strong_typedef_op::relational_comparison<LineLength>,
+                      type_safe::strong_typedef_op::equality_comparison<LineLength> {
+    using strong_typedef::strong_typedef;
+
+    using UnderlyingType = type_safe::underlying_type<LineLength>;
+
+    template<typename T = UnderlyingType>
+    T get() const {
+        if constexpr(std::is_same_v<T, UnderlyingType>) {
+            return type_safe::get(*this);
+        }
+        else {
+           return type_safe::narrow_cast<T>(type_safe::get(*this)); 
+        }
+    }
+};
+Q_DECLARE_METATYPE( LineLength )
+
+inline constexpr OffsetInFile operator"" _offset( unsigned long long int value )
+{
+    return OffsetInFile( static_cast<OffsetInFile::UnderlyingType>( value ) );
 }
 inline constexpr LineNumber operator"" _lnum( unsigned long long int value )
 {
@@ -64,19 +144,49 @@ inline constexpr LineLength operator"" _length( unsigned long long int value )
     return LineLength( static_cast<LineLength::UnderlyingType>( value ) );
 }
 
-template <typename StrongType>
-constexpr StrongType maxValue()
+
+inline LineNumber& operator+=( LineNumber& number, const LinesCount& count )
 {
-    return StrongType( std::numeric_limits<typename StrongType::UnderlyingType>::max() );
+    number = ( number.get() <= maxValue<LineNumber>().get() - count.get() )
+               ? LineNumber( number.get() + count.get() )
+               : maxValue<LineNumber>();
+    return number;
 }
+inline LineNumber operator+( const LineNumber& number, const LinesCount& count )
+{
+    return ( number.get() <= maxValue<LineNumber>().get() - count.get() )
+               ? LineNumber( number.get() + count.get() )
+               : maxValue<LineNumber>();
+}
+
+inline LineNumber operator-( const LineNumber& number, const LinesCount& count )
+{
+    return number.get() >= count.get() ? LineNumber( number.get() - count.get() )
+                                       : LineNumber( 0u );
+}
+
+inline LinesCount operator-( const LineNumber& n1, const LineNumber& n2 )
+{
+    return n1.get() >= n2.get() ? LinesCount( n1.get() - n2.get() ) : LinesCount( 0u );
+}
+
+inline bool operator<( const LineNumber& number, const LinesCount& count )
+{
+    return number.get() < count.get();
+}
+inline bool operator>=( const LineNumber& number, const LinesCount& count )
+{
+    return !( number < count );
+}
+
 
 using OptionalLineNumber = std::optional<LineNumber>;
 
-template <typename T, typename Parameter, template <typename> class... Skills>
-QDebug operator<<( QDebug dbg, fluent::NamedType<T, Parameter, Skills...> const& object )
+template <typename Tag, typename T>
+QDebug operator<<( QDebug dbg, type_safe::strong_typedef<Tag, T> const& object )
 {
     QDebugStateSaver saver( dbg );
-    dbg << object.get();
+    dbg << type_safe::get(object);
 
     return dbg;
 }
@@ -107,53 +217,6 @@ class FilePosition {
     LineNumber line_;
     int column_;
 };
-
-inline LineNumber operator+( const LineNumber& number, const LinesCount& count )
-{
-    return ( number.get() <= maxValue<LineNumber>().get() - count.get() )
-               ? LineNumber( number.get() + count.get() )
-               : maxValue<LineNumber>();
-}
-
-inline LineNumber operator-( const LineNumber& number, const LinesCount& count )
-{
-    return number.get() >= count.get() ? LineNumber( number.get() - count.get() )
-                                       : LineNumber( 0u );
-}
-
-inline LinesCount operator-( const LineNumber& n1, const LineNumber& n2 )
-{
-    return n1.get() >= n2.get() ? LinesCount( n1.get() - n2.get() ) : LinesCount( 0u );
-}
-
-inline bool operator<( const LineNumber& number, const LinesCount& count )
-{
-    return number.get() < count.get();
-}
-inline bool operator>( const LineNumber& number, const LinesCount& count )
-{
-    return count.get() < number.get();
-}
-inline bool operator<=( const LineNumber& number, const LinesCount& count )
-{
-    return !( count.get() < number.get() );
-}
-inline bool operator>=( const LineNumber& number, const LinesCount& count )
-{
-    return !( number < count );
-}
-inline bool operator==( const LineNumber& number, const LinesCount& count )
-{
-    return !( number < count ) && !( count.get() < number.get() );
-}
-inline bool operator!=( const LineNumber& number, const LinesCount& count )
-{
-    return !( number == count );
-}
-
-Q_DECLARE_METATYPE( LineLength )
-Q_DECLARE_METATYPE( LineNumber )
-Q_DECLARE_METATYPE( LinesCount )
 
 // Length of a tab stop
 constexpr int TabStop = 8;

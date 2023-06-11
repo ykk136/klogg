@@ -897,7 +897,7 @@ void AbstractLogView::doRegisterShortcuts()
 
     registerShortcut( ShortcutAction::LogViewSelectLinesUp, [ this ]() {
         auto newPosition = selectionCurrentEndPos_;
-        if ( newPosition.line == 0_lcount ) {
+        if ( newPosition.line == 0_lnum ) {
             // Reached the begin
             return;
         }
@@ -1482,7 +1482,7 @@ void AbstractLogView::saveLinesToFile( LineNumber begin, LineNumber end )
     const auto chunkSize = 5000_lcount;
     offsets.reserve( ( end - ( lineOffset + chunkSize ) ).get() );
 
-    for ( ; lineOffset + chunkSize < end; lineOffset += LineNumber( chunkSize.get() ) ) {
+    for ( ; lineOffset + chunkSize < end; lineOffset += LinesCount( chunkSize.get() ) ) {
         offsets.emplace_back( lineOffset, chunkSize );
     }
     offsets.emplace_back( lineOffset, LinesCount( ( end - lineOffset ).get() % chunkSize.get() ) );
@@ -2231,7 +2231,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
     // the file has just changed)
     const auto linesInFile = logData_->getNbLine();
 
-    if ( firstLine_ > linesInFile )
+    if ( firstLine_ >= linesInFile )
         firstLine_ = LineNumber( linesInFile.get() ? linesInFile.get() - 1 : 0 );
 
     const auto nbLines = qMin( getNbVisibleLines(), linesInFile - LinesCount( firstLine_.get() ) );

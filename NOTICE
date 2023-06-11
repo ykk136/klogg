@@ -13,7 +13,7 @@ for more details.
 
 ===
 This product is based on software developed by Nicolas Bonnefon:
-glogg (https://github.com/nickbnf/glogg) licensed under under the terms
+glogg (https://github.com/nickbnf/glogg) licensed under the terms
 of the GNU General PubLic License as published by the Free Software
 Foundation; either version 3 of the License, or (at your option)
 any later version.
@@ -30,13 +30,13 @@ any later version.
 
 ===
 This product is based on software developed by The Qt Company:
-Qt (www.qt.io) licensed under under the terms of the GNU Lesser General Public
+Qt (www.qt.io) licensed under the terms of the GNU Lesser General Public
 License v.3
 
 ===
 This product includes software developed by Martín Lucas Golini:
-efsw (https://github.com/SpartanJ/efsw) licensed under under the terms
-of MIT licence
+efsw (https://github.com/SpartanJ/efsw) licensed under the terms
+of MIT license
 
 > Copyright (c) 2020 Martín Lucas Golini
 > 
@@ -63,7 +63,7 @@ of MIT licence
 
 ===
 This product includes software developed by Phil Nash and other contributors:
-catch2 (https://github.com/catchorg/Catch2) licensed under under the terms of
+catch2 (https://github.com/catchorg/Catch2) licensed under the terms of
 Boost Software License - Version 1.0
 
 > Boost Software License - Version 1.0 - August 17th, 2003
@@ -90,7 +90,7 @@ Boost Software License - Version 1.0
 ===
 This product includes software developed by Aurelien Rainone:
 macdeployqtfix (https://github.com/aurelien-rainone/macdeployqtfix)
-licensed under under the terms of MIT licence
+licensed under the terms of MIT license
 
 > The MIT License (MIT)
 > Copyright (c) 2015 Aurelien Rainone
@@ -111,12 +111,12 @@ licensed under under the terms of MIT licence
 > SOFTWARE.
 
 ===
-This product includes software developed by Jonathan Boccara:
-NamedType (https://github.com/joboccara/NamedType) licensed under under the
-terms of MIT licence
+This product includes software developed by Jonathan Müller:
+type_safe (https://github.com/foonathan/type_safe) licensed under the
+terms of MIT license
 
 > MIT License
-> Copyright (c) 2017 Jonathan Boccara
+> Copyright (c) 2016-2020 Jonathan Müller
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
 > in the Software without restriction, including without limitation the rights

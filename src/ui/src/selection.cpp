@@ -206,7 +206,7 @@ Selection::getSelectionWithLineNumbers( const AbstractLogData* logData ) const
 
         for ( const auto& line : list ) {
             selectionData.emplace( logData->getLineNumber( ln ), line );
-            ln += 1_lnum;
+            ln++;
         }
     }
 

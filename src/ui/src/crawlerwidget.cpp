@@ -544,7 +544,7 @@ void CrawlerWidget::markLinesFromMain( const std::vector<LineNumber>& lines )
 
     bool markAdded = false;
     for ( const auto& line : lines ) {
-        if ( line > logData_->getNbLine() ) {
+        if ( line >= logData_->getNbLine() ) {
             continue;
         }
 

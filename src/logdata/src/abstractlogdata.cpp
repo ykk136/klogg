@@ -73,7 +73,7 @@ LineNumber AbstractLogData::getLineNumber( LineNumber index ) const
 {
     LineNumber ln = doGetLineNumber( index );
     // line number in file in editor starts from 1, convert it from 0 based index
-    ln += LineNumber( 1 );
+    ++ln;
     return ln;
 }
 

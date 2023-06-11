@@ -107,7 +107,7 @@ class IndexingDataAccessor {
 
     // Get the position (in byte from the beginning of the file)
     // of the end of the passed line.
-    LineOffset getEndOfLineOffset( LineNumber line ) const
+    OffsetInFile getEndOfLineOffset( LineNumber line ) const
     {
         return data_->getEndOfLineOffset( line );
     }
@@ -197,7 +197,7 @@ class IndexingData {
 
     // Get the position (in byte from the beginning of the file)
     // of the end of the passed line.
-    LineOffset getEndOfLineOffset( LineNumber line ) const;
+    OffsetInFile getEndOfLineOffset( LineNumber line ) const;
 
     // Get the guessed encoding for the content.
     QTextCodec* getEncodingGuess() const;
@@ -244,11 +244,11 @@ class IndexingData {
 struct IndexingState {
 
     EncodingParameters encodingParams;
-    LineOffset::UnderlyingType pos{};
+    OffsetInFile::UnderlyingType pos{};
     int64_t max_length{};
     LineLength::UnderlyingType additional_spaces{};
-    LineOffset::UnderlyingType end{};
-    LineOffset::UnderlyingType file_size{};
+    OffsetInFile::UnderlyingType end{};
+    OffsetInFile::UnderlyingType file_size{};
 
     QTextCodec* encodingGuess{};
     QTextCodec* fileTextCodec{};
@@ -277,19 +277,19 @@ class IndexOperation : public QObject {
     void fileCheckFinished( MonitoredFileStatus );
 
   protected:
-    using BlockData = std::pair<LineOffset::UnderlyingType, QByteArray>;
+    using BlockData = std::pair<OffsetInFile::UnderlyingType, QByteArray>;
     using BlockPrefetcher = tbb::flow::limiter_node<BlockData>;
 
     // Returns the total size indexed
     // Modify the passed linePosition and maxLength
-    void doIndex( LineOffset initialPosition );
+    void doIndex( OffsetInFile initialPosition );
 
     QString fileName_;
     std::shared_ptr<IndexingData> indexing_data_;
     AtomicFlag& interruptRequest_;
 
   private:
-    FastLinePositionArray parseDataBlock( LineOffset::UnderlyingType blockBegining,
+    FastLinePositionArray parseDataBlock( OffsetInFile::UnderlyingType blockBegining,
                                           const QByteArray& block, IndexingState& state ) const;
 
     void guessEncoding( const QByteArray& block, IndexingData::MutateAccessor& scopedAccessor,

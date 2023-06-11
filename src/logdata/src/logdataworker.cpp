@@ -91,7 +91,7 @@ LinesCount IndexingData::getNbLines() const
     return LinesCount( linePosition_.size() );
 }
 
-LineOffset IndexingData::getEndOfLineOffset( LineNumber line ) const
+OffsetInFile IndexingData::getEndOfLineOffset( LineNumber line ) const
 {
     return linePosition_.at( line.get(), &linePositionCache_.local() );
 }
@@ -410,7 +410,7 @@ findNextLineFeed( const QByteArray& block, int posWithinBlock, const IndexingSta
 }
 } // namespace parse_data_block
 
-FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType blockBeginning,
+FastLinePositionArray IndexOperation::parseDataBlock( OffsetInFile::UnderlyingType blockBeginning,
                                                       const QByteArray& block,
                                                       IndexingState& state ) const
 {
@@ -455,7 +455,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( LineOffset::UnderlyingType
             state.end = currentDataEnd;
             state.pos = state.end + state.encodingParams.lineFeedWidth;
             state.additional_spaces = 0;
-            linePositions.append( LineOffset( state.pos ) );
+            linePositions.append( OffsetInFile( state.pos ) );
         }
     }
 
@@ -583,7 +583,7 @@ void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& bloc
     LOG_DEBUG << "Indexing block " << blockBeginning << " done";
 }
 
-void IndexOperation::doIndex( LineOffset initialPosition )
+void IndexOperation::doIndex( OffsetInFile initialPosition )
 {
     QFile file( fileName_ );
 
@@ -658,7 +658,7 @@ void IndexOperation::doIndex( LineOffset initialPosition )
         LOG_WARNING << "Non LF terminated file, adding a fake end of line";
 
         FastLinePositionArray line_position;
-        line_position.append( LineOffset( state.file_size + 1 ) );
+        line_position.append( OffsetInFile( state.file_size + 1 ) );
         line_position.setFakeFinalLF();
 
         scopedAccessor.addAll( {}, 0_length, line_position, state.encodingGuess );
@@ -764,7 +764,7 @@ OperationResult PartialIndexOperation::run()
         LOG_INFO << "PartialIndexOperation::run(), file " << fileName_.toStdString();
 
         const auto initialPosition
-            = LineOffset( IndexingData::ConstAccessor{ indexing_data_.get() }.getIndexedSize() );
+            = OffsetInFile( IndexingData::ConstAccessor{ indexing_data_.get() }.getIndexedSize() );
 
         LOG_INFO << "PartialIndexOperation: Starting the count at " << initialPosition << " ...";
 
