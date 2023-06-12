@@ -1806,14 +1806,25 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
 {
     const auto offset = std::abs( ( pos.y() - drawingTopOffset_ ) / charHeight_ );
 
-    const auto wrappedLineInfoIndex = std::clamp( static_cast<size_t>( std::floor( offset ) ),
-                                                  size_t{ 0 }, wrappedLinesNumbers_.size() - 1 );
+    if ( wrappedLinesNumbers_.empty() ) {
+        return FilePos{ 0_lnum, 0 };
+    }
+    
+    const auto wrappedLineInfoIndex
+        = wrappedLinesNumbers_.size() > 1
+              ? std::clamp( static_cast<size_t>( std::floor( offset ) ), size_t{ 0 },
+                            wrappedLinesNumbers_.size() - 1 )
+              : 0;
 
     auto [ line, wrappedLine ] = wrappedLinesNumbers_[ wrappedLineInfoIndex ];
     if ( line >= logData_->getNbLine() )
         line = LineNumber( logData_->getNbLine().get() ) - 1_lcount;
 
     const auto lineText = logData_->getExpandedLineString( line );
+    if ( lineText.size() <= 1 ) {
+        return FilePos{ line, 0 };
+    }
+
     QStringRef visibleText;
     if ( useTextWrap_ ) {
         WrappedLinesView wrapped{ lineText, getNbVisibleCols() };
@@ -1845,8 +1856,8 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         column += firstCol_;
     }
 
-    column = std::clamp(
-        column, 0, std::max( 0, static_cast<LineLength::UnderlyingType>( lineText.size() ) - 1 ) );
+    column
+        = std::clamp( column, 0, static_cast<LineLength::UnderlyingType>( lineText.size() ) - 1 );
 
     LOG_DEBUG << "AbstractLogView::convertCoordToFilePos col=" << column << " line=" << line;
     return FilePos{ line, column };
