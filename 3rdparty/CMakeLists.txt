@@ -27,7 +27,7 @@ cpmaddpackage(
   GITHUB_REPOSITORY
   variar/CRoaring
   GIT_TAG
-  0e4e32b7ceb3d6d63535d8b7195d3142647ea5af
+  80a8dcf4f683f00cc9be180f8b18de13491b7e27
   EXCLUDE_FROM_ALL
   YES
   OPTIONS
