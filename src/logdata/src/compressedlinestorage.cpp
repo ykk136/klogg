@@ -364,7 +364,7 @@ OffsetInFile CompressedLinePositionStorage::at( LineNumber index, Cache* lastPos
     return position;
 }
 
-void CompressedLinePositionStorage::append_list( const std::vector<OffsetInFile>& positions )
+void CompressedLinePositionStorage::append_list( const klogg::vector<OffsetInFile>& positions )
 {
     // This is not very clever, but caching should make it
     // reasonably fast.

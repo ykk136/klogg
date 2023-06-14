@@ -131,9 +131,9 @@ OptionalLineNumber Selection::selectedLine() const
     return selectedLine_;
 }
 
-std::vector<LineNumber> Selection::getLines() const
+klogg::vector<LineNumber> Selection::getLines() const
 {
-    std::vector<LineNumber> selection;
+    klogg::vector<LineNumber> selection;
 
     if ( selectedLine_.has_value() ) {
         selection.push_back( *selectedLine_ );

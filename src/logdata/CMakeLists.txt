@@ -54,6 +54,7 @@ target_link_libraries(
          kdtoolbox
          robin_hood
          simdutf
+         mimalloc
 )
 
 target_link_libraries(klogg_logdata PRIVATE xxhash)

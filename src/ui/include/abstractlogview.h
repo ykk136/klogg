@@ -207,7 +207,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void clearQuickFindNotification();
     // Sent when the view ask for a line to be marked
     // (click in the left margin).
-    void markLines( const std::vector<LineNumber>& lines );
+    void markLines( const klogg::vector<LineNumber>& lines );
     // Sent up when the user wants to add the selection to the search
     void addToSearch( const QString& selection );
     // Sent up when the user wants to replace the search with the selection
@@ -371,7 +371,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     bool useTextWrap_ = false;
     int firstCol_ = 0;
 
-    std::vector<std::pair<LineNumber, size_t>> wrappedLinesNumbers_;
+    klogg::vector<std::pair<LineNumber, size_t>> wrappedLinesNumbers_;
 
     LineNumber searchStart_;
     LineNumber searchEnd_;
@@ -461,7 +461,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
 
     void considerMouseHovering( int xPos, int yPos );
 
-    LineLength maxLineLength( const std::vector<LineNumber>& lines ) const;
+    LineLength maxLineLength( const klogg::vector<LineNumber>& lines ) const;
 
     // Save specified lines in range [begin, end) to a file
     void saveLinesToFile( LineNumber begin, LineNumber end );

@@ -167,7 +167,7 @@ std::pair<QColor, QColor> Highlighter::vairateColors( const QString& match ) con
     return std::make_pair( color_.foreColor.darker( factor ), color_.backColor.darker( factor ) );
 }
 
-bool Highlighter::matchLine( const QString& line, std::vector<HighlightedMatch>& matches ) const
+bool Highlighter::matchLine( const QString& line, klogg::vector<HighlightedMatch>& matches ) const
 {
     matches.clear();
 
@@ -228,11 +228,11 @@ bool HighlighterSet::isEmpty() const
 }
 
 HighlighterMatchType HighlighterSet::matchLine( const QString& line,
-                                                std::vector<HighlightedMatch>& matches ) const
+                                                klogg::vector<HighlightedMatch>& matches ) const
 {
     auto matchType = HighlighterMatchType::NoMatch;
     for ( auto hl = highlighterList_.rbegin(); hl != highlighterList_.rend(); ++hl ) {
-        std::vector<HighlightedMatch> thisMatches;
+        klogg::vector<HighlightedMatch> thisMatches;
         if ( !hl->matchLine( line, thisMatches ) ) {
             continue;
         }

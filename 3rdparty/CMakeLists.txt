@@ -315,13 +315,22 @@ if(WIN32)
   set(BUILD_SHARED_LIBS OFF)
 endif()
 
-if(TARGET tbbmalloc_proxy)
-  add_library(tbbmalloc_proxy_wrapper ALIAS tbbmalloc_proxy)
-else()
-  add_library(tbbmalloc_proxy_wrapper INTERFACE)
-  find_package(tbbmalloc_proxy)
-  target_link_libraries(tbbmalloc_proxy_wrapper INTERFACE ${TBB_MALLOC_PROXY_LIBRARIES})
-endif()
+cpmaddpackage(
+  NAME
+  mimalloc
+  GITHUB_REPOSITORY
+  microsoft/mimalloc
+  VERSION
+  2.1.2
+  EXCLUDE_FROM_ALL
+  YES
+  OPTIONS
+  "MI_BUILD_TESTS OFF"
+  "MI_SECURE OFF"
+  "MI_BUILD_SHARED OFF"
+  "MI_BUILD_STATIC ON"
+  "MI_BUILD_OBJECT OFF"
+)
 
 set(klogg_cpm_targets
     xxhash
@@ -337,7 +346,8 @@ set(klogg_cpm_targets
     hs
     tbb
     exprtk,
-    type_safe
+    type_safe,
+    mimalloc
 )
 foreach(target ${klogg_cpm_targets})
   if(TARGET ${target})
@@ -349,38 +359,6 @@ foreach(target ${klogg_cpm_targets})
     set_property(TARGET ${target} PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${${target}_include_dirs})
   endif()
 endforeach()
-
-if(KLOGG_OVERRIDE_MALLOC)
-  add_library(klogg_malloc_proxy INTERFACE)
-  target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_OVERRIDE_MALLOC)
-
-  if(NOT WIN32 AND KLOGG_USE_MIMALLOC)
-    target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_USE_MIMALLOC)
-
-    cpmaddpackage(
-      NAME
-      mimalloc
-      GITHUB_REPOSITORY
-      microsoft/mimalloc
-      VERSION
-      2.0.5
-      EXCLUDE_FROM_ALL
-      YES
-      OPTIONS
-      "MI_BUILD_TESTS OFF"
-      "MI_SECURE ON"
-      "MI_BUILD_SHARED OFF"
-      "MI_BUILD_STATIC OFF"
-      "MI_BUILD_OBJECT ON"
-    )
-    if(mimalloc_ADDED)
-      target_link_libraries(klogg_malloc_proxy INTERFACE mimalloc-obj)
-    endif()
-  else()
-    target_compile_definitions(klogg_malloc_proxy INTERFACE -DKLOGG_USE_TBBMALLOC)
-    target_link_libraries(klogg_malloc_proxy INTERFACE tbbmalloc_proxy_wrapper)
-  endif()
-endif()
 
 if(KLOGG_USE_SENTRY)
   set(SENTRY_BACKEND

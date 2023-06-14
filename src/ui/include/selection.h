@@ -137,7 +137,7 @@ class Selection {
     // If so, returns the portion position.
     Portion getPortionForLine( LineNumber line ) const;
     // Get a list of selected line(s), in order.
-    std::vector<LineNumber> getLines() const;
+    klogg::vector<LineNumber> getLines() const;
 
     uint64_t getSelectedLinesCount() const;
 

@@ -61,12 +61,12 @@ void Overview::updateView( unsigned height )
     }
 }
 
-const std::vector<Overview::WeightedLine>* Overview::getMatchLines() const
+const klogg::vector<Overview::WeightedLine>* Overview::getMatchLines() const
 {
     return &matchLines_;
 }
 
-const std::vector<Overview::WeightedLine>* Overview::getMarkLines() const
+const klogg::vector<Overview::WeightedLine>* Overview::getMarkLines() const
 {
     return &markLines_;
 }

@@ -200,9 +200,9 @@ class CrawlerWidget : public QSplitter,
     void updateLineNumberHandler( LineNumber line, uint64_t nLines, uint64_t startCol,
                                   uint64_t nSymbols );
     // Mark a line that has been clicked on the main (top) view.
-    void markLinesFromMain( const std::vector<LineNumber>& lines );
+    void markLinesFromMain( const klogg::vector<LineNumber>& lines );
     // Mark a line that has been clicked on the filtered (bottom) view.
-    void markLinesFromFiltered( const std::vector<LineNumber>& lines );
+    void markLinesFromFiltered( const klogg::vector<LineNumber>& lines );
 
     void loadingFinishedHandler( LoadingStatus status );
     // Manages the info lines to inform the user the file has changed.
@@ -407,7 +407,7 @@ class CrawlerWidget : public QSplitter,
     bool loadingInProgress_ = true;
     bool firstLoadDone_ = false;
 
-    std::vector<LineNumber> savedMarkedLines_;
+    klogg::vector<LineNumber> savedMarkedLines_;
 
     // Current encoding setting;
     std::optional<int> encodingMib_;

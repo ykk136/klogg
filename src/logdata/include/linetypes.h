@@ -34,6 +34,7 @@
 #include <type_traits>
 
 #include "log.h"
+#include "containers.h"
 
 template <typename StrongType>
 constexpr StrongType maxValue()

@@ -31,6 +31,8 @@
 #include <QRegularExpression>
 #include <QString>
 
+#include "containers.h"
+
 #ifdef KLOGG_HAS_HS
 #include <hs.h>
 
@@ -44,7 +46,7 @@ using MatchedPatterns = std::string;
 class DefaultRegularExpressionMatcher {
   public:
     explicit DefaultRegularExpressionMatcher(
-        const std::vector<RegularExpressionPattern>& patterns )
+        const klogg::vector<RegularExpressionPattern>& patterns )
     {
         std::transform(
             patterns.cbegin(), patterns.cend(), std::back_inserter( regexp_ ),
@@ -67,7 +69,7 @@ class DefaultRegularExpressionMatcher {
     }
 
   private:
-    std::vector<QRegularExpression> regexp_;
+    klogg::vector<QRegularExpression> regexp_;
 };
 
 #ifdef KLOGG_HAS_HS
@@ -133,7 +135,7 @@ class HsRegularExpression {
   public:
     HsRegularExpression() = default;
     explicit HsRegularExpression( const RegularExpressionPattern& includePattern );
-    explicit HsRegularExpression( const std::vector<RegularExpressionPattern>& patterns );
+    explicit HsRegularExpression( const klogg::vector<RegularExpressionPattern>& patterns );
 
     HsRegularExpression( const HsRegularExpression& ) = delete;
     HsRegularExpression& operator=( const HsRegularExpression& ) = delete;
@@ -153,7 +155,7 @@ class HsRegularExpression {
     HsDatabase database_;
     HsScratch scratch_;
 
-    std::vector<RegularExpressionPattern> patterns_;
+    klogg::vector<RegularExpressionPattern> patterns_;
 
     bool isValid_ = true;
     QString errorMessage_;
@@ -167,11 +169,11 @@ class HsRegularExpression {
     HsRegularExpression() = default;
 
     explicit HsRegularExpression( const RegularExpressionPattern& includePattern )
-        : HsRegularExpression( std::vector<RegularExpressionPattern>{ includePattern } )
+        : HsRegularExpression( klogg::vector<RegularExpressionPattern>{ includePattern } )
     {
     }
 
-    explicit HsRegularExpression( const std::vector<RegularExpressionPattern>& patterns )
+    explicit HsRegularExpression( const klogg::vector<RegularExpressionPattern>& patterns )
         : patterns_( patterns )
     {
         for ( const auto& pattern : patterns_ ) {
@@ -203,7 +205,7 @@ class HsRegularExpression {
     bool isValid_ = true;
     QString errorString_;
 
-    std::vector<RegularExpressionPattern> patterns_;
+    klogg::vector<RegularExpressionPattern> patterns_;
 };
 
 #endif

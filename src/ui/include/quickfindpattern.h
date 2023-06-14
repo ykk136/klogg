@@ -46,6 +46,7 @@
 #include <qglobal.h>
 
 #include "highlightedmatch.h"
+#include "containers.h"
 
 class QuickFind;
 
@@ -114,7 +115,7 @@ class QuickFindPattern : public QObject {
     // Returns whether the passed line match the quick find search.
     // If so, it populate the passed list with the list of matches
     // within this particular line.
-    bool matchLine( const QString& line, std::vector<HighlightedMatch>& matches ) const;
+    bool matchLine( const QString& line, klogg::vector<HighlightedMatch>& matches ) const;
 
     QuickFindMatcher getMatcher() const;
 

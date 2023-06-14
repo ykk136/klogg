@@ -235,9 +235,9 @@ class WrappedLinesView {
         return wrappedLines_.size();
     }
 
-    std::vector<QStringRef> mid( LineLength start, LineLength length ) const
+    klogg::vector<QStringRef> mid( LineLength start, LineLength length ) const
     {
-        std::vector<QStringRef> resultChunks;
+        klogg::vector<QStringRef> resultChunks;
         if ( wrappedLines_.size() == 1 ) {
             resultChunks.push_back( wrappedLines_.front().mid( start.get(), length.get() ) );
             return resultChunks;
@@ -278,7 +278,7 @@ class WrappedLinesView {
         return wrappedLines_.empty() || wrappedLines_.front().isEmpty();
     }
 
-    std::vector<QStringRef> wrappedLines_;
+    klogg::vector<QStringRef> wrappedLines_;
 };
 
 class LineChunk {
@@ -414,7 +414,7 @@ class LineDrawer {
     }
 
   private:
-    std::vector<LineChunk> chunks_;
+    klogg::vector<LineChunk> chunks_;
     QColor backColor_;
 };
 
@@ -1477,7 +1477,7 @@ void AbstractLogView::saveLinesToFile( LineNumber begin, LineNumber end )
 
     QProgressDialog progressDialog( this );
     progressDialog.setLabelText( tr( "Saving content to %1" ).arg( filename ) );
-    std::vector<std::pair<LineNumber, LinesCount>> offsets;
+    klogg::vector<std::pair<LineNumber, LinesCount>> offsets;
     auto lineOffset = begin;
     const auto chunkSize = 5000_lcount;
     offsets.reserve( ( end - ( lineOffset + chunkSize ) ).get() );
@@ -1499,7 +1499,7 @@ void AbstractLogView::saveLinesToFile( LineNumber begin, LineNumber end )
              [ &interruptRequest ]() { interruptRequest.set(); } );
 
     tbb::flow::graph saveFileGraph;
-    using LinesData = std::pair<std::vector<QString>, bool>;
+    using LinesData = std::pair<klogg::vector<QString>, bool>;
     auto lineReader = tbb::flow::input_node<LinesData>(
         saveFileGraph,
         [ this, &offsets, &interruptRequest, &progressDialog, offsetIndex = 0u,
@@ -1834,7 +1834,7 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         visibleText = QStringRef( &lineText ).mid( firstCol_, getNbVisibleCols() );
     }
 
-    std::vector<int> possibleColumns( static_cast<size_t>( visibleText.length() ) );
+    klogg::vector<int> possibleColumns( static_cast<size_t>( visibleText.length() ) );
     std::iota( possibleColumns.begin(), possibleColumns.end(), 0 );
 
     const auto columnIt = std::lower_bound(
@@ -1916,7 +1916,7 @@ void AbstractLogView::jumpToStartOfLine()
     horizontalScrollBar()->setValue( 0 );
 }
 
-LineLength AbstractLogView::maxLineLength( const std::vector<LineNumber>& lines ) const
+LineLength AbstractLogView::maxLineLength( const klogg::vector<LineNumber>& lines ) const
 {
     const auto longestLine = std::max_element(
         lines.cbegin(), lines.cend(), [ this ]( const auto& lhs, const auto& rhs ) {
@@ -1940,10 +1940,10 @@ void AbstractLogView::jumpToRightOfScreen()
 {
     const auto nbVisibleLines = getNbVisibleLines();
 
-    std::vector<LineNumber::UnderlyingType> visibleLinesNumbers( nbVisibleLines.get() );
+    klogg::vector<LineNumber::UnderlyingType> visibleLinesNumbers( nbVisibleLines.get() );
     std::iota( visibleLinesNumbers.begin(), visibleLinesNumbers.end(), firstLine_.get() );
 
-    std::vector<LineNumber> visibleLines( nbVisibleLines.get() );
+    klogg::vector<LineNumber> visibleLines( nbVisibleLines.get() );
     std::transform( visibleLinesNumbers.cbegin(), visibleLinesNumbers.cend(), visibleLines.begin(),
                     []( auto number ) { return LineNumber{ number }; } );
     horizontalScrollBar()->setValue( maxLineLength( visibleLines ).get() - getNbVisibleCols() );
@@ -2332,7 +2332,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
         patternHighlight->setForeColor( Qt::black );
     }
 
-    std::vector<Highlighter> additionalHighlighters;
+    klogg::vector<Highlighter> additionalHighlighters;
     for ( auto i = 0u; i < quickHighlighters_.size(); ++i ) {
         const auto quickHighlighterIndex = static_cast<int>( i );
         if ( quickHighlighterIndex >= quickHighlighters.size() ) {
@@ -2361,7 +2361,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
         const int xPos = contentStartPosX + ContentMarginWidth;
 
-        std::vector<HighlightedMatch> highlighterMatches;
+        klogg::vector<HighlightedMatch> highlighterMatches;
 
         if ( selection_.isLineSelected( lineNumber ) && !selection_.isSingleLine() ) {
             // Reverse the selected line
@@ -2390,7 +2390,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
             }
 
             if ( patternHighlight ) {
-                std::vector<HighlightedMatch> patternMatches;
+                klogg::vector<HighlightedMatch> patternMatches;
                 patternHighlight->matchLine( logLine, patternMatches );
                 highlighterMatches.insert( highlighterMatches.end(), patternMatches.begin(),
                                            patternMatches.end() );
@@ -2398,7 +2398,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
             highlighterMatches.reserve( additionalHighlighters.size() );
             for ( const auto& highlighter : additionalHighlighters ) {
-                std::vector<HighlightedMatch> patternMatches;
+                klogg::vector<HighlightedMatch> patternMatches;
                 highlighter.matchLine( logLine, patternMatches );
                 highlighterMatches.insert( highlighterMatches.end(), patternMatches.begin(),
                                            patternMatches.end() );
@@ -2432,17 +2432,16 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                                      match.foreColor(), match.backColor() };
         };
 
-        std::vector<HighlightedMatch> allHighlights;
+        klogg::vector<HighlightedMatch> allHighlights;
         allHighlights.reserve( highlighterMatches.size() );
         std::transform( highlighterMatches.cbegin(), highlighterMatches.cend(),
                         std::back_inserter( allHighlights ), untabifyHighlight );
 
         // string to print, cut to fit the length and position of the view
-        const QString expandedLine = expandedLines[ currentLine.get() ];
-        const QString cutLine = expandedLine.mid( firstCol_, nbVisibleCols );
+        const QString& expandedLine = expandedLines[ currentLine.get() ];
 
         // Has the line got elements to be highlighted
-        std::vector<HighlightedMatch> quickFindMatches;
+        klogg::vector<HighlightedMatch> quickFindMatches;
         quickFindPattern_->matchLine( expandedLine, quickFindMatches );
         allHighlights.insert( allHighlights.end(),
                               std::make_move_iterator( quickFindMatches.begin() ),
@@ -2468,7 +2467,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 
         LineDrawer lineDrawer( backColor );
         if ( !allHighlights.empty() && !expandedLine.isEmpty() ) {
-            auto highlightColors = std::vector<std::pair<QColor, QColor>>(
+            auto highlightColors = klogg::vector<std::pair<QColor, QColor>>(
                 static_cast<size_t>( expandedLine.size() ),
                 std::make_pair( foreColor, backColor ) );
 
@@ -2485,7 +2484,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
                 }
             }
 
-            std::vector<size_t> columnIndexes( highlightColors.size() );
+            klogg::vector<size_t> columnIndexes( highlightColors.size() );
             std::iota( columnIndexes.begin(), columnIndexes.end(), 0 );
 
             auto columnIndexIt = columnIndexes.begin();

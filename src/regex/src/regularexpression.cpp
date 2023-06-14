@@ -32,14 +32,14 @@
 #include "regularexpression.h"
 
 namespace {
-std::vector<RegularExpressionPattern>
+klogg::vector<RegularExpressionPattern>
 parseBooleanExpressions( QString& pattern, bool isCaseSensitive, bool isPlainText )
 {
     if ( !pattern.contains( '"' ) ) {
         throw std::runtime_error( "Patterns must be enclosed in quotes" );
     }
 
-    std::vector<RegularExpressionPattern> subPatterns;
+    klogg::vector<RegularExpressionPattern> subPatterns;
     subPatterns.reserve( static_cast<size_t>( pattern.size() ) );
 
     int currentIndex = 0;

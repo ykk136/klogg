@@ -51,7 +51,7 @@ uint32_t buildPatternCombination( std::string_view variables )
 } // namespace
 
 BooleanExpressionEvaluator::BooleanExpressionEvaluator(
-    const std::string& expression, const std::vector<RegularExpressionPattern>& patterns )
+    const std::string& expression, const klogg::vector<RegularExpressionPattern>& patterns )
 {
     variables_.reserve( patterns.size() );
 

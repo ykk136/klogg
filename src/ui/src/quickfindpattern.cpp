@@ -137,7 +137,7 @@ void QuickFindPattern::changeSearchPattern( const QString& pattern, bool ignoreC
 }
 
 bool QuickFindPattern::matchLine( const QString& line,
-                                  std::vector<HighlightedMatch>& matches ) const
+                                  klogg::vector<HighlightedMatch>& matches ) const
 {
     matches.clear();
 

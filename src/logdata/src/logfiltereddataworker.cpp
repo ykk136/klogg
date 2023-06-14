@@ -64,6 +64,7 @@
 #include "regularexpression.h"
 
 #include "logfiltereddataworker.h"
+#include "synchronization.h"
 
 namespace {
 struct PartialSearchResults {
@@ -321,7 +322,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
     using PatternMatcherPtr = std::unique_ptr<PatternMatcher>;
     using MatcherContext = std::tuple<PatternMatcherPtr, microseconds, RegexMatcherNode>;
 
-    std::vector<MatcherContext> regexMatchers;
+    klogg::vector<MatcherContext> regexMatchers;
     regexMatchers.reserve( matchingThreadsCount );
     RegularExpression regularExpression{ regexp_ };
     for ( auto index = 0u; index < matchingThreadsCount; ++index ) {
@@ -367,8 +368,6 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
     std::chrono::microseconds matchCombiningDuration{ 0 };
 
-    robin_hood::unordered_node_map<uint64_t, SearchBlockData> searchBlocksStorage;
-    
     auto matchProcessor
         = tbb::flow::function_node<BlockDataType, tbb::flow::continue_msg, tbb::flow::rejecting>(
             searchGraph, 1, [ & ]( const BlockDataType& blockData ) {
@@ -410,12 +409,10 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
                     reportedMatches = nbMatches;
                 }
 
-                searchBlocksStorage.erase(blockData->chunkStart.get());
-
                 const auto matchProcessorEndTime = high_resolution_clock::now();
                 matchCombiningDuration += duration_cast<microseconds>( matchProcessorEndTime
                                                                        - matchProcessorStartTime );
-
+                delete blockData;
                 return tbb::flow::continue_msg{};
             } );
 
@@ -430,7 +427,6 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
     tbb::flow::make_edge( matchProcessor, blockPrefetcher.decrementer() );
 
     auto chunkStart = initialLine;
-    searchBlocksStorage.reserve( matchingThreadsCount * 4 );
     while ( chunkStart < endLine && !interruptRequested_ ) {
         const auto lineSourceStartTime = high_resolution_clock::now();
         LOG_DEBUG << "Reading chunk starting at " << chunkStart;
@@ -442,10 +438,8 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
         /*LOG_DEBUG << "Sending chunk starting at " << chunkStart << ", " <<
             lines.second.size()
                 << " lines read.";*/
-
-        auto [block, _] = searchBlocksStorage.emplace(chunkStart.get(), SearchBlockData{chunkStart, std::move(lines)});
-        auto blockData = &block->second;
-
+        BlockDataType blockData = new SearchBlockData{chunkStart, std::move(lines)};
+        
         const auto lineSourceEndTime = high_resolution_clock::now();
         const auto chunkReadTime
             = duration_cast<microseconds>( lineSourceEndTime - lineSourceStartTime );

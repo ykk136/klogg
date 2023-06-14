@@ -537,9 +537,9 @@ void CrawlerWidget::updateLineNumberHandler( LineNumber line, uint64_t nLines, u
     Q_EMIT newSelection( line, nLines, startCol, nSymbols );
 }
 
-void CrawlerWidget::markLinesFromMain( const std::vector<LineNumber>& lines )
+void CrawlerWidget::markLinesFromMain( const klogg::vector<LineNumber>& lines )
 {
-    std::vector<LineNumber> alreadyMarkedLines;
+    klogg::vector<LineNumber> alreadyMarkedLines;
     alreadyMarkedLines.reserve( lines.size() );
 
     bool markAdded = false;
@@ -575,9 +575,9 @@ void CrawlerWidget::markLinesFromMain( const std::vector<LineNumber>& lines )
     update();
 }
 
-void CrawlerWidget::markLinesFromFiltered( const std::vector<LineNumber>& lines )
+void CrawlerWidget::markLinesFromFiltered( const klogg::vector<LineNumber>& lines )
 {
-    std::vector<LineNumber> linesInMain( lines.size() );
+    klogg::vector<LineNumber> linesInMain( lines.size() );
     std::transform( lines.cbegin(), lines.cend(), linesInMain.begin(),
                     [ this ]( const auto& filteredLine ) {
                         if ( filteredLine < logData_->getNbLine() ) {
