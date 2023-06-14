@@ -38,6 +38,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <exception>
 #include <qsemaphore.h>
 #include <qthreadpool.h>
@@ -48,6 +49,8 @@
 
 #include <tbb/flow_graph.h>
 #include <tbb/info.h>
+#include <vector>
+#include <robin_hood.h>
 
 #include "configuration.h"
 #include "dispatch_to.h"
@@ -175,7 +178,8 @@ void SearchData::clear()
 LogFilteredDataWorker::LogFilteredDataWorker( const LogData& sourceLogData )
     : sourceLogData_( sourceLogData )
 {
-    operationsPool_.setMaxThreadCount(1);
+    operationsPool_.setMaxThreadCount( 1 );
+    LOG_INFO << "Roaring hw " << roaring::internal::croaring_hardware_support();
 }
 
 LogFilteredDataWorker::~LogFilteredDataWorker() noexcept
@@ -210,14 +214,13 @@ void LogFilteredDataWorker::search( const RegularExpressionPattern& regExp, Line
 
     LOG_INFO << "Search requested";
     QSemaphore operationStarted;
-    operationsPool_.start(
-        createRunnable( [ this, &operationStarted, regExp, startLine, endLine ] {
-            operationStarted.release();
-            ScopedLock operationLock( operationsMutex_ );
-            auto operationRequested = std::make_unique<FullSearchOperation>(
-                sourceLogData_, interruptRequested_, regExp, startLine, endLine );
-            connectSignalsAndRun( operationRequested.get() );
-        } ) );
+    operationsPool_.start( createRunnable( [ this, &operationStarted, regExp, startLine, endLine ] {
+        operationStarted.release();
+        ScopedLock operationLock( operationsMutex_ );
+        auto operationRequested = std::make_unique<FullSearchOperation>(
+            sourceLogData_, interruptRequested_, regExp, startLine, endLine );
+        connectSignalsAndRun( operationRequested.get() );
+    } ) );
     operationStarted.acquire();
 }
 
@@ -228,7 +231,7 @@ void LogFilteredDataWorker::updateSearch( const RegularExpressionPattern& regExp
     ScopedLock locker( operationsMutex_ ); // to protect operationRequested_
     operationsPool_.waitForDone();
     interruptRequested_.clear();
-    
+
     LOG_INFO << "Search update requested from " << position.get();
 
     QSemaphore operationStarted;
@@ -306,7 +309,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
     std::chrono::microseconds fileReadingDuration{ 0 };
 
-    using BlockDataType = std::shared_ptr<SearchBlockData>;
+    using BlockDataType = SearchBlockData*;
     auto blockPrefetcher
         = tbb::flow::limiter_node<BlockDataType>( searchGraph, matchingThreadsCount * 3 );
 
@@ -364,6 +367,8 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
 
     std::chrono::microseconds matchCombiningDuration{ 0 };
 
+    robin_hood::unordered_node_map<uint64_t, SearchBlockData> searchBlocksStorage;
+    
     auto matchProcessor
         = tbb::flow::function_node<BlockDataType, tbb::flow::continue_msg, tbb::flow::rejecting>(
             searchGraph, 1, [ & ]( const BlockDataType& blockData ) {
@@ -405,6 +410,8 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
                     reportedMatches = nbMatches;
                 }
 
+                searchBlocksStorage.erase(blockData->chunkStart.get());
+
                 const auto matchProcessorEndTime = high_resolution_clock::now();
                 matchCombiningDuration += duration_cast<microseconds>( matchProcessorEndTime
                                                                        - matchProcessorStartTime );
@@ -423,6 +430,7 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
     tbb::flow::make_edge( matchProcessor, blockPrefetcher.decrementer() );
 
     auto chunkStart = initialLine;
+    searchBlocksStorage.reserve( matchingThreadsCount * 4 );
     while ( chunkStart < endLine && !interruptRequested_ ) {
         const auto lineSourceStartTime = high_resolution_clock::now();
         LOG_DEBUG << "Reading chunk starting at " << chunkStart;
@@ -435,7 +443,8 @@ void SearchOperation::doSearch( SearchData& searchData, LineNumber initialLine )
             lines.second.size()
                 << " lines read.";*/
 
-        auto blockData = std::make_shared<SearchBlockData>( chunkStart, std::move( lines ) );
+        auto [block, _] = searchBlocksStorage.emplace(chunkStart.get(), SearchBlockData{chunkStart, std::move(lines)});
+        auto blockData = &block->second;
 
         const auto lineSourceEndTime = high_resolution_clock::now();
         const auto chunkReadTime
