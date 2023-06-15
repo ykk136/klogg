@@ -78,8 +78,9 @@ EncodingParameters::EncodingParameters( const QTextCodec* codec )
     QTextCodec::ConverterState convertState( QTextCodec::IgnoreHeader );
     const QByteArray encodedLineFeed = codec->fromUnicode( &LineFeed, 1, &convertState );
 
-    lineFeedWidth = encodedLineFeed.size();
-    lineFeedIndex = encodedLineFeed[ 0 ] == '\n' ? 0 : ( encodedLineFeed.size() - 1 );
+    lineFeedWidth = static_cast<int>( encodedLineFeed.size() );
+    lineFeedIndex
+        = encodedLineFeed[ 0 ] == '\n' ? 0 : ( static_cast<int>( encodedLineFeed.size() ) - 1 );
 }
 
 QTextCodec* EncodingDetector::detectEncoding( const klogg::vector<char>& block ) const

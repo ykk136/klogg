@@ -1847,7 +1847,7 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
             return width < p.x();
         } );
 
-    const auto length = visibleText.size();
+    const auto length = static_cast<int>( visibleText.size() );
 
     auto column = ( columnIt != possibleColumns.end() ? *columnIt : length ) - 1;
     if ( useTextWrap_ ) {
@@ -1857,7 +1857,7 @@ AbstractLogView::FilePos AbstractLogView::convertCoordToFilePos( const QPoint& p
         column += firstCol_;
     }
 
-    column = std::clamp( column, 0, lineText.size() - 1 );
+    column = std::clamp( column, 0, static_cast<int>( lineText.size() ) - 1 );
 
     LOG_DEBUG << "AbstractLogView::convertCoordToFilePos col=" << column << " line=" << line;
     return FilePos{ line, column };
@@ -2417,8 +2417,7 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 #if QT_VERSION < QT_VERSION_CHECK( 6, 0, 0 )
             const auto matchPart = logLine.midRef( match.startColumn(), match.size() );
 #else
-            const auto matchPart
-                = QStringView{ logLine }.mid( match.startColumn(), match.size() );
+            const auto matchPart = QStringView{ logLine }.mid( match.startColumn(), match.size() );
 #endif
             const auto expandedMatchLength
                 = untabify( matchPart.toString(), expandedPrefixLength ).size();
