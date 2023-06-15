@@ -50,11 +50,11 @@ target_link_libraries(
          roaring-headers
          tbb
          type_safe
-         uchardet_wrapper
+         klogg_uchardet_wrapper
          kdtoolbox
          robin_hood
          simdutf
-         mimalloc
+         klogg_mimalloc_wrapper
 )
 
 target_link_libraries(klogg_logdata PRIVATE xxhash)

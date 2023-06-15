@@ -155,7 +155,7 @@ int main( int argc, char* argv[] )
     roaring_init_memory_hook(roaring_memory_allocators);
 
 #ifdef KLOGG_HAS_HS
-    hs_set_allocator(mi_malloc, mi_cfree);
+    hs_set_allocator(mi_malloc, mi_free);
 #endif
 
     if ( maxConcurrency < 2 ) {

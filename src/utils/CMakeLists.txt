@@ -29,5 +29,5 @@ target_link_libraries(
          Qt${QT_VERSION_MAJOR}::Network
          Qt${QT_VERSION_MAJOR}::Concurrent
          whereami
-         mimalloc
+         klogg_mimalloc_wrapper
 )
