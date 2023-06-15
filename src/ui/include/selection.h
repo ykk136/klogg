@@ -62,7 +62,7 @@ class Portion {
         return !!line_ && endColumn_ >= startColumn_ && startColumn_ >= 0;
     }
 
-    int length() const
+    int size() const
     {
         return endColumn_ - startColumn_ + 1;
     }

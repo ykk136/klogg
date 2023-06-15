@@ -226,7 +226,7 @@ QToolButton* QuickFindWidget::setupToolButton( const QString& text, const QStrin
     toolButton->setAutoRaise( true );
     toolButton->setIcon( QIcon( icon ) );
 
-    if ( text.length() > 0 ) {
+    if ( text.size() > 0 ) {
         toolButton->setText( text );
         toolButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
     }

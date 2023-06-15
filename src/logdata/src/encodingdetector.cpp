@@ -76,11 +76,10 @@ EncodingParameters::EncodingParameters( const QTextCodec* codec )
     isUtf16LE = codec->mibEnum() == Utf16LEMib;
 
     QTextCodec::ConverterState convertState( QTextCodec::IgnoreHeader );
-    QByteArray encodedLineFeed = codec->fromUnicode( &LineFeed, 1, &convertState );
+    const QByteArray encodedLineFeed = codec->fromUnicode( &LineFeed, 1, &convertState );
 
-    lineFeedWidth = static_cast<int>( encodedLineFeed.length() );
-    lineFeedIndex
-        = encodedLineFeed[ 0 ] == '\n' ? 0 : static_cast<int>( ( encodedLineFeed.length() - 1 ) );
+    lineFeedWidth = encodedLineFeed.size();
+    lineFeedIndex = encodedLineFeed[ 0 ] == '\n' ? 0 : ( encodedLineFeed.size() - 1 );
 }
 
 QTextCodec* EncodingDetector::detectEncoding( const klogg::vector<char>& block ) const
@@ -107,8 +106,7 @@ QTextCodec* EncodingDetector::detectEncoding( const klogg::vector<char>& block )
         }
     }
 
-    QByteArray blockArray
-        = QByteArray::fromRawData( block.data(), static_cast<int>( block.size() ) );
+    QByteArray blockArray = QByteArray::fromRawData( block.data(), klogg::isize( block ) );
 
     auto encodingGuess = uchardetCodec ? QTextCodec::codecForUtfText( blockArray, uchardetCodec )
                                        : QTextCodec::codecForUtfText( blockArray );

@@ -59,8 +59,8 @@ class DefaultRegularExpressionMatcher {
         std::transform( regexp_.cbegin(), regexp_.cend(), matchedPatterns.begin(),
                         [ utf8Data ]( const auto& regexp ) {
                             return regexp
-                                .match( QString::fromUtf8( utf8Data.data(),
-                                                           static_cast<int>( utf8Data.size() ) ) )
+                                .match(
+                                    QString::fromUtf8( utf8Data.data(), klogg::isize( utf8Data ) ) )
                                 .hasMatch();
                             ;
                         } );
@@ -82,10 +82,10 @@ struct HsMatcherContext {
     HsMatcherContext( std::size_t numberOfPatterns = 1 );
 
     void reset();
-   
+
     MatchedPatterns matchingPatterns;
 
-private:
+  private:
     MatchedPatterns matchingPatternsTemplate_;
 };
 

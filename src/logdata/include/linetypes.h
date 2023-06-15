@@ -254,5 +254,5 @@ LineLength getUntabifiedLength( const LineType& utf8Line )
         tabPosition = utf8Line.find( '\t', tabPosition + 1 );
     }
 
-    return LineLength( static_cast<int>( utf8Line.size() + totalSpaces ) );
+    return LineLength( type_safe::narrow_cast<LineLength::UnderlyingType>( utf8Line.size() + totalSpaces ) );
 }

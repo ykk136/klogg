@@ -37,6 +37,7 @@
  */
 
 #include "log.h"
+#include "containers.h"
 
 #include "infoline.h"
 #include <QAction>
@@ -106,7 +107,7 @@ void InfoLine::contextMenuEvent( QContextMenuEvent* event )
              [ this ]( auto ) { QApplication::clipboard()->setText( this->selectedText() ); } );
 
     connect( selectAll, &QAction::triggered,
-             [ this ]( auto ) { setSelection( 0, static_cast<int>( this->text().length() ) ); } );
+             [ this ]( auto ) { setSelection( 0, klogg::isize( this->text() ) ); } );
 
     menu.exec( event->globalPos() );
 }

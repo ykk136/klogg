@@ -127,7 +127,7 @@ void IndexingData::addAll( const klogg::vector<char>& block, LineLength length,
     linePosition_.append_list( linePosition );
 
     if ( !block.empty() ) {
-        hash_.size += static_cast<qint64>( block.size() );
+        hash_.size += klogg::ssize( block );
 
         if ( !useFastModificationDetection_ ) {
             hashBuilder_.addData( block.data(), block.size() );
@@ -395,7 +395,7 @@ findNextLineFeed( const klogg::vector<char>& block, int posWithinBlock, const In
                   FindDelimeter findNextDelimeter )
 {
     const auto searchStart = block.data() + posWithinBlock;
-    const auto searchLineSize = block.size() - static_cast<size_t>( posWithinBlock );
+    const auto searchLineSize = static_cast<size_t>( klogg::ssize( block ) - posWithinBlock );
 
     const auto blockView = std::string_view( searchStart, searchLineSize );
     const auto nextLineFeed = findNextDelimeter( state.encodingParams, blockView, '\n' );
@@ -432,7 +432,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( OffsetInFile::UnderlyingTy
     FastLinePositionArray linePositions;
 
     while ( !isEndOfBlock ) {
-        if ( state.pos > blockBeginning + static_cast<int64_t>( block.size() ) ) {
+        if ( state.pos > blockBeginning + klogg::ssize( block ) ) {
             LOG_ERROR << "Trying to parse out of block: " << state.pos << " " << blockBeginning
                       << " " << block.size();
             break;
@@ -441,7 +441,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( OffsetInFile::UnderlyingTy
         auto posWithinBlock
             = static_cast<int>( state.pos >= blockBeginning ? ( state.pos - blockBeginning ) : 0u );
 
-        isEndOfBlock = posWithinBlock == static_cast<int64_t>( block.size() );
+        isEndOfBlock = posWithinBlock == klogg::ssize( block );
 
         if ( !isEndOfBlock ) {
             std::tie( isEndOfBlock, posWithinBlock, state.additional_spaces )
@@ -512,14 +512,14 @@ std::chrono::microseconds IndexOperation::readFileInBlocks( QFile& file,
 
         clock::time_point ioT1 = clock::now();
         const auto readBytes
-            = file.read( blockData.second->data(), static_cast<qint64>( blockData.second->size() ) );
+            = file.read( blockData.second->data(), klogg::ssize( *blockData.second ) );
 
         if ( readBytes < 0 ) {
             LOG_ERROR << "Reading past the end of file";
             break;
         }
 
-        if ( readBytes < static_cast<qint64>( blockData.second->size() ) ) {
+        if ( readBytes < klogg::ssize( *blockData.second ) ) {
             blockData.second->resize( static_cast<size_t>( readBytes ) );
         }
 
@@ -529,7 +529,7 @@ std::chrono::microseconds IndexOperation::readFileInBlocks( QFile& file,
 
         LOG_DEBUG << "Sending block " << blockData.first << " size " << blockData.second->size();
 
-        while ( !blockPrefetcher.try_put( std::move(blockData) ) && !interruptRequest_ ) {
+        while ( !blockPrefetcher.try_put( std::move( blockData ) ) && !interruptRequest_ ) {
             std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
         }
     }

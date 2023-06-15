@@ -56,6 +56,7 @@
 #include <simdutf.h>
 
 #include "configuration.h"
+#include "containers.h"
 #include "linetypes.h"
 #include "log.h"
 #include "logfiltereddata.h"
@@ -277,8 +278,7 @@ LineLength LogData::doGetLineLength( LineNumber line ) const
         return 0_length; /* exception? */
     }
 
-    return LineLength(
-        static_cast<LineLength::UnderlyingType>( doGetExpandedLineString( line ).length() ) );
+    return LineLength( doGetExpandedLineString( line ).size() );
 }
 
 void LogData::doSetDisplayEncoding( const char* encoding )
@@ -345,7 +345,7 @@ klogg::vector<QString> LogData::doGetExpandedLines( LineNumber first_line, Lines
     } );
 }
 
-LineNumber LogData::doGetLineNumber(LineNumber index) const
+LineNumber LogData::doGetLineNumber( LineNumber index ) const
 {
     return index;
 }
@@ -409,7 +409,7 @@ LogData::RawLines LogData::getLinesRaw( LineNumber firstLine, LinesCount number 
 }
 
 klogg::vector<QString> LogData::getLinesFromFile( LineNumber firstLine, LinesCount number,
-                                                QString ( *processLine )( QString&& ) ) const
+                                                  QString ( *processLine )( QString&& ) ) const
 {
     LOG_DEBUG << "firstLine:" << firstLine << " nb:" << number;
 
@@ -480,7 +480,7 @@ klogg::vector<QString> LogData::RawLines::decodeLines() const
                 break;
             }
 
-            if ( lineStart + length > static_cast<qint64>( buffer.size() ) ) {
+            if ( lineStart + length > klogg::ssize( buffer ) ) {
                 decodedLines.emplace_back( "KLOGG WARNING: file read failed" );
                 LOG_WARNING << "not enough data in buffer";
                 break;
@@ -533,11 +533,10 @@ klogg::vector<std::string_view> LogData::RawLines::buildUtf8View() const
             QString utf16Data;
             if ( prefilterPattern.pattern().isEmpty() && textDecoder.encodingParams.isUtf16LE ) {
                 utf16Data = QString::fromRawData( reinterpret_cast<const QChar*>( buffer.data() ),
-                                                  static_cast<int>( buffer.size() / 2 ) );
+                                                  klogg::isize( buffer ) / 2 );
             }
             else {
-                utf16Data = textDecoder.decoder->toUnicode( buffer.data(),
-                                                            static_cast<int>( buffer.size() ) );
+                utf16Data = textDecoder.decoder->toUnicode( buffer.data(), klogg::isize( buffer ) );
             }
 
             if ( !prefilterPattern.pattern().isEmpty() ) {
@@ -550,10 +549,10 @@ klogg::vector<std::string_view> LogData::RawLines::buildUtf8View() const
             //     resultSize = static_cast<size_t>( utf8Data_.size() );
             // }
             // else {
-                utf8Data_.resize( buffer.size() * 2 );
-                resultSize = simdutf::convert_utf16_to_utf8(
-                    reinterpret_cast<const char16_t*>( utf16Data.utf16() ),
-                    static_cast<size_t>( utf16Data.length() ), utf8Data_.data() );
+            utf8Data_.resize( buffer.size() * 2 );
+            resultSize = simdutf::convert_utf16_to_utf8(
+                reinterpret_cast<const char16_t*>( utf16Data.utf16() ),
+                static_cast<size_t>( utf16Data.size() ), utf8Data_.data() );
             // }
 
             wholeString = { utf8Data_.data(), resultSize };
@@ -573,7 +572,7 @@ klogg::vector<std::string_view> LogData::RawLines::buildUtf8View() const
     } catch ( const std::exception& e ) {
         LOG_ERROR << "failed to transform lines to utf8 " << e.what();
         const auto lastLineOffset = utf8Data_.size();
-        //utf8Data_.append( "KLOGG WARNING: not enough memory, try decrease search buffer" );
+        // utf8Data_.append( "KLOGG WARNING: not enough memory, try decrease search buffer" );
         lines.reserve( this->endOfLines.size() - lines.size() );
         while ( lines.size() < this->endOfLines.size() ) {
             lines.emplace_back( utf8Data_.data() + lastLineOffset,

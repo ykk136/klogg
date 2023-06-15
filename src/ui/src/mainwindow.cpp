@@ -41,6 +41,7 @@
 // load/save the settings on opening/closing of the app
 
 #include "configuration.h"
+#include "containers.h"
 #include "log.h"
 #include <QNetworkReply>
 #include <cassert>
@@ -1050,7 +1051,7 @@ void MainWindow::closeAll( ActionInitiator initiator )
 void MainWindow::selectAll()
 {
     if ( infoLine->hasFocus() ) {
-        infoLine->setSelection( 0, static_cast<int>( infoLine->text().length() ) );
+        infoLine->setSelection( 0, klogg::isize( infoLine->text() ) );
     }
     else if ( auto current = currentCrawlerWidget(); current != nullptr ) {
         current->selectAll();

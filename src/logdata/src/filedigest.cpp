@@ -68,7 +68,7 @@ FileDigest& FileDigest::addData( const char* data, size_t length )
 
 FileDigest& FileDigest::addData( const QByteArray& data )
 {
-    m_state->addData( data.data(), static_cast<size_t>( data.length() ) );
+    m_state->addData( data.data(), static_cast<size_t>( data.size() ) );
     return *this;
 }
 

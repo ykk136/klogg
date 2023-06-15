@@ -26,6 +26,7 @@
 #include <numeric>
 
 #include "abstractlogdata.h"
+#include "containers.h"
 #include "linetypes.h"
 #include "log.h"
 #include "selection.h"
@@ -149,7 +150,10 @@ klogg::vector<LineNumber> Selection::getLines() const
     return selection;
 }
 
-uint64_t Selection::getSelectedLinesCount() const { return selectedRange_.size().get(); }
+uint64_t Selection::getSelectedLinesCount() const
+{
+    return selectedRange_.size().get();
+}
 
 // The tab behaviour is a bit odd at the moment, full lines are not expanded
 // but partials (part of line) are, they probably should not ideally.
@@ -160,7 +164,7 @@ QString Selection::getSelectedText( const AbstractLogData* logData, bool lineNum
     QString text;
 
     const auto selectionSizeEstimate = std::accumulate(
-        selectionData.begin(), selectionData.end(), static_cast<int>( selectionData.size() ),
+        selectionData.begin(), selectionData.end(), klogg::isize( selectionData ),
         []( const auto& acc, const auto& next ) { return acc + next.second.size(); } );
 
     text.reserve( selectionSizeEstimate );

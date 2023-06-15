@@ -241,7 +241,7 @@ HighlighterMatchType HighlighterSet::matchLine( const QString& line,
             matchType = HighlighterMatchType::LineMatch;
 
             matches.clear();
-            matches.emplace_back( 0, line.length(), hl->foreColor(), hl->backColor() );
+            matches.emplace_back( 0, line.size(), hl->foreColor(), hl->backColor() );
         }
         else {
             if ( matchType != HighlighterMatchType::LineMatch ) {

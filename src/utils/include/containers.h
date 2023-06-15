@@ -23,9 +23,26 @@
 #include <mimalloc.h>
 #include <vector>
 
+#include <type_traits>
+#include <type_safe/narrow_cast.hpp>
+
 namespace klogg {
-    template<typename T>
-    using vector = std::vector<T, mi_stl_allocator<T>>;
+template <typename T>
+using vector = std::vector<T, mi_stl_allocator<T>>;
+
+template <class C>
+constexpr auto ssize( const C& c )
+    -> std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype( c.size() )>>
+{
+    using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype( c.size() )>>;
+    return static_cast<R>( c.size() );
 }
+
+template <class C>
+constexpr int isize( const C& c )
+{
+    return type_safe::narrow_cast<int>( c.size() );
+}
+} // namespace klogg
 
 #endif
