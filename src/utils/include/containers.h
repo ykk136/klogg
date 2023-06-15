@@ -23,8 +23,8 @@
 #include <mimalloc.h>
 #include <vector>
 
-#include <type_traits>
 #include <type_safe/narrow_cast.hpp>
+#include <type_traits>
 
 namespace klogg {
 template <typename T>
@@ -41,7 +41,7 @@ constexpr auto ssize( const C& c )
 template <class C>
 constexpr int isize( const C& c )
 {
-    return type_safe::narrow_cast<int>( c.size() );
+    return type_safe::narrow_cast<int>( ssize( c ) );
 }
 } // namespace klogg
 

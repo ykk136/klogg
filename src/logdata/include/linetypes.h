@@ -26,15 +26,15 @@
 #include <qglobal.h>
 #include <string_view>
 
-#include <type_safe/strong_typedef.hpp>
 #include <type_safe/narrow_cast.hpp>
+#include <type_safe/strong_typedef.hpp>
 
 #include <QMetaType>
 #include <QString>
 #include <type_traits>
 
-#include "log.h"
 #include "containers.h"
+#include "log.h"
 
 template <typename StrongType>
 constexpr StrongType maxValue()
@@ -53,35 +53,37 @@ struct OffsetInFile : type_safe::strong_typedef<OffsetInFile, int64_t>,
 
     using UnderlyingType = int64_t;
 
-    template<typename T = UnderlyingType>
-    T get() const {
-        if constexpr(std::is_same_v<T, UnderlyingType>) {
-            return type_safe::get(*this);
+    template <typename T = UnderlyingType>
+    T get() const
+    {
+        if constexpr ( std::is_same_v<T, UnderlyingType> ) {
+            return type_safe::get( *this );
         }
         else {
-           return type_safe::narrow_cast<T>(type_safe::get(*this)); 
+            return type_safe::narrow_cast<T>( type_safe::get( *this ) );
         }
     }
 };
 
 struct LinesCount : type_safe::strong_typedef<LinesCount, uint64_t>,
-                      type_safe::strong_typedef_op::addition<LinesCount>,
-                      type_safe::strong_typedef_op::subtraction<LinesCount>,
-                      type_safe::strong_typedef_op::increment<LinesCount>,
-                      type_safe::strong_typedef_op::decrement<LinesCount>,
-                      type_safe::strong_typedef_op::relational_comparison<LinesCount>,
-                      type_safe::strong_typedef_op::equality_comparison<LinesCount> {
+                    type_safe::strong_typedef_op::addition<LinesCount>,
+                    type_safe::strong_typedef_op::subtraction<LinesCount>,
+                    type_safe::strong_typedef_op::increment<LinesCount>,
+                    type_safe::strong_typedef_op::decrement<LinesCount>,
+                    type_safe::strong_typedef_op::relational_comparison<LinesCount>,
+                    type_safe::strong_typedef_op::equality_comparison<LinesCount> {
     using strong_typedef::strong_typedef;
 
     using UnderlyingType = uint64_t;
 
-    template<typename T = UnderlyingType>
-    T get() const {
-        if constexpr(std::is_same_v<T, UnderlyingType>) {
-            return type_safe::get(*this);
+    template <typename T = UnderlyingType>
+    T get() const
+    {
+        if constexpr ( std::is_same_v<T, UnderlyingType> ) {
+            return type_safe::get( *this );
         }
         else {
-           return type_safe::narrow_cast<T>(type_safe::get(*this)); 
+            return type_safe::narrow_cast<T>( type_safe::get( *this ) );
         }
     }
 };
@@ -96,33 +98,34 @@ struct LineNumber : type_safe::strong_typedef<LineNumber, uint64_t>,
 
     using UnderlyingType = uint64_t;
 
-    template<typename T = UnderlyingType>
-    T get() const {
-        if constexpr(std::is_same_v<T, UnderlyingType>) {
-            return type_safe::get(*this);
+    template <typename T = UnderlyingType>
+    T get() const
+    {
+        if constexpr ( std::is_same_v<T, UnderlyingType> ) {
+            return type_safe::get( *this );
         }
         else {
-           return type_safe::narrow_cast<T>(type_safe::get(*this)); 
+            return type_safe::narrow_cast<T>( type_safe::get( *this ) );
         }
     }
-
 };
 Q_DECLARE_METATYPE( LineNumber )
 
 struct LineLength : type_safe::strong_typedef<LineLength, int>,
-                      type_safe::strong_typedef_op::relational_comparison<LineLength>,
-                      type_safe::strong_typedef_op::equality_comparison<LineLength> {
+                    type_safe::strong_typedef_op::relational_comparison<LineLength>,
+                    type_safe::strong_typedef_op::equality_comparison<LineLength> {
     using strong_typedef::strong_typedef;
 
     using UnderlyingType = int;
 
-    template<typename T = UnderlyingType>
-    T get() const {
-        if constexpr(std::is_same_v<T, UnderlyingType>) {
-            return type_safe::get(*this);
+    template <typename T = UnderlyingType>
+    T get() const
+    {
+        if constexpr ( std::is_same_v<T, UnderlyingType> ) {
+            return type_safe::get( *this );
         }
         else {
-           return type_safe::narrow_cast<T>(type_safe::get(*this)); 
+            return type_safe::narrow_cast<T>( type_safe::get( *this ) );
         }
     }
 };
@@ -145,12 +148,11 @@ inline constexpr LineLength operator"" _length( unsigned long long int value )
     return LineLength( static_cast<LineLength::UnderlyingType>( value ) );
 }
 
-
 inline LineNumber& operator+=( LineNumber& number, const LinesCount& count )
 {
     number = ( number.get() <= maxValue<LineNumber>().get() - count.get() )
-               ? LineNumber( number.get() + count.get() )
-               : maxValue<LineNumber>();
+                 ? LineNumber( number.get() + count.get() )
+                 : maxValue<LineNumber>();
     return number;
 }
 inline LineNumber operator+( const LineNumber& number, const LinesCount& count )
@@ -180,14 +182,13 @@ inline bool operator>=( const LineNumber& number, const LinesCount& count )
     return !( number < count );
 }
 
-
 using OptionalLineNumber = std::optional<LineNumber>;
 
 template <typename Tag, typename T>
 QDebug operator<<( QDebug dbg, type_safe::strong_typedef<Tag, T> const& object )
 {
     QDebugStateSaver saver( dbg );
-    dbg << type_safe::get(object);
+    dbg << type_safe::get( object );
 
     return dbg;
 }
@@ -254,5 +255,6 @@ LineLength getUntabifiedLength( const LineType& utf8Line )
         tabPosition = utf8Line.find( '\t', tabPosition + 1 );
     }
 
-    return LineLength( type_safe::narrow_cast<LineLength::UnderlyingType>( utf8Line.size() + totalSpaces ) );
+    return LineLength( type_safe::narrow_cast<LineLength::UnderlyingType>(
+        static_cast<int64_t>( utf8Line.size() + totalSpaces ) ) );
 }

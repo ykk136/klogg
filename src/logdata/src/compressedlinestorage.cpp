@@ -241,8 +241,7 @@ void CompressedLinePositionStorage::append( OffsetInFile pos )
             block_index_ = pool32_.get_block( IndexBlockSize, pos.get<uint32_t>(), &nextOffset );
         }
         else {
-            long_block_index_ = pool64_.get_block(
-                IndexBlockSize, pos.get(), &nextOffset );
+            long_block_index_ = pool64_.get_block( IndexBlockSize, pos.get(), &nextOffset );
         }
         block_offset_ = BlockOffset{ nextOffset };
     }
@@ -397,8 +396,13 @@ void CompressedLinePositionStorage::pop_back()
         block_offset_ = {};
     }
 
-    --nb_lines_;
-    current_pos_ = nb_lines_.get() > 0 ? at( nb_lines_.get() - 1 ) : 0_offset;
+    if ( nb_lines_.get() == 0 ) {
+        current_pos_ = 0_offset;
+    }
+    else {
+        --nb_lines_;
+        current_pos_ = nb_lines_.get() > 0 ? at( nb_lines_.get() - 1 ) : 0_offset;
+    }
 }
 
 size_t CompressedLinePositionStorage::allocatedSize() const
