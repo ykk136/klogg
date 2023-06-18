@@ -189,7 +189,6 @@ int textWidth( const QFontMetrics& fm, const QString& text )
 #endif
 }
 
-
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 10, 0 )
 int textWidth( const QFontMetrics& fm, const QStringView& text )
 {
@@ -271,8 +270,10 @@ class WrappedLinesView {
 
         size_t wrappedLineIndex = 0;
         auto positionInWrappedLine = start.get();
-        while ( positionInWrappedLine > wrappedLines_[ wrappedLineIndex ].size() ) {
-            positionInWrappedLine -= wrappedLines_[ wrappedLineIndex ].size();
+        while ( positionInWrappedLine > type_safe::narrow_cast<LineLength::UnderlyingType>(
+                    wrappedLines_[ wrappedLineIndex ].size() ) ) {
+            positionInWrappedLine -= type_safe::narrow_cast<LineLength::UnderlyingType>(
+                wrappedLines_[ wrappedLineIndex ].size() );
             wrappedLineIndex++;
             if ( wrappedLineIndex >= wrappedLines_.size() ) {
                 return resultChunks;
@@ -280,12 +281,14 @@ class WrappedLinesView {
         }
 
         auto chunkLength = length.get();
-        while ( positionInWrappedLine + chunkLength > wrappedLines_[ wrappedLineIndex ].size() ) {
+        while ( positionInWrappedLine + chunkLength
+                > type_safe::narrow_cast<LineLength::UnderlyingType>(
+                    wrappedLines_[ wrappedLineIndex ].size() ) ) {
             resultChunks.push_back(
                 wrappedLines_[ wrappedLineIndex ].mid( positionInWrappedLine ) );
             wrappedLineIndex++;
             positionInWrappedLine = 0;
-            chunkLength -= resultChunks.back().size();
+            chunkLength -= type_safe::narrow_cast<LineLength::UnderlyingType>( resultChunks.back().size() );
             if ( wrappedLineIndex >= wrappedLines_.size() ) {
                 return resultChunks;
             }
@@ -1874,7 +1877,8 @@ FilePosition AbstractLogView::convertCoordToFilePos( const QPoint& pos ) const
             return width < p.x();
         } );
 
-    const auto length = LineColumn{ visibleText.size() };
+    const auto length
+        = LineColumn{ type_safe::narrow_cast<LineColumn::UnderlyingType>( visibleText.size() ) };
 
     auto column = ( columnIt != possibleColumns.end() ? *columnIt : length ) - 1_length;
     if ( useTextWrap_ ) {
@@ -2443,19 +2447,27 @@ void AbstractLogView::drawTextArea( QPaintDevice* paintDevice )
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 10, 0 )
             const auto prefix = QStringView{ logLine }.left( match.startColumn().get() );
             const auto matchPart
-                = QStringView{ logLine }.mid( match.startColumn().get(), match.size().get() );    
+                = QStringView{ logLine }.mid( match.startColumn().get(), match.size().get() );
 #else
             const auto prefix = logLine.leftRef( match.startColumn().get() );
             const auto matchPart = logLine.midRef( match.startColumn().get(), match.size().get() );
 #endif
             const auto expandedPrefixLength = untabify( prefix.toString() ).size();
-            const LineLength startDelta = LineLength{ expandedPrefixLength - prefix.size() };
+            const LineLength startDelta
+                = LineLength{ type_safe::narrow_cast<LineLength::UnderlyingType>(
+                    expandedPrefixLength - prefix.size() ) };
 
             const LineLength expandedMatchLength = LineLength{
-                untabify( matchPart.toString(), LineColumn{ expandedPrefixLength } ).size()
+                untabify( matchPart.toString(),
+                          LineColumn{ type_safe::narrow_cast<LineColumn::UnderlyingType>(
+                              expandedPrefixLength ) } )
+                    .size()
             };
 
-            const auto lengthDelta = expandedMatchLength - LineLength{ matchPart.size() };
+            const auto lengthDelta
+                = expandedMatchLength
+                  - LineLength{ type_safe::narrow_cast<LineLength::UnderlyingType>(
+                      matchPart.size() ) };
 
             return HighlightedMatch{ match.startColumn() + startDelta, match.size() + lengthDelta,
                                      match.foreColor(), match.backColor() };
