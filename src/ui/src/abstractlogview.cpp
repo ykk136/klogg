@@ -57,7 +57,6 @@
 #include <numeric>
 #include <optional>
 #include <qcolor.h>
-#include <qstringview.h>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -79,7 +78,11 @@
 #include <QRect>
 #include <QScrollBar>
 #include <QShortcut>
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 10, 0 )
+#include <QStringView>
+#else
 #include <QStringRef>
+#endif
 #include <QtCore>
 
 #include <tbb/flow_graph.h>
