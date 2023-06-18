@@ -450,7 +450,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( OffsetInFile::UnderlyingTy
 
         const auto currentDataEnd = posWithinBlock + blockBeginning;
 
-        const auto length = ( currentDataEnd - state.pos ) / state.encodingParams.lineFeedWidth
+        const auto length = type_safe::narrow_cast<LineLength::UnderlyingType>( currentDataEnd - state.pos ) / state.encodingParams.lineFeedWidth
                             + state.additional_spaces;
 
         state.max_length = std::max( state.max_length, length );
