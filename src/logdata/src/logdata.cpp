@@ -41,8 +41,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <numeric>
 #include <qregularexpression.h>
 #include <qtextcodec.h>
@@ -230,7 +232,7 @@ void LogData::checkFileChangesFinished( MonitoredFileStatus status )
 {
     attached_file_->detachReader();
 
-    LOG_INFO << "File " << indexingFileName_ << " status " << static_cast<int>( status );
+    LOG_INFO << "File " << indexingFileName_ << " status " << static_cast<uint8_t>( status );
 
     if ( fileChangedOnDisk_ != MonitoredFileStatus::Truncated ) {
         switch ( status ) {
@@ -278,7 +280,7 @@ LineLength LogData::doGetLineLength( LineNumber line ) const
         return 0_length; /* exception? */
     }
 
-    return LineLength( static_cast<LineLength::UnderlyingType>( doGetExpandedLineString( line ).size() ) );
+    return LineLength{ doGetExpandedLineString( line ).size() };
 }
 
 void LogData::doSetDisplayEncoding( const char* encoding )
@@ -474,7 +476,7 @@ klogg::vector<QString> LogData::RawLines::decodeLines() const
             LOG_DEBUG << "line " << this->startLine.get() + currentLineIndex << ", length "
                       << length;
 
-            constexpr auto maxlength = std::numeric_limits<LineLength::UnderlyingType>::max() / 2;
+            constexpr auto maxlength = std::numeric_limits<int>::max() / 2;
             if ( length >= maxlength ) {
                 decodedLines.emplace_back( "KLOGG WARNING: this line is too long" );
                 break;
@@ -486,8 +488,8 @@ klogg::vector<QString> LogData::RawLines::decodeLines() const
                 break;
             }
 
-            auto decodedLine = textDecoder.decoder->toUnicode( buffer.data() + lineStart,
-                                                               static_cast<int>( length ) );
+            auto decodedLine = textDecoder.decoder->toUnicode(
+                buffer.data() + lineStart, type_safe::narrow_cast<int>( length ) );
 
             if ( !prefilterPattern.pattern().isEmpty() ) {
                 decodedLine.remove( prefilterPattern );

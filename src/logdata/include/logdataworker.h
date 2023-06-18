@@ -246,7 +246,7 @@ struct IndexingState {
 
     EncodingParameters encodingParams;
     OffsetInFile::UnderlyingType pos{};
-    int64_t max_length{};
+    LineLength::UnderlyingType max_length{};
     LineLength::UnderlyingType additional_spaces{};
     OffsetInFile::UnderlyingType end{};
     OffsetInFile::UnderlyingType file_size{};

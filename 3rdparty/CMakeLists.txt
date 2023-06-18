@@ -315,6 +315,7 @@ if(WIN32)
   set(BUILD_SHARED_LIBS OFF)
 endif()
 
+set(CPM_USE_LOCAL_PACKAGES OFF)
 cpmaddpackage(
   NAME
   mimalloc
@@ -342,6 +343,8 @@ else()
   target_link_libraries(klogg_mimalloc_wrapper INTERFACE ${MIMALLOC_LIBRARY})
   target_include_directories(klogg_mimalloc_wrapper INTERFACE ${MIMALLOC_INCLUDE_DIR})
 endif()
+
+set(CPM_USE_LOCAL_PACKAGES ${_TMP_CPM_USE_LOCAL_PACKAGES})
 
 set(klogg_cpm_targets
     xxhash

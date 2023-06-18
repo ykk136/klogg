@@ -42,6 +42,7 @@
 // It also interacts with the sets of data (full and filtered).
 
 #include "abstractlogview.h"
+#include "linetypes.h"
 #include "log.h"
 
 #include <algorithm>
@@ -179,9 +180,9 @@ LineNumber CrawlerWidget::getTopLine() const
 QString CrawlerWidget::getSelectedText() const
 {
     if ( filteredView_->hasFocus() )
-        return filteredView_->getSelection();
+        return filteredView_->getSelectedText();
     else
-        return logMainView_->getSelection();
+        return logMainView_->getSelectedText();
 }
 
 bool CrawlerWidget::isPartialSelection() const
@@ -239,7 +240,7 @@ std::vector<QObject*> CrawlerWidget::doGetAllSearchables() const
 // Update the state of the parent
 void CrawlerWidget::doSendAllStateSignals()
 {
-    Q_EMIT newSelection( currentLineNumber_, 0, 0, 0 );
+    Q_EMIT newSelection( currentLineNumber_, 0_lcount, 0_lcol, 0_length );
     if ( !loadingInProgress_ )
         Q_EMIT loadingFinished( LoadingStatus::Successful );
 }
@@ -522,16 +523,16 @@ void CrawlerWidget::updateFilteredView( LinesCount nbMatches, int progress,
     }
 }
 
-void CrawlerWidget::jumpToMatchingLine( LineNumber filteredLineNb, uint64_t nLines,
-                                        uint64_t startCol, uint64_t nSymbols )
+void CrawlerWidget::jumpToMatchingLine( LineNumber filteredLineNb, LinesCount nLines,
+                                        LineColumn startCol, LineLength nSymbols )
 {
     const auto mainViewLine = logFilteredData_->getMatchingLineNumber( filteredLineNb );
     logMainView_->selectPortionAndDisplayLine( mainViewLine, nLines, startCol,
                                                nSymbols ); // FIXME: should be done with a signal.
 }
 
-void CrawlerWidget::updateLineNumberHandler( LineNumber line, uint64_t nLines, uint64_t startCol,
-                                             uint64_t nSymbols )
+void CrawlerWidget::updateLineNumberHandler( LineNumber line, LinesCount nLines, LineColumn startCol,
+                                             LineLength nSymbols )
 {
     currentLineNumber_ = line;
     Q_EMIT newSelection( line, nLines, startCol, nSymbols );
@@ -1300,14 +1301,14 @@ void CrawlerWidget::setup()
              &CrawlerWidget::addColorLabelToSelection );
 
     connect( logMainView_, &AbstractLogView::sendSelectionToScratchpad, this,
-             [ this ]() { Q_EMIT sendToScratchpad( logMainView_->getSelection() ); } );
+             [ this ]() { Q_EMIT sendToScratchpad( logMainView_->getSelectedText() ); } );
     connect( filteredView_, &AbstractLogView::sendSelectionToScratchpad, this,
-             [ this ]() { Q_EMIT sendToScratchpad( filteredView_->getSelection() ); } );
+             [ this ]() { Q_EMIT sendToScratchpad( filteredView_->getSelectedText() ); } );
 
     connect( logMainView_, &AbstractLogView::replaceScratchpadWithSelection, this,
-             [ this ]() { Q_EMIT replaceDataInScratchpad( logMainView_->getSelection() ); } );
+             [ this ]() { Q_EMIT replaceDataInScratchpad( logMainView_->getSelectedText() ); } );
     connect( filteredView_, &AbstractLogView::replaceScratchpadWithSelection, this,
-             [ this ]() { Q_EMIT replaceDataInScratchpad( filteredView_->getSelection() ); } );
+             [ this ]() { Q_EMIT replaceDataInScratchpad( filteredView_->getSelectedText() ); } );
 
     const auto defaultEncodingMib = config.defaultEncodingMib();
     if ( defaultEncodingMib >= 0 ) {

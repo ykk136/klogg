@@ -20,13 +20,14 @@
 #ifndef KLOGG_HIGHLIGHTEDMATCH_H
 #define KLOGG_HIGHLIGHTEDMATCH_H
 
+#include "linetypes.h"
 #include <QColor>
 
 // Represents a match result for QuickFind or highlighter
 class HighlightedMatch {
   public:
     // Construct a match (must be initialised)
-    HighlightedMatch( int start_column, int size, QColor foreColor, QColor backColor )
+    HighlightedMatch( LineColumn start_column, LineLength size, QColor foreColor, QColor backColor )
         : startColumn_{ start_column }
         , size_{ size }
         , foreColor_{ foreColor }
@@ -34,13 +35,12 @@ class HighlightedMatch {
     {
     }
 
-    // Accessor functions
-    int startColumn() const
+    LineColumn startColumn() const
     {
         return startColumn_;
     }
 
-    int size() const
+    LineLength size() const
     {
         return size_;
     }
@@ -56,8 +56,8 @@ class HighlightedMatch {
     }
 
   private:
-    int startColumn_;
-    int size_;
+    LineColumn startColumn_;
+    LineLength size_;
 
     QColor foreColor_;
     QColor backColor_;

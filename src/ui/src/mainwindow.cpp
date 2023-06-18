@@ -164,8 +164,8 @@ MainWindow::MainWindow( WindowSession session )
     // Actions from the CrawlerWidget
     signalMux_.connect( SIGNAL( followModeChanged( bool ) ), this,
                         SLOT( changeFollowMode( bool ) ) );
-    signalMux_.connect( SIGNAL( newSelection( LineNumber, uint64_t, uint64_t, uint64_t ) ), this,
-                        SLOT( lineNumberHandler( LineNumber, uint64_t, uint64_t, uint64_t ) ) );
+    signalMux_.connect( SIGNAL( newSelection( LineNumber, LinesCount, LineColumn, LineLength ) ), this,
+                        SLOT( lineNumberHandler( LineNumber, LinesCount, LineColumn, LineLength ) ) );
     signalMux_.connect( SIGNAL( saveCurrentSearchAsPredefinedFilter( QString ) ), this,
                         SLOT( newPredefinedFilterHandler( QString ) ) );
 

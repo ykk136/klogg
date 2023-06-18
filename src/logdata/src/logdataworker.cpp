@@ -352,7 +352,7 @@ std::string_view::size_type findNextSingleByteDelimeter( EncodingParameters, std
 int charOffsetWithinBlock( const char* blockStart, const char* pointer,
                            const EncodingParameters& encodingParams )
 {
-    return static_cast<int>( std::distance( blockStart, pointer ) )
+    return type_safe::narrow_cast<int>( std::distance( blockStart, pointer ) )
            - encodingParams.getBeforeCrOffset();
 }
 
@@ -439,7 +439,7 @@ FastLinePositionArray IndexOperation::parseDataBlock( OffsetInFile::UnderlyingTy
         }
 
         auto posWithinBlock
-            = static_cast<int>( state.pos >= blockBeginning ? ( state.pos - blockBeginning ) : 0u );
+            = type_safe::narrow_cast<int>( state.pos >= blockBeginning ? ( state.pos - blockBeginning ) : 0 );
 
         isEndOfBlock = posWithinBlock == klogg::ssize( block );
 
@@ -567,7 +567,7 @@ void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& bloc
         }
 
         scopedAccessor.addAll( block,
-                               LineLength( static_cast<LineLength::UnderlyingType>( maxLength ) ),
+                               LineLength( type_safe::narrow_cast<LineLength::UnderlyingType>( maxLength ) ),
                                linePositions, state.encodingGuess );
 
         // Update the caller for progress indication

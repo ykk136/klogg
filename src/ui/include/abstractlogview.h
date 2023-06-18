@@ -130,7 +130,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     // Return the line number of the top line of the view
     LineNumber getTopLine() const;
     // Return the text of the current selection.
-    QString getSelection() const;
+    QString getSelectedText() const;
     // True for partial selection
     bool isPartialSelection() const;
     // Instructs the widget to select the whole text.
@@ -199,8 +199,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     // Sent when the view wants the QuickFind widget pattern to change.
     void changeQuickFind( const QString& newPattern, QuickFindMux::QFDirection newDirection );
     // Sent when a new line has been selected by the user
-    void newSelection( LineNumber startLine, uint64_t nLines, uint64_t startCol,
-                       uint64_t nSymbols );
+    void newSelection( LineNumber startLine, LinesCount nLines, LineColumn startCol,
+                       LineLength nSymbols );
     // Sent up when quickFind wants to show a message to the user.
     void notifyQuickFind( const QFNotification& message );
     // Sent up when quickFind wants to clear the notification.
@@ -243,8 +243,8 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     // Scrolling as necessary
     void trySelectLine( LineNumber newLine );
     void selectAndDisplayLine( LineNumber line );
-    void selectPortionAndDisplayLine( LineNumber line, uint64_t nLines, uint64_t startCol,
-                                      uint64_t nSymbols );
+    void selectPortionAndDisplayLine( LineNumber line, LinesCount nLines, LineColumn startCol,
+                                      LineLength nSymbols );
 
     // Use the current QFP to go and select the next match.
     void searchForward() override;
@@ -337,16 +337,11 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     // reasons).
     OverviewWidget* overviewWidget_ = nullptr;
 
-    struct FilePos {
-        LineNumber line;
-        int column;
-    };
-
     bool selectionStarted_ = false;
     // Start of the selection (characters)
-    FilePos selectionStartPos_;
+    FilePosition selectionStartPos_;
     // Current end of the selection (characters)
-    FilePos selectionCurrentEndPos_;
+    FilePosition selectionCurrentEndPos_;
     QBasicTimer autoScrollTimer_;
 
     // Hovering state
@@ -369,7 +364,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     LineNumber firstLine_;
     bool lastLineAligned_ = false;
     bool useTextWrap_ = false;
-    int firstCol_ = 0;
+    LineColumn firstCol_ = 0_lcol;
 
     klogg::vector<std::pair<LineNumber, size_t>> wrappedLinesNumbers_;
 
@@ -426,23 +421,23 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
         bool invalid_;
         LineNumber first_line_;
         LineNumber last_line_;
-        int first_column_;
+        LineColumn first_column_;
     };
     struct PullToFollowCache {
         QPixmap pixmap_;
-        int nb_columns_;
+        LineLength nb_columns_;
     };
-    TextAreaCache textAreaCache_ = { {}, true, 0_lnum, 0_lnum, 0 };
-    PullToFollowCache pullToFollowCache_ = { {}, 0 };
+    TextAreaCache textAreaCache_ = { {}, true, 0_lnum, 0_lnum, 0_lcol };
+    PullToFollowCache pullToFollowCache_ = { {}, 0_length };
     QFontMetrics pixmapFontMetrics_;
 
     LinesCount getNbVisibleLines() const;
     LinesCount getNbBottomWrappedVisibleLines() const;
-    int getNbVisibleCols() const;
+    LineLength getNbVisibleCols() const;
 
-    FilePos convertCoordToFilePos( const QPoint& pos ) const;
+    FilePosition convertCoordToFilePos( const QPoint& pos ) const;
     OptionalLineNumber convertCoordToLine( int yPos ) const;
-    int convertCoordToColumn( int xPos ) const;
+    LineColumn convertCoordToColumn( int xPos ) const;
 
     void displayLine( LineNumber line );
     void moveSelection( LinesCount delta, bool isDeltaNegative );
@@ -453,7 +448,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     void jumpToRightOfScreen();
     void jumpToTop();
     void jumpToBottom();
-    void selectWordAtPosition( const FilePos& pos );
+    void selectWordAtPosition( const FilePosition& pos );
 
     void updateSearchLimits();
 
@@ -484,7 +479,7 @@ class AbstractLogView : public QAbstractScrollArea, public SearchableWidgetInter
     // Utils functions
     void updateGlobalSelection();
 
-    void selectAndDisplayRange( FilePos pos );
+    void selectAndDisplayRange( FilePosition pos );
 };
 
 #endif

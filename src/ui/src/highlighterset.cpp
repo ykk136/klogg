@@ -48,6 +48,7 @@
 
 #include "crc32.h"
 #include "highlightersetedit.h"
+#include "linetypes.h"
 #include "log.h"
 #include "uuid.h"
 
@@ -186,14 +187,16 @@ bool Highlighter::matchLine( const QString& line, klogg::vector<HighlightedMatch
 
                 const auto colors = vairateColors( match.captured( i ) );
 
-                matches.emplace_back( match.capturedStart( i ), match.capturedLength( i ),
-                                      colors.first, colors.second );
+                matches.emplace_back( LineColumn{ match.capturedStart( i ) },
+                                      LineLength{ match.capturedLength( i ) }, colors.first,
+                                      colors.second );
             }
         }
         else {
             const auto colors = vairateColors( match.captured( 0 ) );
 
-            matches.emplace_back( match.capturedStart( 0 ), match.capturedLength( 0 ), colors.first,
+            matches.emplace_back( LineColumn{ match.capturedStart( 0 ) },
+                                  LineLength{ match.capturedLength( 0 ) }, colors.first,
                                   colors.second );
         }
     }
@@ -241,7 +244,7 @@ HighlighterMatchType HighlighterSet::matchLine( const QString& line,
             matchType = HighlighterMatchType::LineMatch;
 
             matches.clear();
-            matches.emplace_back( 0, line.size(), hl->foreColor(), hl->backColor() );
+            matches.emplace_back( 0_lcol, LineLength {line.size() }, hl->foreColor(), hl->backColor() );
         }
         else {
             if ( matchType != HighlighterMatchType::LineMatch ) {
