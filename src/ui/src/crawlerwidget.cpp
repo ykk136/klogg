@@ -1228,20 +1228,22 @@ void CrawlerWidget::setup()
     connect( logMainView_, &LogMainView::clearSearchLimits, this,
              &CrawlerWidget::clearSearchLimits );
 
-    connect( tabbedFilteredView_, &QTabWidget::currentChanged, [ this ]( int index ) {
+    const auto updateFilteredViewFromTabIndex = [ this ]( int index ) {
         logFilteredData_->interruptSearch();
-        filteredView_ = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( index ) );
-        logFilteredData_ = filteredViewsData_[ filteredView_ ];
-    } );
+        if ( index >= 0 ) {
+            filteredView_ = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( index ) );
+            logFilteredData_ = filteredViewsData_.at( filteredView_ );
+            logMainView_->useNewFiltering( logFilteredData_.get() );
+        }
+    };
 
-    connect( tabbedFilteredView_, &QTabWidget::tabCloseRequested, [ this ]( int index ) {
+    connect( tabbedFilteredView_, &QTabWidget::currentChanged, updateFilteredViewFromTabIndex );
+
+    connect( tabbedFilteredView_, &QTabWidget::tabCloseRequested, [ this, &updateFilteredViewFromTabIndex ]( int index ) {
         auto* tmp = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( index ) );
         if ( tmp == filteredView_ ) {
             auto newCurIndex = index + 1 < tabbedFilteredView_->count() ? index + 1 : index - 1;
-            filteredView_
-                = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( newCurIndex ) );
-            logFilteredData_ = filteredViewsData_[ filteredView_ ];
-            logMainView_->useNewFiltering( logFilteredData_.get() );
+            tabbedFilteredView_->setCurrentIndex(newCurIndex);
         }
 
         filteredViewsData_.erase( tmp );
@@ -1491,8 +1493,7 @@ void CrawlerWidget::replaceCurrentSearch( const QString& searchText )
 
     // Switch to "Marks and matches" view when in "Marks" view
     using VisibilityFlags = LogFilteredData::VisibilityFlags;
-    if (!filteredView_->visibility().testFlag(VisibilityFlags::Matches))
-    {
+    if ( !filteredView_->visibility().testFlag( VisibilityFlags::Matches ) ) {
         visibilityBox_->setCurrentIndex( 0 );
     }
 
