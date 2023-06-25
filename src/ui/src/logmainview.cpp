@@ -67,6 +67,8 @@ void LogMainView::useNewFiltering( LogFilteredData* filteredData )
 
     if ( getOverview() != nullptr )
         getOverview()->setFilteredData( filteredData_ );
+
+    forceRefresh();
 }
 
 AbstractLogData::LineType LogMainView::lineType( LineNumber lineNumber ) const
