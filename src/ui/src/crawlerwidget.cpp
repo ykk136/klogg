@@ -1228,22 +1228,20 @@ void CrawlerWidget::setup()
     connect( logMainView_, &LogMainView::clearSearchLimits, this,
              &CrawlerWidget::clearSearchLimits );
 
-    const auto updateFilteredViewFromTabIndex = [ this ]( int index ) {
+    connect( tabbedFilteredView_, &QTabWidget::currentChanged, [ this ]( int index ) {
         logFilteredData_->interruptSearch();
         if ( index >= 0 ) {
             filteredView_ = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( index ) );
             logFilteredData_ = filteredViewsData_.at( filteredView_ );
             logMainView_->useNewFiltering( logFilteredData_.get() );
         }
-    };
+    } );
 
-    connect( tabbedFilteredView_, &QTabWidget::currentChanged, updateFilteredViewFromTabIndex );
-
-    connect( tabbedFilteredView_, &QTabWidget::tabCloseRequested, [ this, &updateFilteredViewFromTabIndex ]( int index ) {
+    connect( tabbedFilteredView_, &QTabWidget::tabCloseRequested, [ this ]( int index ) {
         auto* tmp = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( index ) );
         if ( tmp == filteredView_ ) {
             auto newCurIndex = index + 1 < tabbedFilteredView_->count() ? index + 1 : index - 1;
-            tabbedFilteredView_->setCurrentIndex(newCurIndex);
+            tabbedFilteredView_->setCurrentIndex( newCurIndex );
         }
 
         filteredViewsData_.erase( tmp );
