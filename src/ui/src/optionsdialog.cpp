@@ -605,6 +605,7 @@ KeySequencePresenter::KeySequencePresenter( const QString& keySequence )
 
     auto editButton = new QPushButton();
     editButton->setText( "..." );
+    editButton->setFixedWidth( 50 );
 
     auto layout = new QHBoxLayout();
 
@@ -687,7 +688,9 @@ void OptionsDialog::buildShortcutsTable( bool useDefaultsOnly )
     }
 
     shortcutsTable->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
-    shortcutsTable->verticalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    shortcutsTable->horizontalHeader()->setSectionResizeMode( 0, QHeaderView::Interactive );
+    shortcutsTable->horizontalHeader()->setMinimumSectionSize( 150 );
+    shortcutsTable->resizeColumnToContents( 0 );
     shortcutsTable->setHorizontalHeaderItem( 0, new QTableWidgetItem( tr( "Action" ) ) );
     shortcutsTable->setHorizontalHeaderItem( 1, new QTableWidgetItem( tr( "Primary shortcut" ) ) );
     shortcutsTable->setHorizontalHeaderItem( 2,
