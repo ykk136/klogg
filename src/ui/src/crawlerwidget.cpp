@@ -61,6 +61,7 @@
 #include <QStandardItemModel>
 #include <QStringListModel>
 #include <qglobal.h>
+#include <qobject.h>
 #include <string>
 
 #include "regularexpression.h"
@@ -380,7 +381,13 @@ void CrawlerWidget::startNewSearch()
 
         filteredView_ = new FilteredView( logFilteredData_.get(), quickFindPattern_.get() );
         filteredViewsData_[ filteredView_ ] = logFilteredData_;
+
+        connect(filteredView_, &QObject::destroyed, [this](QObject* view) {
+            filteredViewsData_.erase(qobject_cast<FilteredView*>(view));
+        });
+
         connectAllFilteredViewSlots( filteredView_ );
+
         auto index = tabbedFilteredView_->addTab( filteredView_, "" );
         tabbedFilteredView_->setCurrentIndex( index );
 
@@ -1244,7 +1251,6 @@ void CrawlerWidget::setup()
             tabbedFilteredView_->setCurrentIndex( newCurIndex );
         }
 
-        filteredViewsData_.erase( tmp );
         tabbedFilteredView_->removeTab( index );
         tmp->deleteLater();
     } );
