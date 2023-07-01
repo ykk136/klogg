@@ -1416,9 +1416,43 @@ void CrawlerWidget::registerShortcuts()
 
     ShortcutAction::registerShortcut(
         configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-        ShortcutAction::CrawlerChangeVisibility, [ this ]() {
+        ShortcutAction::CrawlerChangeVisibilityForward, [ this ]() {
             visibilityBox_->setCurrentIndex( ( visibilityBox_->currentIndex() + 1 )
                                              % visibilityBox_->count() );
+        } );
+
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::CrawlerChangeVisibilityBackward, [ this ]() {
+            int nextIndex = visibilityBox_->currentIndex() - 1;
+            if ( nextIndex < 0 ) {
+                nextIndex = visibilityBox_->count() - 1;
+            }
+            visibilityBox_->setCurrentIndex( nextIndex );
+        } );
+
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::CrawlerChangeVisibilityToMarksAndMatches, [ this ]() {
+            if ( visibilityBox_->count() > 0 ) {
+                visibilityBox_->setCurrentIndex( 0 );
+            }
+        } );
+
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::CrawlerChangeVisibilityToMarks, [ this ]() {
+            if ( visibilityBox_->count() > 1 ) {
+                visibilityBox_->setCurrentIndex( 1 );
+            }
+        } );
+
+    ShortcutAction::registerShortcut(
+        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
+        ShortcutAction::CrawlerChangeVisibilityToMatches, [ this ]() {
+            if ( visibilityBox_->count() > 2 ) {
+                visibilityBox_->setCurrentIndex( 2 );
+            }
         } );
 
     ShortcutAction::registerShortcut(
