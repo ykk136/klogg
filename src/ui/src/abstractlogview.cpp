@@ -52,6 +52,7 @@
 #include <numeric>
 #include <optional>
 #include <qcolor.h>
+#include <qscreen.h>
 #include <utility>
 #include <vector>
 
@@ -82,6 +83,7 @@
 #include "containers.h"
 #include "linetypes.h"
 
+#include "active_screen.h"
 #include "configuration.h"
 #include "highlighterset.h"
 #include "highlightersmenu.h"
@@ -702,10 +704,8 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
             connect( clearAllAction, &QAction::triggered, this,
                      &AbstractLogView::clearColorLabels );
         }
-
         // Display the popup (blocking)
-        popupMenu_->exec( QCursor::pos( this->screen() ) );
-
+        popupMenu_->exec( QCursor::pos( activeScreen( this ) ) );
         highlightersActionGroup->deleteLater();
         colorLablesActionGroup->deleteLater();
     }
@@ -809,7 +809,7 @@ void AbstractLogView::timerEvent( QTimerEvent* timerEvent )
     if ( timerEvent->timerId() == autoScrollTimer_.timerId() ) {
         QRect visible = viewport()->rect();
         visible.setLeft( leftMarginPx_ );
-        const QPoint globalPos = QCursor::pos( this->screen() );
+        const QPoint globalPos = QCursor::pos( activeScreen( this ) );
         const QPoint pos = viewport()->mapFromGlobal( globalPos );
         QMouseEvent ev( QEvent::MouseMove, pos, globalPos, Qt::LeftButton, Qt::LeftButton,
                         Qt::NoModifier );
@@ -1126,7 +1126,7 @@ void AbstractLogView::scrollContentsBy( int dx, int dy )
     }
 
     // Are we hovering over a new line?
-    const auto mousePos = mapFromGlobal( QCursor::pos( this->screen() ) );
+    const auto mousePos = mapFromGlobal( QCursor::pos( activeScreen( this ) ) );
     considerMouseHovering( mousePos.x(), mousePos.y() );
 
     // Redraw

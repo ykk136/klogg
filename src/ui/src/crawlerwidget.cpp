@@ -42,6 +42,7 @@
 // It also interacts with the sets of data (full and filtered).
 
 #include "abstractlogview.h"
+#include "active_screen.h"
 #include "linetypes.h"
 #include "log.h"
 
@@ -477,7 +478,7 @@ void CrawlerWidget::saveAsPredefinedFilter()
 void CrawlerWidget::showSearchContextMenu()
 {
     if ( searchLineContextMenu_ )
-        searchLineContextMenu_->exec( QCursor::pos( this->screen() ) );
+        searchLineContextMenu_->exec( QCursor::pos( activeScreen( this ) ) );
 }
 
 // When receiving the 'newDataAvailable' signal from LogFilteredData

@@ -22,6 +22,7 @@
 #include <QTimerEvent>
 #include <QToolTip>
 
+#include "active_screen.h"
 #include "menuactiontooltipbehavior.h"
 
 // It would be nice to only need action, and have action be the parent,
@@ -63,14 +64,14 @@ void MenuActionToolTipBehavior::timerEvent( QTimerEvent* event )
     timerId = 0;
 
     // Has the mouse waited unmoved in one location for 'delay' ms?
-    const QPoint& mousePos = QCursor::pos( parentMenu->screen() );
+    const QPoint& mousePos = QCursor::pos( activeScreen( parentMenu ) );
     if ( hoverPoint == mousePos )
         showToolTip( hoverPoint );
 }
 
 void MenuActionToolTipBehavior::onActionHovered()
 {
-    const QPoint& mousePos = QCursor::pos( parentMenu->screen() );
+    const QPoint& mousePos = QCursor::pos( activeScreen( parentMenu ) );
 
     // Hover is fired on keyboard focus over action in menu, ignore it
     const QPoint& relativeMousePos = parentMenu->mapFromGlobal( mousePos );
