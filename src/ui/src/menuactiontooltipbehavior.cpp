@@ -29,17 +29,16 @@
 // since neither action nor parent is guaranteed to die before the other,
 // for memory-management purposes the parent will have to be specified
 // explicity (probably, the window owning the action and the menu).
-MenuActionToolTipBehavior::MenuActionToolTipBehavior(QAction *menuAction,
-                                                     QMenu *menuParent,
-                                                     QObject *parent = nullptr)
-    : QObject(parent),
-      action(menuAction),
-      parentMenu(menuParent),
-      toolTipDelayMs(1000),
-      timerId(0),
-      hoverPoint()
+MenuActionToolTipBehavior::MenuActionToolTipBehavior( QAction* menuAction, QMenu* menuParent,
+                                                      QObject* parent = nullptr )
+    : QObject( parent )
+    , action( menuAction )
+    , parentMenu( menuParent )
+    , toolTipDelayMs( 1000 )
+    , timerId( 0 )
+    , hoverPoint()
 {
-    connect(action, &QAction::hovered, this, &MenuActionToolTipBehavior::onActionHovered);
+    connect( action, &QAction::hovered, this, &MenuActionToolTipBehavior::onActionHovered );
 }
 
 int MenuActionToolTipBehavior::toolTipDelay()
@@ -47,37 +46,37 @@ int MenuActionToolTipBehavior::toolTipDelay()
     return toolTipDelayMs;
 }
 
-void MenuActionToolTipBehavior::setToolTipDelay(int delayMs)
+void MenuActionToolTipBehavior::setToolTipDelay( int delayMs )
 {
     toolTipDelayMs = delayMs;
 }
 
-void MenuActionToolTipBehavior::timerEvent(QTimerEvent *event)
+void MenuActionToolTipBehavior::timerEvent( QTimerEvent* event )
 {
     // Not ours, don't touch
-    if (event->timerId() != timerId) {
-        QObject::timerEvent(event);
+    if ( event->timerId() != timerId ) {
+        QObject::timerEvent( event );
         return;
     }
 
-    killTimer(timerId); // interested in a single shot
+    killTimer( timerId ); // interested in a single shot
     timerId = 0;
 
     // Has the mouse waited unmoved in one location for 'delay' ms?
-    const QPoint &mousePos = QCursor::pos();
-    if (hoverPoint == mousePos)
-        showToolTip(hoverPoint);
+    const QPoint& mousePos = QCursor::pos( parentMenu->screen() );
+    if ( hoverPoint == mousePos )
+        showToolTip( hoverPoint );
 }
 
 void MenuActionToolTipBehavior::onActionHovered()
 {
-    const QPoint &mousePos = QCursor::pos();
+    const QPoint& mousePos = QCursor::pos( parentMenu->screen() );
 
     // Hover is fired on keyboard focus over action in menu, ignore it
-    const QPoint &relativeMousePos = parentMenu->mapFromGlobal(mousePos);
-    if (!parentMenu->actionGeometry(action).contains(relativeMousePos)) {
-        if (timerId != 0) { // once timer expires its check will fail anyway
-            killTimer(timerId);
+    const QPoint& relativeMousePos = parentMenu->mapFromGlobal( mousePos );
+    if ( !parentMenu->actionGeometry( action ).contains( relativeMousePos ) ) {
+        if ( timerId != 0 ) { // once timer expires its check will fail anyway
+            killTimer( timerId );
             timerId = 0;
         }
         QToolTip::hideText(); // there might be one currently shown
@@ -88,14 +87,14 @@ void MenuActionToolTipBehavior::onActionHovered()
     hoverPoint = mousePos;
 
     // Restart timer
-    if (timerId != 0)
-        killTimer(timerId);
-    timerId = startTimer(toolTipDelayMs);
+    if ( timerId != 0 )
+        killTimer( timerId );
+    timerId = startTimer( toolTipDelayMs );
 }
 
-void MenuActionToolTipBehavior::showToolTip(const QPoint &position)
+void MenuActionToolTipBehavior::showToolTip( const QPoint& position )
 {
-    const QString &toolTip = action->toolTip();
+    const QString& toolTip = action->toolTip();
     // Show tooltip until mouse moves at all
     // NOTE: using action->parentWidget() which is the MainWindow,
     // does not work (tooltip is not cleared when upon leaving the
@@ -104,7 +103,7 @@ void MenuActionToolTipBehavior::showToolTip(const QPoint &position)
     // cleared on a mouse move over the designated widget, but mouse
     // move doesn't happen over MainWindow, since the mouse is over
     // the menu even when out of the activeRegion.
-    QPoint relativePos = parentMenu->mapFromGlobal(position);
-    QRect activeRegion(relativePos.x(), relativePos.y(), 1, 1);
-    QToolTip::showText(position, toolTip, parentMenu, activeRegion);
+    QPoint relativePos = parentMenu->mapFromGlobal( position );
+    QRect activeRegion( relativePos.x(), relativePos.y(), 1, 1 );
+    QToolTip::showText( position, toolTip, parentMenu, activeRegion );
 }

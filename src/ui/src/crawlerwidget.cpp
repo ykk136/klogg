@@ -382,9 +382,9 @@ void CrawlerWidget::startNewSearch()
         filteredView_ = new FilteredView( logFilteredData_.get(), quickFindPattern_.get() );
         filteredViewsData_[ filteredView_ ] = logFilteredData_;
 
-        connect(filteredView_, &QObject::destroyed, [this](QObject* view) {
-            filteredViewsData_.erase(qobject_cast<FilteredView*>(view));
-        });
+        connect( filteredView_, &QObject::destroyed, [ this ]( QObject* view ) {
+            filteredViewsData_.erase( qobject_cast<FilteredView*>( view ) );
+        } );
 
         connectAllFilteredViewSlots( filteredView_ );
 
@@ -477,7 +477,7 @@ void CrawlerWidget::saveAsPredefinedFilter()
 void CrawlerWidget::showSearchContextMenu()
 {
     if ( searchLineContextMenu_ )
-        searchLineContextMenu_->exec( QCursor::pos() );
+        searchLineContextMenu_->exec( QCursor::pos( this->screen() ) );
 }
 
 // When receiving the 'newDataAvailable' signal from LogFilteredData
@@ -1421,15 +1421,15 @@ void CrawlerWidget::registerShortcuts()
                                              % visibilityBox_->count() );
         } );
 
-    ShortcutAction::registerShortcut(
-        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-        ShortcutAction::CrawlerChangeVisibilityBackward, [ this ]() {
-            int nextIndex = visibilityBox_->currentIndex() - 1;
-            if ( nextIndex < 0 ) {
-                nextIndex = visibilityBox_->count() - 1;
-            }
-            visibilityBox_->setCurrentIndex( nextIndex );
-        } );
+    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this,
+                                      Qt::WidgetWithChildrenShortcut,
+                                      ShortcutAction::CrawlerChangeVisibilityBackward, [ this ]() {
+                                          int nextIndex = visibilityBox_->currentIndex() - 1;
+                                          if ( nextIndex < 0 ) {
+                                              nextIndex = visibilityBox_->count() - 1;
+                                          }
+                                          visibilityBox_->setCurrentIndex( nextIndex );
+                                      } );
 
     ShortcutAction::registerShortcut(
         configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
@@ -1439,21 +1439,21 @@ void CrawlerWidget::registerShortcuts()
             }
         } );
 
-    ShortcutAction::registerShortcut(
-        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-        ShortcutAction::CrawlerChangeVisibilityToMarks, [ this ]() {
-            if ( visibilityBox_->count() > 1 ) {
-                visibilityBox_->setCurrentIndex( 1 );
-            }
-        } );
+    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this,
+                                      Qt::WidgetWithChildrenShortcut,
+                                      ShortcutAction::CrawlerChangeVisibilityToMarks, [ this ]() {
+                                          if ( visibilityBox_->count() > 1 ) {
+                                              visibilityBox_->setCurrentIndex( 1 );
+                                          }
+                                      } );
 
-    ShortcutAction::registerShortcut(
-        configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,
-        ShortcutAction::CrawlerChangeVisibilityToMatches, [ this ]() {
-            if ( visibilityBox_->count() > 2 ) {
-                visibilityBox_->setCurrentIndex( 2 );
-            }
-        } );
+    ShortcutAction::registerShortcut( configuredShortcuts, shortcuts_, this,
+                                      Qt::WidgetWithChildrenShortcut,
+                                      ShortcutAction::CrawlerChangeVisibilityToMatches, [ this ]() {
+                                          if ( visibilityBox_->count() > 2 ) {
+                                              visibilityBox_->setCurrentIndex( 2 );
+                                          }
+                                      } );
 
     ShortcutAction::registerShortcut(
         configuredShortcuts, shortcuts_, this, Qt::WidgetWithChildrenShortcut,

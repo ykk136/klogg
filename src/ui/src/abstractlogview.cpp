@@ -704,7 +704,7 @@ void AbstractLogView::mousePressEvent( QMouseEvent* mouseEvent )
         }
 
         // Display the popup (blocking)
-        popupMenu_->exec( QCursor::pos() );
+        popupMenu_->exec( QCursor::pos( this->screen() ) );
 
         highlightersActionGroup->deleteLater();
         colorLablesActionGroup->deleteLater();
@@ -809,7 +809,7 @@ void AbstractLogView::timerEvent( QTimerEvent* timerEvent )
     if ( timerEvent->timerId() == autoScrollTimer_.timerId() ) {
         QRect visible = viewport()->rect();
         visible.setLeft( leftMarginPx_ );
-        const QPoint globalPos = QCursor::pos();
+        const QPoint globalPos = QCursor::pos( this->screen() );
         const QPoint pos = viewport()->mapFromGlobal( globalPos );
         QMouseEvent ev( QEvent::MouseMove, pos, globalPos, Qt::LeftButton, Qt::LeftButton,
                         Qt::NoModifier );
@@ -1126,7 +1126,7 @@ void AbstractLogView::scrollContentsBy( int dx, int dy )
     }
 
     // Are we hovering over a new line?
-    const auto mousePos = mapFromGlobal( QCursor::pos() );
+    const auto mousePos = mapFromGlobal( QCursor::pos( this->screen() ) );
     considerMouseHovering( mousePos.x(), mousePos.y() );
 
     // Redraw
