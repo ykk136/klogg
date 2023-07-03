@@ -16,7 +16,7 @@ on:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -47,10 +47,19 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
+    - name: Cache Qt
+      id: cache-qt
+      uses: actions/cache@v1
       with:
-        version: ${{ matrix.qt_version }}
+        path: ../Qt
+        key: ${{ matrix.config.qt_version }}-QtCache
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ matrix.config.qt_version }}
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+        archives: qtbase qtimageformats qtsvg qttools qttranslations icu
 
     - name: Install ninja
       uses: seanmiddleditch/gha-setup-ninja@master
