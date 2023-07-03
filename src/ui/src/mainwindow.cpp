@@ -716,7 +716,7 @@ void MainWindow::updateShortcuts()
 
 void MainWindow::loadIcons()
 {
-    openAction->setIcon( iconLoader_.load( "icons8-add-file" ) );
+    openAction->setIcon( iconLoader_.load( "icons8-open-file" ) );
     stopAction->setIcon( iconLoader_.load( "icons8-delete" ) );
     reloadAction->setIcon( iconLoader_.load( "icons8-restore-page" ) );
     followAction->setIcon( iconLoader_.load( "icons8-fast-forward" ) );
