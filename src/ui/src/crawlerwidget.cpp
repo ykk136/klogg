@@ -383,7 +383,7 @@ void CrawlerWidget::startNewSearch()
         filteredView_ = new FilteredView( logFilteredData_.get(), quickFindPattern_.get() );
         filteredViewsData_[ filteredView_ ] = logFilteredData_;
 
-        connect( filteredView_, &QObject::destroyed, [ this ]( QObject* view ) {
+        connect( filteredView_, &QObject::destroyed, this, [ this ]( QObject* view ) {
             filteredViewsData_.erase( qobject_cast<FilteredView*>( view ) );
         } );
 
