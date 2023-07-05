@@ -266,6 +266,10 @@ class CrawlerWidget : public QSplitter,
     void addNextColorLabelToSelection();
     void clearColorLabels();
 
+    void changeFilteredView(int tabIndex);
+    void closeFilteredView(int tabIndex);
+    void filteredViewDestroyed(QObject* view);
+
   private:
     // State machine holding the state of the search, used to allow/disallow
     // auto-refresh and inform the user via the info line.

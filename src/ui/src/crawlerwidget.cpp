@@ -1232,28 +1232,11 @@ void CrawlerWidget::setup()
     connect( logMainView_, &LogMainView::clearSearchLimits, this,
              &CrawlerWidget::clearSearchLimits );
 
-    connect( tabbedFilteredView_, &QTabWidget::currentChanged, [ this ]( int index ) {
-        logFilteredData_->interruptSearch();
-        if ( index >= 0 ) {
-            filteredView_ = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( index ) );
-            Q_EMIT filteredViewChanged();
-            logFilteredData_ = filteredViewsData_.at( filteredView_ );
-            logMainView_->useNewFiltering( logFilteredData_.get() );
-            changeFilteredViewVisibility( visibilityBox_->currentIndex() );
-        }
-    } );
+    connect( tabbedFilteredView_, &QTabWidget::currentChanged, this,
+             &CrawlerWidget::changeFilteredView );
 
-    connect( tabbedFilteredView_, &QTabWidget::tabCloseRequested, [ this ]( int index ) {
-        auto* tmp = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( index ) );
-        if ( tmp == filteredView_ ) {
-            auto newCurIndex = index + 1 < tabbedFilteredView_->count() ? index + 1 : index - 1;
-            tabbedFilteredView_->setCurrentIndex( newCurIndex );
-        }
-
-        tabbedFilteredView_->removeTab( index );
-        filteredViewsData_.erase( tmp );
-        tmp->deleteLater();
-    } );
+    connect( tabbedFilteredView_, &QTabWidget::tabCloseRequested, this,
+             &CrawlerWidget::closeFilteredView );
 
     connect( logMainView_, &LogMainView::saveDefaultSplitterSizes, this,
              &CrawlerWidget::saveSplitterSizes );
@@ -1308,6 +1291,35 @@ void CrawlerWidget::setup()
         encodingMib_ = defaultEncodingMib;
     }
     updatePredefinedFiltersWidget();
+}
+
+void CrawlerWidget::changeFilteredView( int tabIndex )
+{
+    logFilteredData_->interruptSearch();
+    if ( tabIndex >= 0 ) {
+        auto* tabFilteredView
+            = qobject_cast<FilteredView*>( tabbedFilteredView_->widget( tabIndex ) );
+
+        filteredView_ = tabFilteredView;
+        logFilteredData_ = filteredViewsData_.at( tabFilteredView );
+
+        Q_EMIT filteredViewChanged();
+
+        logMainView_->useNewFiltering( logFilteredData_.get() );
+        changeFilteredViewVisibility( visibilityBox_->currentIndex() );
+    }
+}
+
+void CrawlerWidget::closeFilteredView( int tabIndex )
+{
+    auto* tabFilteredView = tabbedFilteredView_->widget( tabIndex );
+    connect( tabFilteredView, &QObject::destroyed, this, &CrawlerWidget::filteredViewDestroyed );
+    tabFilteredView->deleteLater();
+}
+
+void CrawlerWidget::filteredViewDestroyed( QObject* view )
+{
+    filteredViewsData_.erase( qobject_cast<FilteredView*>( view ) );
 }
 
 void CrawlerWidget::saveSplitterSizes() const
