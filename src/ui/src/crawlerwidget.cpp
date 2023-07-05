@@ -1357,7 +1357,7 @@ void CrawlerWidget::changeFontSize( bool increase )
 
 void CrawlerWidget::connectAllFilteredViewSlots( FilteredView* view )
 {
-    connect( view, &FilteredView::newSelection, [ view ]( auto ) { view->update(); } );
+    connect( view, &FilteredView::newSelection, view, [ view ]( auto ) { view->update(); } );
 
     connect( view, &FilteredView::newSelection, this, &CrawlerWidget::jumpToMatchingLine );
 
