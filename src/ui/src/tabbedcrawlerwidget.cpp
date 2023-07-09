@@ -26,6 +26,8 @@
 #include <QInputDialog>
 #include <QKeyEvent>
 #include <QMenu>
+#include <qobjectdefs.h>
+#include <qpoint.h>
 
 #include "crawlerwidget.h"
 
@@ -100,7 +102,7 @@ TabbedCrawlerWidget::TabbedCrawlerWidget()
     myTabBar_.hide();
 
     myTabBar_.setContextMenuPolicy( Qt::CustomContextMenu );
-    connect( &myTabBar_, &QWidget::customContextMenuRequested, this,
+    connect( &myTabBar_, &CrawlerTabBar::showTabContextMenu, this,
              &TabbedCrawlerWidget::showContextMenu );
 
     dispatchToMainThread( [ this ] { loadIcons(); } );
@@ -139,7 +141,7 @@ void TabbedCrawlerWidget::addTabBarItem( int index, const QString& fileName )
 
     myTabBar_.setTabData( index, tabData );
 
-    setCurrentIndex(index);
+    setCurrentIndex( index );
 
     if ( count() > 1 )
         myTabBar_.show();
@@ -173,93 +175,97 @@ QString TabbedCrawlerWidget::tabPathAt( int index ) const
     return myTabBar_.tabData( index ).toMap()[ PathKey ].toString();
 }
 
-void TabbedCrawlerWidget::showContextMenu( const QPoint& point )
+void CrawlerTabBar::mouseReleaseEvent( QMouseEvent* mouseEvent )
 {
-    int tab = myTabBar_.tabAt( point );
-    if ( -1 != tab ) {
-        QMenu menu( this );
-        auto closeThis = menu.addAction( tr( "Close this" ) );
-        auto closeOthers = menu.addAction( tr( "Close others" ) );
-        auto closeLeft = menu.addAction( tr( "Close to the left" ) );
-        auto closeRight = menu.addAction( tr( "Close to the right" ) );
-        auto closeAll = menu.addAction( tr( "Close all" ) );
-        menu.addSeparator();
-        auto copyFullPath = menu.addAction( tr( "Copy full path" ) );
-        auto openContainingFolder = menu.addAction( tr( "Open containing folder" ) );
-        menu.addSeparator();
-        auto renameTab = menu.addAction( tr( "Rename tab" ) );
-        auto resetTabName = menu.addAction( tr( "Reset tab name" ) );
-
-        connect( closeThis, &QAction::triggered,
-                 [ tab, this ] { Q_EMIT tabCloseRequested( tab ); } );
-
-        connect( closeOthers, &QAction::triggered, [ tabWidget = widget( tab ), this ] {
-            while ( count() != 1 ) {
-                for ( int i = 0; i < count(); ++i ) {
-                    if ( i != indexOf( tabWidget ) ) {
-                        Q_EMIT tabCloseRequested( i );
-                        break;
-                    }
-                }
-            }
-        } );
-
-        connect( closeLeft, &QAction::triggered, [ tabWidget = widget( tab ), this ] {
-            while ( indexOf( tabWidget ) != 0 ) {
-                Q_EMIT tabCloseRequested( 0 );
-            }
-        } );
-
-        connect( closeRight, &QAction::triggered, [ tab, this ] {
-            while ( count() > tab + 1 ) {
-                Q_EMIT tabCloseRequested( tab + 1 );
-            }
-        } );
-
-        connect( closeAll, &QAction::triggered, [ this ] {
-            while ( count() ) {
-                Q_EMIT tabCloseRequested( 0 );
-            }
-        } );
-
-        if ( tab == 0 ) {
-            closeLeft->setDisabled( true );
-        }
-        else if ( tab == count() - 1 ) {
-            closeRight->setDisabled( true );
-        }
-
-        connect( copyFullPath, &QAction::triggered,
-                 [ this, tab ] { QApplication::clipboard()->setText( tabToolTip( tab ) ); } );
-
-        connect( openContainingFolder, &QAction::triggered,
-                 [ this, tab ] { showPathInFileExplorer( tabToolTip( tab ) ); } );
-
-        connect( renameTab, &QAction::triggered, [ this, tab ] {
-            bool isNameEntered = false;
-            auto newName = QInputDialog::getText( this, "Rename tab", "Tab name", QLineEdit::Normal,
-                                                  myTabBar_.tabText( tab ), &isNameEntered );
-            if ( isNameEntered ) {
-                const auto tabPath = tabPathAt( tab );
-                TabNameMapping::getSynced().setTabName( tabPath, newName ).save();
-
-                if ( newName.isEmpty() ) {
-                    myTabBar_.setTabText( tab, QFileInfo( tabPath ).fileName() );
-                }
-                else {
-                    myTabBar_.setTabText( tab, std::move( newName ) );
-                }
-            }
-        } );
-
-        connect( resetTabName, &QAction::triggered, [ this, tab ] {
-            const auto tabPath = tabPathAt( tab );
-            TabNameMapping::getSynced().setTabName( tabPath, "" ).save();
-            myTabBar_.setTabText( tab, QFileInfo( tabPath ).fileName() );
-        } );
-
-        menu.exec( myTabBar_.mapToGlobal( point ) );
+    int tab = tabAt( mouseEvent->pos() );
+    if ( tab != -1 ) {
+        Q_EMIT showTabContextMenu( tab, mapToGlobal( mouseEvent->pos() ) );
     }
+}
+
+void TabbedCrawlerWidget::showContextMenu( int tab, QPoint globalPoint )
+{
+    QMenu menu( this );
+    auto closeThis = menu.addAction( tr( "Close this" ) );
+    auto closeOthers = menu.addAction( tr( "Close others" ) );
+    auto closeLeft = menu.addAction( tr( "Close to the left" ) );
+    auto closeRight = menu.addAction( tr( "Close to the right" ) );
+    auto closeAll = menu.addAction( tr( "Close all" ) );
+    menu.addSeparator();
+    auto copyFullPath = menu.addAction( tr( "Copy full path" ) );
+    auto openContainingFolder = menu.addAction( tr( "Open containing folder" ) );
+    menu.addSeparator();
+    auto renameTab = menu.addAction( tr( "Rename tab" ) );
+    auto resetTabName = menu.addAction( tr( "Reset tab name" ) );
+
+    connect( closeThis, &QAction::triggered, [ tab, this ] { Q_EMIT tabCloseRequested( tab ); } );
+
+    connect( closeOthers, &QAction::triggered, [ tabWidget = widget( tab ), this ] {
+        while ( count() != 1 ) {
+            for ( int i = 0; i < count(); ++i ) {
+                if ( i != indexOf( tabWidget ) ) {
+                    Q_EMIT tabCloseRequested( i );
+                    break;
+                }
+            }
+        }
+    } );
+
+    connect( closeLeft, &QAction::triggered, [ tabWidget = widget( tab ), this ] {
+        while ( indexOf( tabWidget ) != 0 ) {
+            Q_EMIT tabCloseRequested( 0 );
+        }
+    } );
+
+    connect( closeRight, &QAction::triggered, [ tab, this ] {
+        while ( count() > tab + 1 ) {
+            Q_EMIT tabCloseRequested( tab + 1 );
+        }
+    } );
+
+    connect( closeAll, &QAction::triggered, [ this ] {
+        while ( count() ) {
+            Q_EMIT tabCloseRequested( 0 );
+        }
+    } );
+
+    if ( tab == 0 ) {
+        closeLeft->setDisabled( true );
+    }
+    else if ( tab == count() - 1 ) {
+        closeRight->setDisabled( true );
+    }
+
+    connect( copyFullPath, &QAction::triggered,
+             [ this, tab ] { QApplication::clipboard()->setText( tabToolTip( tab ) ); } );
+
+    connect( openContainingFolder, &QAction::triggered,
+             [ this, tab ] { showPathInFileExplorer( tabToolTip( tab ) ); } );
+
+    connect( renameTab, &QAction::triggered, [ this, tab ] {
+        bool isNameEntered = false;
+        auto newName = QInputDialog::getText( this, "Rename tab", "Tab name", QLineEdit::Normal,
+                                              myTabBar_.tabText( tab ), &isNameEntered );
+        if ( isNameEntered ) {
+            const auto tabPath = tabPathAt( tab );
+            TabNameMapping::getSynced().setTabName( tabPath, newName ).save();
+
+            if ( newName.isEmpty() ) {
+                myTabBar_.setTabText( tab, QFileInfo( tabPath ).fileName() );
+            }
+            else {
+                myTabBar_.setTabText( tab, std::move( newName ) );
+            }
+        }
+    } );
+
+    connect( resetTabName, &QAction::triggered, [ this, tab ] {
+        const auto tabPath = tabPathAt( tab );
+        TabNameMapping::getSynced().setTabName( tabPath, "" ).save();
+        myTabBar_.setTabText( tab, QFileInfo( tabPath ).fileName() );
+    } );
+
+    menu.exec( globalPoint );
 }
 
 void TabbedCrawlerWidget::keyPressEvent( QKeyEvent* event )
