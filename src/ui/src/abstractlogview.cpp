@@ -1493,12 +1493,14 @@ void AbstractLogView::saveToFile()
 
 void AbstractLogView::saveSelectedToFile()
 {
-    auto start = selectionStartPos_.line();
-    auto lastLine = selectionCurrentEndPos_.line();
-    if ( start > lastLine ) {
-        std::swap( start, lastLine );
+    const auto selectedLines = selection_.getLines();
+    if ( selectedLines.empty() ) {
+        return;
     }
-    auto end = lastLine + 1_lcount;
+
+    const auto start = selectedLines.front();
+    const auto lastLine = selectedLines.back();
+    const auto end = lastLine + 1_lcount;
     saveLinesToFile( start, end );
 }
 
