@@ -93,6 +93,7 @@
 #include "quickfindpattern.h"
 #include "regularexpressionpattern.h"
 #include "shortcuts.h"
+#include "clipboard.h"
 
 #ifdef Q_OS_WIN
 
@@ -1451,11 +1452,11 @@ void AbstractLogView::findPreviousSelected()
 // Copy the selection to the clipboard
 void AbstractLogView::copy()
 {
+
     try {
-        auto clipboard = QApplication::clipboard();
         auto text = selection_.getSelectedText( logData_ );
         text.replace( QChar::Null, QChar::Space );
-        clipboard->setText( text );
+        sendTextToClipboard(text);
     } catch ( std::exception& err ) {
         LOG_ERROR << "failed to copy data to clipboard " << err.what();
     }
@@ -1465,10 +1466,9 @@ void AbstractLogView::copy()
 void AbstractLogView::copyWithLineNumbers()
 {
     try {
-        auto clipboard = QApplication::clipboard();
         auto text = selection_.getSelectedText( logData_, true );
         text.replace( QChar::Null, QChar::Space );
-        clipboard->setText( text );
+        sendTextToClipboard(text);
     } catch ( std::exception& err ) {
         LOG_ERROR << "failed to copy data to clipboard " << err.what();
     }
@@ -2053,7 +2053,6 @@ void AbstractLogView::updateGlobalSelection()
 {
     try {
         auto clipboard = QApplication::clipboard();
-
         // Updating it only for "non-trivial" (range or portion) selections
         if ( !selection_.isSingleLine() )
             clipboard->setText( selection_.getSelectedText( logData_ ), QClipboard::Selection );

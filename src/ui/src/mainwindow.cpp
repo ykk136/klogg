@@ -81,6 +81,7 @@
 
 #include "mainwindow.h"
 
+#include "clipboard.h"
 #include "crawlerwidget.h"
 #include "decompressor.h"
 #include "dispatch_to.h"
@@ -186,7 +187,7 @@ MainWindow::MainWindow( WindowSession session )
                         SLOT( handleMatchCaseChanged( bool ) ) );
 
     signalMux_.connect( SIGNAL( filteredViewChanged() ), this,
-                       SLOT( handleFilteredViewChanged() ) );
+                        SLOT( handleFilteredViewChanged() ) );
 
     // Configure the main tabbed widget
     mainTabWidget_.setDocumentMode( true );
@@ -1063,10 +1064,8 @@ void MainWindow::selectAll()
 void MainWindow::copy()
 {
     try {
-        auto clipboard = QApplication::clipboard();
-
         if ( infoLine->hasFocus() && infoLine->hasSelectedText() ) {
-            clipboard->setText( infoLine->selectedText() );
+            sendTextToClipboard( infoLine->selectedText() );
             return;
         }
 
@@ -1074,9 +1073,7 @@ void MainWindow::copy()
             auto text = current->getSelectedText();
             text.replace( QChar::Null, QChar::Space );
 
-            clipboard->setText( text );
-            // Put it in the global selection as well (X11 only)
-            clipboard->setText( text, QClipboard::Selection );
+            sendTextToClipboard( text, true );
         }
     } catch ( std::exception& err ) {
         LOG_ERROR << "failed to copy data to clipboard " << err.what();
@@ -1102,7 +1099,7 @@ void MainWindow::clearLog()
 void MainWindow::copyFullPath()
 {
     const auto current_file = session_.getFilename( currentCrawlerWidget() );
-    QApplication::clipboard()->setText( QDir::toNativeSeparators( current_file ) );
+    sendTextToClipboard( QDir::toNativeSeparators( current_file ) );
 }
 
 void MainWindow::openContainingFolder()

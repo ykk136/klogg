@@ -31,6 +31,7 @@
 
 #include "crawlerwidget.h"
 
+#include "clipboard.h"
 #include "configuration.h"
 #include "dispatch_to.h"
 #include "iconloader.h"
@@ -236,13 +237,13 @@ void TabbedCrawlerWidget::showContextMenu( int tab, QPoint globalPoint )
         closeRight->setDisabled( true );
     }
 
-    connect( copyFullPath, &QAction::triggered,
-             [ this, tab ] { QApplication::clipboard()->setText( tabToolTip( tab ) ); } );
+    connect( copyFullPath, &QAction::triggered, this,
+             [ this, tab ] { sendTextToClipboard( tabToolTip( tab ) ); } );
 
-    connect( openContainingFolder, &QAction::triggered,
+    connect( openContainingFolder, &QAction::triggered, this,
              [ this, tab ] { showPathInFileExplorer( tabToolTip( tab ) ); } );
 
-    connect( renameTab, &QAction::triggered, [ this, tab ] {
+    connect( renameTab, &QAction::triggered, this, [ this, tab ] {
         bool isNameEntered = false;
         auto newName = QInputDialog::getText( this, "Rename tab", "Tab name", QLineEdit::Normal,
                                               myTabBar_.tabText( tab ), &isNameEntered );
@@ -259,7 +260,7 @@ void TabbedCrawlerWidget::showContextMenu( int tab, QPoint globalPoint )
         }
     } );
 
-    connect( resetTabName, &QAction::triggered, [ this, tab ] {
+    connect( resetTabName, &QAction::triggered, this, [ this, tab ] {
         const auto tabPath = tabPathAt( tab );
         TabNameMapping::getSynced().setTabName( tabPath, "" ).save();
         myTabBar_.setTabText( tab, QFileInfo( tabPath ).fileName() );

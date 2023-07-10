@@ -37,6 +37,7 @@
 #include <QVBoxLayout>
 
 #include "crc32.h"
+#include "clipboard.h"
 
 namespace {
 
@@ -192,7 +193,7 @@ void ScratchPad::transformTextInPlace( const std::function<QString( QString )>& 
         cursor.insertText( transformedText );
         textEdit_->setTextCursor( cursor );
 
-        QApplication::clipboard()->setText( transformedText );
+        sendTextToClipboard( transformedText );
 
         statusBar_->showMessage( "Copied to clipboard", StatusTimeout );
     }

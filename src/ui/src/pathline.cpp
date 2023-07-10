@@ -27,6 +27,7 @@
 
 #include "containers.h"
 #include "openfilehelper.h"
+#include "clipboard.h"
 
 void PathLine::setPath( const QString& path )
 {
@@ -46,10 +47,10 @@ void PathLine::contextMenuEvent( QContextMenuEvent* event )
     auto selectAll = menu.addAction( tr( "Select all" ) );
 
     connect( copyFullPath, &QAction::triggered, this,
-             [ this ]( auto ) { QApplication::clipboard()->setText( this->path_ ); } );
+             [ this ]( auto ) { sendTextToClipboard( this->path_ ); } );
 
     connect( copyFileName, &QAction::triggered, this, [ this ]( auto ) {
-        QApplication::clipboard()->setText( QFileInfo( this->path_ ).fileName() );
+        sendTextToClipboard( QFileInfo( this->path_ ).fileName() );
     } );
 
     connect( openContainingFolder, &QAction::triggered, this,
@@ -57,7 +58,7 @@ void PathLine::contextMenuEvent( QContextMenuEvent* event )
 
     copySelection->setEnabled( this->hasSelectedText() );
     connect( copySelection, &QAction::triggered, this,
-             [ this ]( auto ) { QApplication::clipboard()->setText( this->selectedText() ); } );
+             [ this ]( auto ) { sendTextToClipboard( this->selectedText() ); } );
 
     connect( selectAll, &QAction::triggered, this,
              [ this ]( auto ) { setSelection( 0, klogg::isize( this->text() ) ); } );
