@@ -178,10 +178,15 @@ QString TabbedCrawlerWidget::tabPathAt( int index ) const
 
 void CrawlerTabBar::mouseReleaseEvent( QMouseEvent* mouseEvent )
 {
-    int tab = tabAt( mouseEvent->pos() );
-    if ( tab != -1 ) {
-        Q_EMIT showTabContextMenu( tab, mapToGlobal( mouseEvent->pos() ) );
+    if ( mouseEvent->button() == Qt::RightButton ) {
+        int tab = tabAt( mouseEvent->pos() );
+        if ( tab != -1 ) {
+            Q_EMIT showTabContextMenu( tab, mapToGlobal( mouseEvent->pos() ) );
+            mouseEvent->accept();
+        }
     }
+
+    mouseEvent->ignore();
 }
 
 void TabbedCrawlerWidget::showContextMenu( int tab, QPoint globalPoint )
