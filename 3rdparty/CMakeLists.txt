@@ -5,7 +5,7 @@ include(CPM)
 set(_TMP_CPM_USE_LOCAL_PACKAGES ${CPM_USE_LOCAL_PACKAGES})
 
 cpmaddpackage("gh:simdutf/simdutf@3.2.13")
-cpmaddpackage("gh:foonathan/type_safe@0.2.2")
+cpmaddpackage("gh:foonathan/type_safe@0.2.3")
 
 if(APPLE)
   cpmaddpackage(
@@ -97,7 +97,7 @@ cpmaddpackage(
   GIT_REPOSITORY
   https://gitlab.freedesktop.org/uchardet/uchardet
   VERSION
-  0.0.7
+  0.0.8
   EXCLUDE_FROM_ALL
   YES
   OPTIONS
