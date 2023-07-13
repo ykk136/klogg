@@ -47,6 +47,7 @@
 
 #include "configuration.h"
 #include "log.h"
+#include "shortcuts.h"
 #include "styles.h"
 
 namespace {
@@ -298,16 +299,24 @@ void Configuration::retrieveFromStorage( QSettings& settings )
 
         const auto mapping = settings.value( "shortcuts.mapping" ).toMap();
         for ( auto keys = mapping.begin(); keys != mapping.end(); ++keys ) {
-            shortcuts_.emplace( keys.key().toStdString(), keys.value().toStringList() );
+            auto action = keys.key().toStdString();
+            if (action == ShortcutAction::LogViewJumpToButtom) {
+                action = ShortcutAction::LogViewJumpToBottom;
+            }
+            shortcuts_.emplace( action, keys.value().toStringList() );
         }
+
         settings.remove( "shortcuts.mapping" );
     }
 
     const auto shortcutsCount = settings.beginReadArray( "shortcuts" );
     for ( auto shortcutIndex = 0; shortcutIndex < shortcutsCount; ++shortcutIndex ) {
         settings.setArrayIndex( static_cast<int>( shortcutIndex ) );
-        const auto action = settings.value( "action", "" ).toString();
+        auto action = settings.value( "action", "" ).toString();
         if ( !action.isEmpty() ) {
+            if (action == ShortcutAction::LogViewJumpToButtom) {
+                action = ShortcutAction::LogViewJumpToBottom;
+            }
             const auto keys = settings.value( "keys", QStringList() ).toStringList();
             shortcuts_.emplace( action.toStdString(), keys );
         }

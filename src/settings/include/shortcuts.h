@@ -76,6 +76,7 @@ struct ShortcutAction {
     static constexpr auto LogViewScrollRight = "logview.scroll_right";
     static constexpr auto LogViewJumpToTop = "logview.jump_to_top";
     static constexpr auto LogViewJumpToButtom = "logview.jump_to_buttom";
+    static constexpr auto LogViewJumpToBottom = "logview.jump_to_bottom";
     static constexpr auto LogViewJumpToStartOfLine = "logview.jump_to_start_of_line";
     static constexpr auto LogViewJumpToEndOfLine = "logview.jump_to_end_of_line";
     static constexpr auto LogViewJumpToRightOfScreen = "logview.jump_to_right";

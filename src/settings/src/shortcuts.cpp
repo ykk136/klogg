@@ -116,7 +116,7 @@ const std::map<std::string, QStringList>& ShortcutAction::defaultShortcuts()
                            QStringList() << QKeySequence( Qt::Key_Dollar ).toString() );
         shortcuts.emplace( LogViewJumpToRightOfScreen,
                            QStringList() << QKeySequence( Qt::Key_End ).toString() );
-        shortcuts.emplace( LogViewJumpToButtom, QStringList() << "Ctrl+End"
+        shortcuts.emplace( LogViewJumpToBottom, QStringList() << "Ctrl+End"
                                                               << "Shift+G" );
         shortcuts.emplace( LogViewJumpToTop, QStringList() << "Ctrl+Home" );
         shortcuts.emplace( LogViewJumpToLine, QStringList() << "Ctrl+L" );
@@ -240,8 +240,8 @@ QString ShortcutAction::actionName( const std::string& action )
                            QApplication::tr( "Jump to the end start of the current line" ) );
         shortcuts.emplace( LogViewJumpToRightOfScreen,
                            QApplication::tr( "Jump to the right of the text" ) );
-        shortcuts.emplace( LogViewJumpToButtom,
-                           QApplication::tr( "Jump to the buttom of the text" ) );
+        shortcuts.emplace( LogViewJumpToBottom,
+                           QApplication::tr( "Jump to the bottom of the text" ) );
         shortcuts.emplace( LogViewJumpToTop, QApplication::tr( "Jump to the top of the text" ) );
         shortcuts.emplace( LogViewJumpToLine, QApplication::tr( "Jump to line" ) );
         shortcuts.emplace( LogViewQfForward, QApplication::tr( "Main view: find next" ) );

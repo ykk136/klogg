@@ -905,7 +905,7 @@ void AbstractLogView::doRegisterShortcuts()
 
     registerShortcut( ShortcutAction::LogViewJumpToTop,
                       [ this ]() { selectAndDisplayLine( 0_lnum ); } );
-    registerShortcut( ShortcutAction::LogViewJumpToButtom, [ this ]() {
+    registerShortcut( ShortcutAction::LogViewJumpToBottom, [ this ]() {
         const bool wasAtBottom = verticalScrollBar()->value() == verticalScrollBar()->maximum();
         if ( !wasAtBottom ) {
             selectAndDisplayLine( maxDisplayLineNumber() - 1_lcount );
