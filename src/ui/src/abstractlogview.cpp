@@ -906,8 +906,15 @@ void AbstractLogView::doRegisterShortcuts()
     registerShortcut( ShortcutAction::LogViewJumpToTop,
                       [ this ]() { selectAndDisplayLine( 0_lnum ); } );
     registerShortcut( ShortcutAction::LogViewJumpToButtom, [ this ]() {
-        selectAndDisplayLine( maxDisplayLineNumber() - 1_lcount );
-        jumpToBottom();
+        const bool wasAtBottom = verticalScrollBar()->value() == verticalScrollBar()->maximum();
+        if ( !wasAtBottom ) {
+            selectAndDisplayLine( maxDisplayLineNumber() - 1_lcount );
+            jumpToBottom();
+        }
+        else {
+            Q_EMIT followModeChanged( true );
+            followElasticHook_.hook( true );
+        }
     } );
 
     registerShortcut( ShortcutAction::LogViewJumpToStartOfLine,
