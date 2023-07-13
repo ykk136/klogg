@@ -84,6 +84,7 @@
 #include "linetypes.h"
 
 #include "active_screen.h"
+#include "clipboard.h"
 #include "configuration.h"
 #include "highlighterset.h"
 #include "highlightersmenu.h"
@@ -93,7 +94,6 @@
 #include "quickfindpattern.h"
 #include "regularexpressionpattern.h"
 #include "shortcuts.h"
-#include "clipboard.h"
 
 #ifdef Q_OS_WIN
 
@@ -518,6 +518,17 @@ AbstractLogView::AbstractLogView( const AbstractLogData* newLogData,
     connect( &followElasticHook_, SIGNAL( lengthChanged() ), this, SLOT( repaint() ) );
     connect( &followElasticHook_, SIGNAL( hooked( bool ) ), this,
              SIGNAL( followModeChanged( bool ) ) );
+
+    connect( verticalScrollBar(), &QAbstractSlider::actionTriggered, this, [ this ]( int action ) {
+        if ( !followMode_ ) {
+            return;
+        }
+
+        if ( action == QAbstractSlider::SliderPageStepSub
+             || action == QAbstractSlider::SliderSingleStepSub ) {
+            disableFollow();
+        }
+    } );
 }
 
 AbstractLogView::~AbstractLogView()
@@ -1454,7 +1465,7 @@ void AbstractLogView::copy()
     try {
         auto text = selection_.getSelectedText( logData_ );
         text.replace( QChar::Null, QChar::Space );
-        sendTextToClipboard(text);
+        sendTextToClipboard( text );
     } catch ( std::exception& err ) {
         LOG_ERROR << "failed to copy data to clipboard " << err.what();
     }
@@ -1466,7 +1477,7 @@ void AbstractLogView::copyWithLineNumbers()
     try {
         auto text = selection_.getSelectedText( logData_, true );
         text.replace( QChar::Null, QChar::Space );
-        sendTextToClipboard(text);
+        sendTextToClipboard( text );
     } catch ( std::exception& err ) {
         LOG_ERROR << "failed to copy data to clipboard " << err.what();
     }
