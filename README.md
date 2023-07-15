@@ -132,12 +132,13 @@ Package for Mac can be installed from Homebrew
 #### Linux
 It is recommended to use klogg package from distribution-specific [repositories](https://repology.org/project/klogg/versions).
 
-Generic packages are available from klogg DEB and RPM repositories hosted at JFrog Artifactory.
-They are built to run on Ubuntu 18.04/20.04/22.04 and Centos 7 (x86-64 only).
+Generic packages are available from klogg DEB and RPM repositories hosted at GitHub Pages.
+They are built to run on Ubuntu 18.04/20.04/22.04 and Oracle Linux 7/8 (x86-64 only).
 
-For DEB add klogg artifactory repository (replace `<ubuntu_release>` with one of `bionic`, `focal`, `jammy`):
+For DEB add klogg repository (replace `<ubuntu_release>` with one of `bionic`, `focal`, `jammy`):
 ```
-echo deb [trusted=yes] https://favpackage.jfrog.io/artifactory/klogg_deb <ubuntu_release> utils | sudo tee -a /etc/apt/sources.list
+curl -sS https://klogg.filimonov.dev/klogg.gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/klogg.gpg
+echo deb [signed-by=etc/apt/trusted.gpg.d/klogg.gpg] https://klogg.filimonov.dev/deb/<ubuntu_release> <ubuntu_release> utils | sudo tee -a /etc/apt/sources.list
 ```
 
 Then install using apt
@@ -146,14 +147,13 @@ sudo apt-get update
 sudo apt install klogg
 ```
 
-
-For RPM create klogg repo file in `/etc/yum.repos.d/klogg-rpm.repo` with this content:
+For RPM create klogg repo file in `/etc/yum.repos.d/klogg-rpm.repo` with this content (replace `<oracle_release>` with one of `7`, `8`):
 ```
 [Klogg]
 name=Klogg
-baseurl=https://favpackage.jfrog.io/artifactory/klogg_rpm/
+baseurl=https://klogg.filimonov.dev/rpm/oracle/<oracle_release>/amd64
+gpgkey=https://klogg.filimonov.dev/klogg.gpg.key
 enabled=1
-gpgcheck=0
 ```
 
 Then install using yum
