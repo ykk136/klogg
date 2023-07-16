@@ -135,25 +135,32 @@ It is recommended to use klogg package from distribution-specific [repositories]
 Generic packages are available from klogg DEB and RPM repositories hosted at GitHub Pages.
 They are built to run on Ubuntu 18.04/20.04/22.04 and Oracle Linux 7/8 (x86-64 only).
 
-For DEB add klogg repository (replace `<ubuntu_release>` with one of `bionic`, `focal`, `jammy`):
+For DEB packages first download the gpg key:
 ```
-curl -sS https://klogg.filimonov.dev/klogg.gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/klogg.gpg
-echo deb [signed-by=etc/apt/trusted.gpg.d/klogg.gpg] https://klogg.filimonov.dev/deb/<ubuntu_release> <ubuntu_release> utils | sudo tee -a /etc/apt/sources.list
+curl -sS https://klogg.filimonov.dev/klogg.gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/klogg.gpg
 ```
 
-Then install using apt
+You might need to manually create `/etc/apt/keyrings` directory.
+
+Then download the repository list file for you distribution (replace `<ubuntu_release>` with one of `bionic`, `focal`, `jammy`):
+```
+curl -sS https://klogg.filimonov.dev/dev/klogg.<ubuntu_release>.list | sudo tee /etc/apt/sources.list.d/klogg.list
+```
+
+Finally, install using apt
 ```
 sudo apt-get update
 sudo apt install klogg
 ```
 
-For RPM create klogg repo file in `/etc/yum.repos.d/klogg-rpm.repo` with this content (replace `<oracle_release>` with one of `7`, `8`):
+If there is already an entry for JFrogg hosted klogg repository in `/etc/apt/sources.list`, then remove this line from it:
 ```
-[Klogg]
-name=Klogg
-baseurl=https://klogg.filimonov.dev/rpm/oracle/<oracle_release>/amd64
-gpgkey=https://klogg.filimonov.dev/klogg.gpg.key
-enabled=1
+deb [trusted=yes] https://favpackage.jfrog.io/artifactory/klogg_deb/ <ubuntu_release> utils
+```
+
+For RPM download klogg repo file (replace `<oracle_release>` with one of `7`, `8`):
+```
+curl -sS https://klogg.filimonov.dev/rpm/klogg-oracle-<oracle_release>.repo | sudo tee /etc/yum.repos.d/klogg-rpm.repo
 ```
 
 Then install using yum
