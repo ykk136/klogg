@@ -1045,10 +1045,16 @@ void AbstractLogView::wheelEvent( QWheelEvent* wheelEvent )
     if ( verticalScrollBar()->value() == verticalScrollBar()->maximum() ) {
         if ( allowFollowOnScroll || yDelta > 0 ) {
             // First see if we need to block the elastic (on Mac)
-            if ( wheelEvent->phase() == Qt::ScrollBegin )
+            if ( wheelEvent->phase() == Qt::ScrollBegin ) {
                 followElasticHook_.hold();
-            else if ( wheelEvent->phase() == Qt::ScrollEnd || wheelEvent->phase() == Qt::ScrollMomentum )
+            }
+            else if ( wheelEvent->phase() == Qt::ScrollEnd
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 12, 0 )
+                      || wheelEvent->phase() == Qt::ScrollMomentum
+#endif
+            ) {
                 followElasticHook_.release();
+            }
 
             followElasticHook_.move( -yDelta );
         }
