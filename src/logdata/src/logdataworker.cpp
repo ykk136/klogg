@@ -64,7 +64,7 @@
 
 #include "logdataworker.h"
 
-constexpr int IndexingBlockSize = 1 * 1024 * 1024;
+constexpr int IndexingBlockSize = 5 * 1024 * 1024;
 
 qint64 IndexingData::getIndexedSize() const
 {
@@ -430,8 +430,8 @@ FastLinePositionArray IndexOperation::parseDataBlock( OffsetInFile::UnderlyingTy
             break;
         }
 
-        auto posWithinBlock
-            = type_safe::narrow_cast<int>( state.pos >= blockBeginning ? ( state.pos - blockBeginning ) : 0 );
+        auto posWithinBlock = type_safe::narrow_cast<int>(
+            state.pos >= blockBeginning ? ( state.pos - blockBeginning ) : 0 );
 
         isEndOfBlock = posWithinBlock == klogg::ssize( block );
 
@@ -442,8 +442,10 @@ FastLinePositionArray IndexOperation::parseDataBlock( OffsetInFile::UnderlyingTy
 
         const auto currentDataEnd = posWithinBlock + blockBeginning;
 
-        const auto length = type_safe::narrow_cast<LineLength::UnderlyingType>( currentDataEnd - state.pos ) / state.encodingParams.lineFeedWidth
-                            + state.additional_spaces;
+        const auto length
+            = type_safe::narrow_cast<LineLength::UnderlyingType>( currentDataEnd - state.pos )
+                  / state.encodingParams.lineFeedWidth
+              + state.additional_spaces;
 
         state.max_length = std::max( state.max_length, length );
 
@@ -493,6 +495,8 @@ std::chrono::microseconds IndexOperation::readFileInBlocks( QFile& file,
 
     LOG_INFO << "Starting IO thread";
 
+    int sentBlocksCount = 0;
+
     microseconds ioDuration{};
     while ( !file.atEnd() ) {
 
@@ -519,11 +523,14 @@ std::chrono::microseconds IndexOperation::readFileInBlocks( QFile& file,
 
         ioDuration += duration_cast<microseconds>( ioT2 - ioT1 );
 
-        LOG_DEBUG << "Sending block " << blockData.first << " size " << blockData.second->size();
+        if ( sentBlocksCount % 10 == 0 ) {
+            LOG_INFO << "Sending block " << blockData.first << " size " << blockData.second->size();
+        }
 
         while ( !blockPrefetcher.try_put( std::move( blockData ) ) && !interruptRequest_ ) {
             std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
         }
+        sentBlocksCount++;
     }
 
     auto lastBlock = std::make_pair( -1, new klogg::vector<char>{} );
@@ -558,9 +565,9 @@ void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& bloc
             maxLength = std::numeric_limits<LineLength::UnderlyingType>::max();
         }
 
-        scopedAccessor.addAll( block,
-                               LineLength( type_safe::narrow_cast<LineLength::UnderlyingType>( maxLength ) ),
-                               linePositions, state.encodingGuess );
+        scopedAccessor.addAll(
+            block, LineLength( type_safe::narrow_cast<LineLength::UnderlyingType>( maxLength ) ),
+            linePositions, state.encodingGuess );
 
         // Update the caller for progress indication
         const auto progress
@@ -581,6 +588,7 @@ void IndexOperation::indexNextBlock( IndexingState& state, const BlockData& bloc
 
 void IndexOperation::doIndex( OffsetInFile initialPosition )
 {
+    LOG_INFO << "Indexing file " << fileName_;
     QFile file( fileName_ );
 
     if ( !( file.isOpen() || file.open( QIODevice::ReadOnly ) ) ) {
@@ -597,6 +605,8 @@ void IndexOperation::doIndex( OffsetInFile initialPosition )
         Q_EMIT indexingProgressed( 100 );
         return;
     }
+
+    LOG_INFO << "File size " << file.size();
 
     IndexingState state;
     state.pos = initialPosition.get();

@@ -37,10 +37,12 @@ void openFileByHandle( QFile* file )
                        &securityAtts, creationDisp, FILE_ATTRIBUTE_NORMAL, NULL );
 
     if ( fileHandle != INVALID_HANDLE_VALUE ) {
+        LOG_INFO << "Got native file handle " << (intptr_t)fileHandle;
         // Convert the HANDLE to an fd and pass it to QFile's foreign-open
         // function. The fd owns the handle, so when QFile later closes
         // the fd the handle will be closed too.
         int fd = _open_osfhandle( (intptr_t)fileHandle, _O_RDONLY );
+        LOG_INFO << "Got fd " << fd;
         if ( fd != -1 ) {
             openedByHandle = file->open( fd, QIODevice::ReadOnly, QFile::AutoCloseHandle );
         }
@@ -56,6 +58,7 @@ void openFileByHandle( QFile* file )
     if ( !openedByHandle ) {
         file->open( QIODevice::ReadOnly );
     }
+    LOG_INFO << "QFile opened";
 }
 } // namespace
 
