@@ -346,6 +346,53 @@ endif()
 
 set(CPM_USE_LOCAL_PACKAGES ${_TMP_CPM_USE_LOCAL_PACKAGES})
 
+if(KLOGG_USE_SENTRY)
+  #set(SENTRY_BACKEND
+  #    "crashpad"
+  #    CACHE INTERNAL "" FORCE
+  #)
+  #set(SENTRY_TRANSPORT
+  #    "none"
+  #    CACHE INTERNAL "" FORCE
+  #)
+  #set(SENTRY_BUILD_EXAMPLES
+  #    OFF
+  #    CACHE INTERNAL "" FORCE
+  #)
+  #set(CRASHPAD_ENABLE_INSTALL
+  #    OFF
+  #    CACHE INTERNAL "" FORCE
+  #)
+  #set(CRASHPAD_ENABLE_INSTALL_DEV
+  #    OFF
+  #    CACHE INTERNAL "" FORCE
+  #)
+  #add_subdirectory(sentry)
+
+  cpmaddpackage(
+    NAME
+    sentry
+    GITHUB_REPOSITORY
+    getsentry/sentry-native
+    GIT_TAG
+    79899a808a4675a66db6b76a144cecea954506ea
+    EXCLUDE_FROM_ALL
+    YES
+    OPTIONS
+    "SENTRY_BACKEND crashpad"
+    "SENTRY_TRANSPORT none"
+    "SENTRY_BUILD_EXAMPLES OFF"
+    "CRASHPAD_ENABLE_INSTALL OFF"
+    "CRASHPAD_ENABLE_INSTALL_DEV OFF"
+  )
+
+  if(WIN32)
+    set_target_properties(crashpad_handler PROPERTIES OUTPUT_NAME "klogg_crashpad_handler.exe")
+  else()
+    set_target_properties(crashpad_handler PROPERTIES OUTPUT_NAME "klogg_crashpad_handler")
+  endif()
+endif(KLOGG_USE_SENTRY)
+
 set(klogg_cpm_targets
     xxhash
     Catch2
@@ -359,9 +406,14 @@ set(klogg_cpm_targets
     SingleApplication
     hs
     tbb
-    exprtk,
-    type_safe,
+    exprtk
+    type_safe
     mimalloc-static
+    sentry
+    crashpad_client
+    crashpad_compat
+    crashpad_util
+    mini_chromium
 )
 foreach(target ${klogg_cpm_targets})
   if(TARGET ${target})
@@ -375,26 +427,4 @@ foreach(target ${klogg_cpm_targets})
   endif()
 endforeach()
 
-if(KLOGG_USE_SENTRY)
-  set(SENTRY_BACKEND
-      "crashpad"
-      CACHE INTERNAL "" FORCE
-  )
-  set(SENTRY_TRANSPORT
-      "none"
-      CACHE INTERNAL "" FORCE
-  )
-  set(SENTRY_BUILD_EXAMPLES
-      OFF
-      CACHE INTERNAL "" FORCE
-  )
-  set(CRASHPAD_ENABLE_INSTALL
-      OFF
-      CACHE INTERNAL "" FORCE
-  )
-  set(CRASHPAD_ENABLE_INSTALL_DEV
-      OFF
-      CACHE INTERNAL "" FORCE
-  )
-  add_subdirectory(sentry)
-endif(KLOGG_USE_SENTRY)
+
