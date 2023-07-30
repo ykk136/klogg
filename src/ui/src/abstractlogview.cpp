@@ -2260,19 +2260,18 @@ void AbstractLogView::updateScrollBars()
         const auto wrappedLinesScrollAdjust = ( getNbVisibleLines() - visibleWrappedLines ).get();
 
         verticalScrollBar()->setRange(
-            0, static_cast<int>( qMin( logData_->getNbLine().get() - getNbVisibleLines().get()
-                                           + LinesCount::UnderlyingType{ 1 }
-                                           + wrappedLinesScrollAdjust,
-                                       maxValue<LinesCount>().get() ) ) );
+            0, static_cast<int>( std::min( logData_->getNbLine().get() - getNbVisibleLines().get()
+                                               + LinesCount::UnderlyingType{ 1 }
+                                               + wrappedLinesScrollAdjust,
+                                           maxValue<LinesCount>().get() ) ) );
     }
 
-    const int hScrollMaxValue
-        = useTextWrap_
-              ? 0
-              : std::max( 0, type_safe::narrow_cast<int>( logData_->getMaxLength().get()
-                                                          - getNbVisibleCols().get() + 1 ) );
+    int64_t hScrollMaxValue = 0;
+    if ( !useTextWrap_ && logData_->getMaxLength().get() >= getNbVisibleCols().get() ) {
+        hScrollMaxValue = logData_->getMaxLength().get() - getNbVisibleCols().get() + 1;
+    }
 
-    horizontalScrollBar()->setRange( 0, hScrollMaxValue );
+    horizontalScrollBar()->setRange( 0, type_safe::narrow_cast<int>( hScrollMaxValue ) );
     horizontalScrollBar()->setPageStep(
         type_safe::narrow_cast<int>( getNbVisibleCols().get() * 7 / 8 ) );
 }
