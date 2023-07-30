@@ -347,28 +347,6 @@ endif()
 set(CPM_USE_LOCAL_PACKAGES ${_TMP_CPM_USE_LOCAL_PACKAGES})
 
 if(KLOGG_USE_SENTRY)
-  #set(SENTRY_BACKEND
-  #    "crashpad"
-  #    CACHE INTERNAL "" FORCE
-  #)
-  #set(SENTRY_TRANSPORT
-  #    "none"
-  #    CACHE INTERNAL "" FORCE
-  #)
-  #set(SENTRY_BUILD_EXAMPLES
-  #    OFF
-  #    CACHE INTERNAL "" FORCE
-  #)
-  #set(CRASHPAD_ENABLE_INSTALL
-  #    OFF
-  #    CACHE INTERNAL "" FORCE
-  #)
-  #set(CRASHPAD_ENABLE_INSTALL_DEV
-  #    OFF
-  #    CACHE INTERNAL "" FORCE
-  #)
-  #add_subdirectory(sentry)
-
   cpmaddpackage(
     NAME
     sentry
@@ -380,7 +358,7 @@ if(KLOGG_USE_SENTRY)
     YES
     OPTIONS
     "SENTRY_BACKEND crashpad"
-    "SENTRY_TRANSPORT none"
+    "SENTRY_DEFAULT_TRANSPORT none"
     "SENTRY_BUILD_EXAMPLES OFF"
     "CRASHPAD_ENABLE_INSTALL OFF"
     "CRASHPAD_ENABLE_INSTALL_DEV OFF"
