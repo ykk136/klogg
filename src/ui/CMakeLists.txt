@@ -17,7 +17,7 @@ add_library(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/logmainview.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/mainwindow.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/mainwindowtext.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/menuactiontooltipbehavior.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/menu.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/optionsdialog.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/overview.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/overviewwidget.h
@@ -56,6 +56,7 @@ add_library(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/filteredview.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/highlightersdialog.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/highlighteredit.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/highlightersmenu.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/highlightersetedit.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/highlighterset.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/predefinedfilters.cpp
@@ -66,7 +67,7 @@ add_library(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/logmainview.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/mainwindow.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/mainwindowtext.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/menuactiontooltipbehavior.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/menu.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/optionsdialog.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/overview.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/overviewwidget.cpp

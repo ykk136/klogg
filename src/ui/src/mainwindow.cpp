@@ -794,9 +794,14 @@ void MainWindow::createMenus()
 
     toolsMenu = menuBar()->addMenu( tr( menu::toolsTitle ) );
 
-    highlightersMenu = menuBar()->addMenu( tr( menu::highlightersTitle ) );
-    connect( highlightersMenu, &QMenu::aboutToShow,
-             [ this ]() { setCurrentHighlighterAction( highlightersActionGroup ); } );
+    highlightersMenu = new HighlightersMenu( tr( menu::highlightersTitle ), menuBar() );
+    menuBar()->addMenu( highlightersMenu );
+    highlightersMenu->setApplyChange( [ this ]() {
+        auto crawler = currentCrawlerWidget();
+        if ( crawler != nullptr ) {
+            crawler->applyConfiguration();
+        }
+    } );
 
     toolsMenu->addAction( predefinedFiltersDialogAction );
 
@@ -1966,29 +1971,10 @@ void MainWindow::updateOpenedFilesMenu()
 
 void MainWindow::updateHighlightersMenu()
 {
-    highlightersMenu->clear();
-    if ( highlightersActionGroup ) {
-        highlightersActionGroup->deleteLater();
-    }
-
-    highlightersActionGroup = new QActionGroup( this );
-    highlightersActionGroup->setExclusive( false );
-    connect( highlightersActionGroup, &QActionGroup::triggered, this,
-             &MainWindow::setCurrentHighlighter );
-
-    highlightersMenu->addAction( editHighlightersAction );
-    highlightersMenu->addSeparator();
-
-    populateHighlightersMenu( highlightersMenu, highlightersActionGroup );
-}
-
-void MainWindow::setCurrentHighlighter( QAction* action )
-{
-    saveCurrentHighlighterFromAction( action );
-
-    if ( auto current = currentCrawlerWidget() ) {
-        current->applyConfiguration();
-    }
+    highlightersMenu->clearHighlightersMenu();
+    highlightersMenu->createHighlightersMenu();
+    highlightersMenu->addAction( editHighlightersAction, true );
+    highlightersMenu->populateHighlightersMenu();
 }
 
 void MainWindow::updateFavoritesMenu()
