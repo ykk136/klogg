@@ -31,7 +31,7 @@ release/
 object_script.glogg.Debug
 object_script.glogg.Release
 
-
+build
 build_root/
 build_root_clang/
 build_root_gcc/
@@ -40,6 +40,7 @@ build_root_qt6/
 test_data/
 
 compile_commands.json
+./cache
 
 # Qt-specific
 /.moc

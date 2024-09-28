@@ -311,3 +311,12 @@ add_custom_target(
 )
 
 add_custom_target(klogg_stuff SOURCES .clang-format .clang-tidy .cmake-format)
+
+if (PROJECT_IS_TOP_LEVEL AND UNIX)
+  # Create symlink to compile_commands.json for IDE to pick it up
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_BINARY_DIR}/compile_commands.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json
+  )
+endif()

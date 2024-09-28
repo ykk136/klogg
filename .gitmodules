@@ -1,0 +1,63 @@
+[submodule "3rdparty/simdutf"]
+	path = 3rdparty/simdutf
+	url = https://github.com/simdutf/simdutf
+[submodule "3rdparty/type_safe"]
+	path = 3rdparty/type_safe
+	url = https://github.com/foonathan/type_safe
+[submodule "3rdparty/CRoaring"]
+	path = 3rdparty/CRoaring
+	url = https://github.com/variar/CRoaring
+[submodule "3rdparty/maddy"]
+	path = 3rdparty/maddy
+	url = https://github.com/variar/maddy
+[submodule "3rdparty/hyperscan"]
+	path = 3rdparty/hyperscan
+	url = https://github.com/variar/hyperscan
+[submodule "3rdparty/macdeployqtfix"]
+	path = 3rdparty/macdeployqtfix
+	url = https://github.com/arl/macdeployqtfix
+[submodule "3rdparty/vectorscan"]
+	path = 3rdparty/vectorscan
+	url = https://github.com/VectorCamp/vectorscan
+[submodule "3rdparty/uchardet"]
+	path = 3rdparty/uchardet
+	url = https://gitlab.freedesktop.org/uchardet/uchardet
+[submodule "3rdparty/klogg_karchive"]
+	path = 3rdparty/klogg_karchive
+	url = https://github.com/variar/klogg_karchive
+[submodule "3rdparty/robin-hood-hashing"]
+	path = 3rdparty/robin-hood-hashing
+	url = https://github.com/martinus/robin-hood-hashing
+[submodule "3rdparty/Catch2"]
+	path = 3rdparty/Catch2
+	url = https://github.com/catchorg/Catch2
+[submodule "3rdparty/KDSingleApplication"]
+	path = 3rdparty/KDSingleApplication
+	url = https://github.com/variar/KDSingleApplication
+[submodule "3rdparty/xxHash"]
+	path = 3rdparty/xxHash
+	url = https://github.com/Cyan4973/xxHash
+[submodule "3rdparty/whereami"]
+	path = 3rdparty/whereami
+	url = https://github.com/gpakosz/whereami
+[submodule "3rdparty/klogg_exprtk"]
+	path = 3rdparty/klogg_exprtk
+	url = https://github.com/variar/klogg_exprtk
+[submodule "3rdparty/KDToolBox"]
+	path = 3rdparty/KDToolBox
+	url = https://github.com/KDABLabs/KDToolBox
+[submodule "3rdparty/efsw"]
+	path = 3rdparty/efsw
+	url = https://github.com/SpartanJ/efsw
+[submodule "3rdparty/oneTBB"]
+	path = 3rdparty/oneTBB
+	url = https://github.com/variar/oneTBB
+[submodule "3rdparty/mimalloc"]
+	path = 3rdparty/mimalloc
+	url = https://github.com/microsoft/mimalloc
+[submodule "3rdparty/sentry-native"]
+	path = 3rdparty/sentry-native
+	url = https://github.com/getsentry/sentry-native
+[submodule "3rdparty/backward-cpp"]
+	path = 3rdparty/backward-cpp
+	url = https://github.com/bombela/backward-cpp

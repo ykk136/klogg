@@ -1,0 +1,5 @@
+CompileFlags:
+    Add:
+        - "--include-directory=/usr/include"
+        - "--include-directory=/usr/local/include/"
+        - "-std=c++17"
