@@ -30,6 +30,10 @@
 
 #include <cassert>
 
+// Undefine QT_MESSAGELOG_FILE to get real filename rather than full file path
+#undef QT_MESSAGELOG_FILE
+#define QT_MESSAGELOG_FILE (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
 #define LOG_IF_( severity )                                                                        \
     if ( !logging::needLogging( severity ) ) {                                                     \
         ;                                                                                          \
@@ -40,6 +44,7 @@
 #define LOG_INFO LOG_IF_( QtInfoMsg ) qInfo().nospace()
 #define LOG_WARNING LOG_IF_( QtWarningMsg ) qWarning().nospace()
 #define LOG_ERROR LOG_IF_( QtCriticalMsg ) qCritical().nospace()
+#define LOG_FATAL LOG_IF_( QtFatalMsg ) qFatal().nospace()
 
 namespace logging {
 bool needLogging( QtMsgType type );

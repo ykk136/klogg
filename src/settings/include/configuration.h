@@ -62,7 +62,7 @@ static constexpr int MAX_RECENT_FILES = 25;
 // Configuration class containing everything in the "Settings" dialog
 class Configuration final : public Persistable<Configuration> {
   public:
-    static const char* persistableName()
+    inline static const char* persistableName()
     {
         return "Configuration";
     }
@@ -72,435 +72,435 @@ class Configuration final : public Persistable<Configuration> {
     QFont mainFont() const;
     void setMainFont( QFont newFont );
 
-    QString language() const
+    inline QString language() const
     {
         return language_;
     }
 
-    void setLanguage( QString lang )
+    inline void setLanguage( QString lang )
     {
         language_ = lang;
     }
 
     // Accesses the regexp types
-    SearchRegexpType mainRegexpType() const
+    inline SearchRegexpType mainRegexpType() const
     {
         return mainRegexpType_;
     }
-    SearchRegexpType quickfindRegexpType() const
+    inline SearchRegexpType quickfindRegexpType() const
     {
         return quickfindRegexpType_;
     }
-    bool isQuickfindIncremental() const
+    inline bool isQuickfindIncremental() const
     {
         return quickfindIncremental_;
     }
-    void setMainRegexpType( SearchRegexpType type )
+    inline void setMainRegexpType( SearchRegexpType type )
     {
         mainRegexpType_ = type;
     }
-    void setQuickfindRegexpType( SearchRegexpType type )
+    inline void setQuickfindRegexpType( SearchRegexpType type )
     {
         quickfindRegexpType_ = type;
     }
-    void setQuickfindIncremental( bool isIncremental )
+    inline void setQuickfindIncremental( bool isIncremental )
     {
         quickfindIncremental_ = isIncremental;
     }
 
     // "Advanced" settings
-    bool anyFileWatchEnabled() const
+    inline bool anyFileWatchEnabled() const
     {
         return nativeFileWatchEnabled() || pollingEnabled();
     }
 
-    bool nativeFileWatchEnabled() const
+    inline bool nativeFileWatchEnabled() const
     {
         return nativeFileWatchEnabled_;
     }
-    void setNativeFileWatchEnabled( bool enabled )
+    inline void setNativeFileWatchEnabled( bool enabled )
     {
         nativeFileWatchEnabled_ = enabled;
     }
-    bool pollingEnabled() const
+    inline bool pollingEnabled() const
     {
         return pollingEnabled_;
     }
-    void setPollingEnabled( bool enabled )
+    inline void setPollingEnabled( bool enabled )
     {
         pollingEnabled_ = enabled;
     }
-    int pollIntervalMs() const
+    inline int pollIntervalMs() const
     {
         return pollIntervalMs_;
     }
-    void setPollIntervalMs( int interval )
+    inline void setPollIntervalMs( int interval )
     {
         pollIntervalMs_ = interval;
     }
 
-    bool fastModificationDetection() const
+    inline bool fastModificationDetection() const
     {
         return fastModificationDetection_;
     }
 
-    void setFastModificationDetection( bool fastDetection )
+    inline void setFastModificationDetection( bool fastDetection )
     {
         fastModificationDetection_ = fastDetection;
     }
 
-    bool loadLastSession() const
+    inline bool loadLastSession() const
     {
         return loadLastSession_;
     }
-    void setLoadLastSession( bool enabled )
+    inline void setLoadLastSession( bool enabled )
     {
         loadLastSession_ = enabled;
     }
-    bool followFileOnLoad() const
+    inline bool followFileOnLoad() const
     {
         return followFileOnLoad_;
     }
-    void setFollowFileOnLoad( bool enabled )
+    inline void setFollowFileOnLoad( bool enabled )
     {
         followFileOnLoad_ = enabled;
     }
-    bool allowMultipleWindows() const
+    inline bool allowMultipleWindows() const
     {
         return allowMultipleWindows_;
     }
-    void setAllowMultipleWindows( bool enabled )
+    inline void setAllowMultipleWindows( bool enabled )
     {
         allowMultipleWindows_ = enabled;
     }
 
     // perf settings
-    bool useParallelSearch() const
+    inline bool useParallelSearch() const
     {
         return useParallelSearch_;
     }
-    void setUseParallelSearch( bool enabled )
+    inline void setUseParallelSearch( bool enabled )
     {
         useParallelSearch_ = enabled;
     }
-    bool useSearchResultsCache() const
+    inline bool useSearchResultsCache() const
     {
         return useSearchResultsCache_;
     }
-    void setUseSearchResultsCache( bool enabled )
+    inline void setUseSearchResultsCache( bool enabled )
     {
         useSearchResultsCache_ = enabled;
     }
-    unsigned searchResultsCacheLines() const
+    inline unsigned searchResultsCacheLines() const
     {
         return searchResultsCacheLines_;
     }
-    void setSearchResultsCacheLines( unsigned lines )
+    inline void setSearchResultsCacheLines( unsigned lines )
     {
         searchResultsCacheLines_ = lines;
     }
-    int indexReadBufferSizeMb() const
+    inline int indexReadBufferSizeMb() const
     {
         return indexReadBufferSizeMb_;
     }
-    void setIndexReadBufferSizeMb( int bufferSizeMb )
+    inline void setIndexReadBufferSizeMb( int bufferSizeMb )
     {
         indexReadBufferSizeMb_ = bufferSizeMb;
     }
-    int searchReadBufferSizeLines() const
+    inline int searchReadBufferSizeLines() const
     {
         return searchReadBufferSizeLines_;
     }
-    void setSearchReadBufferSizeLines( int lines )
+    inline void setSearchReadBufferSizeLines( int lines )
     {
         searchReadBufferSizeLines_ = lines;
     }
-    int searchThreadPoolSize() const
+    inline int searchThreadPoolSize() const
     {
         return searchThreadPoolSize_;
     }
-    void setSearchThreadPoolSize( int threads )
+    inline void setSearchThreadPoolSize( int threads )
     {
         searchThreadPoolSize_ = threads;
     }
-    bool keepFileClosed() const
+    inline bool keepFileClosed() const
     {
         return keepFileClosed_;
     }
-    void setKeepFileClosed( bool shouldKeepClosed )
+    inline void setKeepFileClosed( bool shouldKeepClosed )
     {
         keepFileClosed_ = shouldKeepClosed;
     }
 
-    RegexpEngine regexpEngine() const
+    inline RegexpEngine regexpEngine() const
     {
         return regexpEngine_;
     }
 
-    void setRegexpEnging( RegexpEngine engine )
+    inline void setRegexpEnging( RegexpEngine engine )
     {
         regexpEngine_ = engine;
     }
 
     // Accessors
-    bool versionCheckingEnabled() const
+    inline bool versionCheckingEnabled() const
     {
         return enableVersionChecking_;
     }
-    void setVersionCheckingEnabled( bool enabled )
+    inline void setVersionCheckingEnabled( bool enabled )
     {
         enableVersionChecking_ = enabled;
     }
 
     // View settings
-    bool isOverviewVisible() const
+    inline bool isOverviewVisible() const
     {
         return overviewVisible_;
     }
-    void setOverviewVisible( bool isVisible )
+    inline void setOverviewVisible( bool isVisible )
     {
         overviewVisible_ = isVisible;
     }
-    bool mainLineNumbersVisible() const
+    inline bool mainLineNumbersVisible() const
     {
         return lineNumbersVisibleInMain_;
     }
-    bool filteredLineNumbersVisible() const
+    inline bool filteredLineNumbersVisible() const
     {
         return lineNumbersVisibleInFiltered_;
     }
-    bool minimizeToTray() const
+    inline bool minimizeToTray() const
     {
         return minimizeToTray_;
     }
-    QString style() const
+    inline QString style() const
     {
         return style_;
     }
-    void setMainLineNumbersVisible( bool lineNumbersVisible )
+    inline void setMainLineNumbersVisible( bool lineNumbersVisible )
     {
         lineNumbersVisibleInMain_ = lineNumbersVisible;
     }
-    void setFilteredLineNumbersVisible( bool lineNumbersVisible )
+    inline void setFilteredLineNumbersVisible( bool lineNumbersVisible )
     {
         lineNumbersVisibleInFiltered_ = lineNumbersVisible;
     }
-    void setMinimizeToTray( bool minimizeToTray )
+    inline void setMinimizeToTray( bool minimizeToTray )
     {
         minimizeToTray_ = minimizeToTray;
     }
-    void setStyle( const QString& style )
+    inline void setStyle( const QString& style )
     {
         style_ = style;
     }
 
-    bool enableLogging() const
+    inline bool enableLogging() const
     {
         return enableLogging_;
     }
-    int loggingLevel() const
+    inline int loggingLevel() const
     {
         return loggingLevel_;
     }
 
-    void setEnableLogging( bool enableLogging )
+    inline void setEnableLogging( bool enableLogging )
     {
         enableLogging_ = enableLogging;
     }
-    void setLoggingLevel( int level )
+    inline void setLoggingLevel( int level )
     {
         loggingLevel_ = level;
     }
 
     // Default settings for new views
-    bool isSearchAutoRefreshDefault() const
+    inline bool isSearchAutoRefreshDefault() const
     {
         return searchAutoRefresh_;
     }
-    void setSearchAutoRefreshDefault( bool autoRefresh )
+    inline void setSearchAutoRefreshDefault( bool autoRefresh )
     {
         searchAutoRefresh_ = autoRefresh;
     }
-    bool isSearchIgnoreCaseDefault() const
+    inline bool isSearchIgnoreCaseDefault() const
     {
         return searchIgnoreCase_;
     }
-    void setSearchIgnoreCaseDefault( bool ignoreCase )
+    inline void setSearchIgnoreCaseDefault( bool ignoreCase )
     {
         searchIgnoreCase_ = ignoreCase;
     }
-    QList<int> splitterSizes() const
+    inline QList<int> splitterSizes() const
     {
         return splitterSizes_;
     }
-    void setSplitterSizes( QList<int> sizes )
+    inline void setSplitterSizes( QList<int> sizes )
     {
         splitterSizes_ = std::move( sizes );
     }
 
-    bool extractArchives() const
+    inline bool extractArchives() const
     {
         return extractArchives_;
     }
-    void setExtractArchives( bool extract )
+    inline void setExtractArchives( bool extract )
     {
         extractArchives_ = extract;
     }
 
-    bool extractArchivesAlways() const
+    inline bool extractArchivesAlways() const
     {
         return extractArchivesAlways_;
     }
-    void setExtractArchivesAlways( bool extract )
+    inline void setExtractArchivesAlways( bool extract )
     {
         extractArchivesAlways_ = extract;
     }
 
-    bool verifySslPeers() const
+    inline bool verifySslPeers() const
     {
         return verifySslPeers_;
     }
-    void setVerifySslPeers( bool verify )
+    inline void setVerifySslPeers( bool verify )
     {
         verifySslPeers_ = verify;
     }
 
-    bool forceFontAntialiasing() const
+    inline bool forceFontAntialiasing() const
     {
         return forceFontAntialiasing_;
     }
-    void setForceFontAntialiasing( bool force )
+    inline void setForceFontAntialiasing( bool force )
     {
         forceFontAntialiasing_ = force;
     }
 
-    bool enableQtHighDpi() const
+    inline bool enableQtHighDpi() const
     {
         return enableQtHighDpi_;
     }
-    void setEnableQtHighDpi( bool enable )
+    inline void setEnableQtHighDpi( bool enable )
     {
         enableQtHighDpi_ = enable;
     }
 
-    int scaleFactorRounding() const
+    inline int scaleFactorRounding() const
     {
         return scaleFactorRounding_;
     }
-    void setScaleFactorRounding( int rounding )
+    inline void setScaleFactorRounding( int rounding )
     {
         scaleFactorRounding_ = rounding;
     }
 
-    bool mainSearchHighlight() const
+    inline bool mainSearchHighlight() const
     {
         return enableMainSearchHighlight_;
     }
-    void setEnableMainSearchHighlight( bool enable )
+    inline void setEnableMainSearchHighlight( bool enable )
     {
         enableMainSearchHighlight_ = enable;
     }
 
-    bool variateMainSearchHighlight() const
+    inline bool variateMainSearchHighlight() const
     {
         return enableMainSearchHighlightVariance_;
     }
-    void setVariateMainSearchHighlight( bool enable )
+    inline void setVariateMainSearchHighlight( bool enable )
     {
         enableMainSearchHighlightVariance_ = enable;
     }
 
-    QColor mainSearchBackColor() const
+    inline QColor mainSearchBackColor() const
     {
         return mainSearchBackColor_;
     }
-    void setMainSearchBackColor( QColor color )
+    inline void setMainSearchBackColor( QColor color )
     {
         mainSearchBackColor_ = color;
     }
 
-    QColor qfBackColor() const
+    inline QColor qfBackColor() const
     {
         return qfBackColor_;
     }
-    void setQfBackColor( QColor color )
+    inline void setQfBackColor( QColor color )
     {
         qfBackColor_ = color;
     }
 
-    bool qfIgnoreCase() const
+    inline bool qfIgnoreCase() const
     {
         return qfIgnoreCase_;
     }
-    void setQfIgnoreCase( bool ignore )
+    inline void setQfIgnoreCase( bool ignore )
     {
         qfIgnoreCase_ = ignore;
     }
 
-    std::map<std::string, QStringList> shortcuts() const
+    inline std::map<std::string, QStringList> shortcuts() const
     {
         return shortcuts_;
     }
-    void setShortcuts( const std::map<std::string, QStringList>& shortcuts )
+    inline void setShortcuts( const std::map<std::string, QStringList>& shortcuts )
     {
         shortcuts_ = shortcuts;
     }
 
-    bool allowFollowOnScroll() const
+    inline bool allowFollowOnScroll() const
     {
         return allowFollowOnScroll_;
     }
-    void setAllowFollowOnScroll( bool enable )
+    inline void setAllowFollowOnScroll( bool enable )
     {
         allowFollowOnScroll_ = enable;
     }
 
-    bool useTextWrap() const
+    inline bool useTextWrap() const
     {
         return useTextWrap_;
     }
-    void setUseTextWrap( bool enable )
+    inline void setUseTextWrap( bool enable )
     {
         useTextWrap_ = enable;
     }
 
-    bool autoRunSearchOnPatternChange() const
+    inline bool autoRunSearchOnPatternChange() const
     {
         return autoRunSearchOnPatternChange_;
     }
-    void setAutoRunSearchOnPatternChange( bool enable )
+    inline void setAutoRunSearchOnPatternChange( bool enable )
     {
         autoRunSearchOnPatternChange_ = enable;
     }
 
-    bool optimizeForNotLatinEncodings() const
+    inline bool optimizeForNotLatinEncodings() const
     {
         return optimizeForNotLatinEncodings_;
     }
-    void setOptimizeForNotLatinEncodings( bool enable )
+    inline void setOptimizeForNotLatinEncodings( bool enable )
     {
         optimizeForNotLatinEncodings_ = enable;
     }
 
-    bool hideAnsiColorSequences() const
+    inline bool hideAnsiColorSequences() const
     {
         return hideAnsiColorSequences_;
     }
-    void setHideAnsiColorSequences( bool hide )
+    inline void setHideAnsiColorSequences( bool hide )
     {
         hideAnsiColorSequences_ = hide;
     }
 
-    int defaultEncodingMib() const
+    inline int defaultEncodingMib() const
     {
         return defaultEncodingMib_;
     }
-    void setDefaultEncodingMib( int mib )
+    inline void setDefaultEncodingMib( int mib )
     {
         defaultEncodingMib_ = mib;
     }
 
-    std::map<QString, QString> darkPalette() const {
+    inline std::map<QString, QString> darkPalette() const {
         return darkPalette_;
     }
 

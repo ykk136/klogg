@@ -84,7 +84,9 @@ class Logger {
     {
         ScopedLock lock( mutex_ );
 
-        qSetMessagePattern( "%{time} %{type} [%{threadid}] [%{function}@%{line}] %{message}" );
+        qSetMessagePattern( "%{time yyyy-MM-dd hh:mm:ss.zzz} %{if-debug}D%{endif}%{if-info}I%{endif}"
+                "%{if-warning}W%{endif}%{if-critical}E%{endif}%{if-fatal}F%{endif} "
+                "%{pid} %{threadid} %{file}:%{line} %{function}() %{message}" );
 
         isConsoleLogEnabled_ = isEnabled;
         logLevel_ = logLevel;
@@ -96,7 +98,9 @@ class Logger {
     {
         ScopedLock lock( mutex_ );
 
-        qSetMessagePattern( "%{time} %{type} [%{threadid}] [%{function}@%{line}] %{message}" );
+        qSetMessagePattern( "%{time yyyy-MM-dd hh:mm:ss.zzz} %{if-debug}D%{endif}%{if-info}I%{endif}"
+                "%{if-warning}W%{endif}%{if-critical}E%{endif}%{if-fatal}F%{endif} "
+                "%{pid} %{threadid} %{file}:%{line} %{function}() %{message}" );
 
         isFileLogEnabled_ = isEnabled;
         logLevel_ = logLevel;
